@@ -18,15 +18,16 @@
     "type-check": "tsc --noEmit",
     "prebuild": "npm run clean",
     "build": "rollup -c",
-    "test": "nyc mocha \"packages/**/*.test.js\""
+    "test": "nyc mocha --parallel --watch \"packages/**/*.test.js\""
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",
     "@types/mocha": "^9.1.1",
+    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@typescript-eslint/parser": "^5.36.2",
     "chai": "^4.3.6",
     "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsdoc": "^39.3.6",
     "eslint-plugin-mocha": "^10.1.0",
     "eslint-plugin-prettier": "^4.2.1",
