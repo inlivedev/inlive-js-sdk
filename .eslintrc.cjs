@@ -41,5 +41,5 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: ["node_modules", "dist", "./*.js"] //same patterns as "exclude" on tsconfig.json
+  ignorePatterns: ["node_modules", "dist", "./*.js"]
 }
