@@ -6,7 +6,7 @@ const baseOptions = {
  * @type {import('./init').init}
  */
 const init = (options = baseOptions) => {
-  return options.apiKey.trim().length > 0
+  return options && options.apiKey && options.apiKey.trim().length > 0
     ? {
         options: {
           api_key: options.apiKey,
