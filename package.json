@@ -23,7 +23,7 @@
     "typecheck": "tsc --noEmit --skipLibCheck --allowJs --checkJs --strict",
     "test": "mocha \"packages/**/*.test.js\"",
     "test:watch": "mocha \"packages/**/*.test.js\" --parallel --watch",
-    "test:coverage": "nyc --report=text npm run test"
+    "test:coverage": "nyc npm run test"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",
