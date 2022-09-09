@@ -6,5 +6,5 @@
     "strict": true
   },
   "include": ["./packages/**/*.js"],
-  "exclude": ["node_modules", "dist", "./*.js"]
+  "exclude": ["node_modules", "dist", "**/*.test.js", "./*.js"]
 }

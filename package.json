@@ -20,7 +20,7 @@
     "lint": "eslint --cache",
     "lint:packages": "npm run lint \"packages/**/*.js\"",
     "prettier": "prettier --write",
-    "typecheck": "tsc --noEmit --skipLibCheck",
+    "typecheck": "tsc --noEmit --skipLibCheck --allowJs --checkJs --strict",
     "test": "mocha \"packages/**/*.test.js\"",
     "test:watch": "mocha \"packages/**/*.test.js\" --parallel --watch",
     "test:coverage": "nyc --report=text npm run test"
@@ -52,7 +52,12 @@
     "node-fetch": "3.2.10"
   },
   "lint-staged": {
-    "*.{js,d.ts}": [
+    "*.d.ts": [
+      "npm run typecheck",
+      "npm run lint",
+      "npm run prettier"
+    ],
+    "!(*test).js": [
       "npm run typecheck",
       "npm run lint",
       "npm run prettier"
