@@ -2,17 +2,17 @@ type Options = {
   apiKey: string
 }
 
-type SuccessResponses = {
+type InliveAppInstance = {
   options: {
     api_key: string
   }
   name: string
 }
 
-type ErrorResponses = {
+type ErrorException = {
   status: {
     message: string
-    type: 'success' | 'error'
+    type: 'error'
   }
 }
 
@@ -23,4 +23,4 @@ type ErrorResponses = {
  */
 export declare function init({
   apiKey,
-}: Options): SuccessResponses | ErrorResponses
+}: Options): InliveAppInstance | ErrorException
