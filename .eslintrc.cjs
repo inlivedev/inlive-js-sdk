@@ -8,7 +8,6 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:jsdoc/recommended',
     'plugin:mocha/recommended',
     'plugin:prettier/recommended',
@@ -19,8 +18,6 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    tsconfigRootDir: __dirname,
-    project: ['./tsconfig.json'],
   },
   plugins: [
     '@typescript-eslint',
@@ -44,5 +41,5 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: ["node_modules", "dist", "**/*.test.js", "./*.js"] //same patterns as "exclude" on tsconfig.json
+  ignorePatterns: ["node_modules", "dist", "./*.js"] //same patterns as "exclude" on tsconfig.json
 }
