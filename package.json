@@ -21,7 +21,9 @@
     "lint:packages": "npm run lint \"packages/**/*.js\"",
     "prettier": "prettier --write",
     "typecheck": "tsc --noEmit --skipLibCheck",
-    "test": "nyc mocha --parallel --watch \"packages/**/*.test.js\""
+    "test": "mocha \"packages/**/*.test.js\"",
+    "test:watch": "mocha \"packages/**/*.test.js\" --parallel --watch",
+    "test:coverage": "nyc --report=text npm run test"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",
