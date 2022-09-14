@@ -2,8 +2,7 @@ module.exports = {
   root: true,
   env: {
     browser: true,
-    node: true,
-    es2021: true,
+    node: true
   },
   extends: [
     'eslint:recommended',
@@ -28,6 +27,7 @@ module.exports = {
     'unicorn',
   ],
   rules: {
+    'unicorn/prefer-ternary': ['error', 'only-single-line'],
     'jsdoc/require-jsdoc': [
       'error',
       {
@@ -41,5 +41,5 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: ["node_modules", "dist", "./*.js"]
+  ignorePatterns: ['node_modules', 'dist', './*.js']
 }
