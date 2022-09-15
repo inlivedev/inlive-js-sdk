@@ -37,6 +37,26 @@ describe('Create Stream Module', function () {
           'Failed to create a new stream because the name of the stream is not in string format. A stream name must be in string format'
         )
       }
+
+      try {
+        await createStream({})
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to create a new stream because the name of the stream is not in string format. A stream name must be in string format'
+        )
+      }
+
+      try {
+        await createStream([])
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to create a new stream because the name of the stream is not in string format. A stream name must be in string format'
+        )
+      }
     })
 
     it('should return error response if function is called with stream slug with not a string type', async function () {
@@ -49,8 +69,39 @@ describe('Create Stream Module', function () {
           'Failed to create a new stream because the slug of the stream is not in string format. A slug must be in string format'
         )
       }
+
+      try {
+        await createStream('shopping', {})
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('Error')
+        expect(error.message).to.be.equal(
+          'Failed to create a new stream because the slug of the stream is not in string format. A slug must be in string format'
+        )
+      }
+
+      try {
+        await createStream('shopping', [])
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('Error')
+        expect(error.message).to.be.equal(
+          'Failed to create a new stream because the slug of the stream is not in string format. A slug must be in string format'
+        )
+      }
     })
+
     it('should return error response if function is called with stream description with not a string type', async function () {
+      try {
+        await createStream('shopping', 'shopping', 2)
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('Error')
+        expect(error.message).to.be.equal(
+          'Failed to create a new stream because the description of the stream is not in string format. A description must be in string format'
+        )
+      }
+
       try {
         await createStream('shopping', 'shopping', {})
       } catch (error) {
@@ -60,7 +111,18 @@ describe('Create Stream Module', function () {
           'Failed to create a new stream because the description of the stream is not in string format. A description must be in string format'
         )
       }
+
+      try {
+        await createStream('shopping', 'shopping', [])
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('Error')
+        expect(error.message).to.be.equal(
+          'Failed to create a new stream because the description of the stream is not in string format. A description must be in string format'
+        )
+      }
     })
+
     it('should return error response if API Key is not valid', async function () {
       nock(`${Internal.config.api.base_url}`)
         .post(`/${Internal.config.api.version}/streams/create`, {
