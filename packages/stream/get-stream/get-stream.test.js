@@ -33,6 +33,26 @@ describe('Get Stream Module', function () {
           'Failed to get the stream data because the stream ID is not type of number. Please provide a valid stream ID'
         )
       }
+
+      try {
+        await getStream({})
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to get the stream data because the stream ID is not type of number. Please provide a valid stream ID'
+        )
+      }
+
+      try {
+        await getStream([])
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to get the stream data because the stream ID is not type of number. Please provide a valid stream ID'
+        )
+      }
     })
 
     it('should return error response if stream ID not found', async function () {
@@ -98,44 +118,14 @@ describe('Get Stream Module', function () {
       expect(result).to.have.property('status').to.be.an('object')
       expect(result).to.have.property('data').to.be.an('object')
       expect(result.data).to.have.property('id').to.be.equal(stream_id)
-      expect(result.data).to.have.property('name')
-      expect(result.data).to.have.property('slug')
-      expect(result.data).to.have.property('hls_manifest_path')
-      expect(result.data).to.have.property('dash_manifest_path')
+      expect(result.data).to.have.property('name').to.be.a('string')
+      expect(result.data).to.have.property('slug').to.be.a('string')
+      expect(result.data)
+        .to.have.property('hls_manifest_path')
+        .to.be.a('string')
+      expect(result.data)
+        .to.have.property('dash_manifest_path')
+        .to.be.a('string')
     })
   })
-
-  // msh ragu cara cek part id ini
-  // it('stream id should be a number', async function () {
-  //   const STREAM_ID = 1
-  //   expect(STREAM_ID).to.be.a('number')
-  //   expect(STREAM_ID % 1).to.equal(0)
-  // })
-
-  // it('should return as an object & has properties of status & data', async function () {
-  //   const result = await getStream(351)
-
-  //   if (result !== undefined) {
-  //     expect(result).to.be.an('object')
-  //     expect(result).to.have.property('status')
-  //     expect(result).to.have.property('data')
-  //   }
-  // })
-
-  // it('if success will return data of an object, if error will return data of null', async function () {
-  //   let id = 351
-  //   const result = await getStream(id)
-  //   const data = result.data
-
-  //   if (result?.status?.code === 200) {
-  //     expect(data).to.be.an('object')
-  //     expect(data).to.have.property('id').to.be.equal(id)
-  //     expect(data).to.have.property('name')
-  //     expect(data).to.have.property('slug')
-  //     expect(data).to.have.property('hls_manifest_path')
-  //     expect(data).to.have.property('dash_manifest_path')
-  //   } else {
-  //     expect(data).to.be.a('null')
-  //   }
-  // })
 })
