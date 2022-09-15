@@ -20,7 +20,7 @@ export const getStream = async (stream_id) => {
     )
   } else if (typeof stream_id !== 'number') {
     throw new TypeError(
-      'Failed to get the stream data because the stream ID is not type of number. Please provide a valid stream ID'
+      'Failed to get the stream data because the stream ID is not in number format. A stream ID must be number format'
     )
   } else {
     let fetchResponse = await Internal.fetchHttp({

@@ -30,7 +30,7 @@ describe('Get Stream Module', function () {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
         expect(error.message).to.be.equal(
-          'Failed to get the stream data because the stream ID is not type of number. Please provide a valid stream ID'
+          'Failed to get the stream data because the stream ID is not in number format. A stream ID must be number format'
         )
       }
 
@@ -40,7 +40,7 @@ describe('Get Stream Module', function () {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
         expect(error.message).to.be.equal(
-          'Failed to get the stream data because the stream ID is not type of number. Please provide a valid stream ID'
+          'Failed to get the stream data because the stream ID is not in number format. A stream ID must be number format'
         )
       }
 
@@ -50,7 +50,7 @@ describe('Get Stream Module', function () {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
         expect(error.message).to.be.equal(
-          'Failed to get the stream data because the stream ID is not type of number. Please provide a valid stream ID'
+          'Failed to get the stream data because the stream ID is not in number format. A stream ID must be number format'
         )
       }
     })
