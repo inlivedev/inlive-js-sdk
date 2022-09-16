@@ -13,11 +13,11 @@ function InitializationInstance(config) {
 }
 
 /**
- * Initialize an initialization object
+ * Initialize an initialization instance
  *
  * @function
  * @param {Config} config - A set of key/value parameter configuration
- * @returns {object} InitializationObject that contains config object of api_key
+ * @returns {object} InitializationInstance that contains config object of api_key
  * @throws {Error}
  */
 const init = (config) => {
