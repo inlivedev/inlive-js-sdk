@@ -8,7 +8,7 @@
  *
  * @param {Config} config -- being passed from init module parameter
  */
-function InitializationInstance(config) {
+export function InitializationInstance(config) {
   this.config = config
 }
 

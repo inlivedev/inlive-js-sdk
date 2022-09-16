@@ -1,7 +1,8 @@
-import { expect } from 'chai'
 import nock from 'nock'
+import { expect } from 'chai'
 import { getStreams } from './get-streams.js'
 import { Internal } from '../../internal/index.js'
+import { init } from '../../app/init/init.js'
 
 describe('Get Streams Module', function () {
   describe('Basic test', function () {
@@ -11,13 +12,55 @@ describe('Get Streams Module', function () {
   })
 
   describe('Negative test', function () {
+    it('should return error if initialization instance not input / not match format', async function () {
+      try {
+        await getStreams()
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+        )
+      }
+
+      try {
+        await getStreams({})
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+        )
+      }
+
+      try {
+        await getStreams('blabla')
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+        )
+      }
+
+      try {
+        await getStreams({ tes: 'blabla' })
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+        )
+      }
+    })
+
     it('should return error response if API key is not valid', async function () {
       nock(`${Internal.config.api.base_url}`)
         .get(`/${Internal.config.api.version}/streams/`)
         .reply(403, { code: 403, message: 'API key is not valid', data: '' })
 
       try {
-        await getStreams()
+        await getStreams(init({ api_key: 'blabla' }))
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -61,14 +104,22 @@ describe('Get Streams Module', function () {
     })
 
     it('should return success response', async function () {
-      const result = await getStreams()
+      const result = await getStreams(
+        init({
+          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+        })
+      )
       // console.log(result)
 
       expect(result.status.code).to.equal(200)
     })
 
     it('should return success response data', async function () {
-      const result = await getStreams()
+      const result = await getStreams(
+        init({
+          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+        })
+      )
 
       expect(result).to.be.an('object')
       expect(result).to.have.property('data').to.be.an('array')
@@ -81,15 +132,4 @@ describe('Get Streams Module', function () {
       }
     })
   })
-
-  // it('should return error if the /streams endpoint returns 403', async function () {
-  //   nock('https://api.inlive.app')
-  //     .get('/v1/streams/')
-  //     .reply(403, { code: 403, message: 'API key is not valid', data: '' })
-  //   const result = await getStreams()
-  //   console.log('res', result)
-
-  //   expect(result.status.code).to.equal(403)
-  //   expect(result).to.have.property('data').to.be.a('null')
-  // })
 })
