@@ -31,9 +31,7 @@ export const getStream = async (initObject, stream_id) => {
   } else {
     let fetchResponse = await Internal.fetchHttp({
       url: `${Internal.config.api.base_url}/${Internal.config.api.version}/streams/${stream_id}`,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjI2OTA5OTgsImlzcyI6ImlubGl2ZSIsIlRva2VuVHlwZSI6InRva2VuIiwiVXNlciI6eyJpZCI6MzEsInVzZXJuYW1lIjoiIiwicGFzc3dvcmQiOiIiLCJjb25maXJtX3Bhc3N3b3JkIjoiIiwibmFtZSI6IiIsImxvZ2luX3R5cGUiOjAsImVtYWlsIjoiIiwicm9sZV9pZCI6MCwicGljdHVyZV91cmwiOiIiLCJpc19hY3RpdmUiOmZhbHNlLCJyZWdpc3Rlcl9kYXRlIjoiMDAwMS0wMS0wMVQwMDowMDowMFoiLCJ1cGRhdGVkX2RhdGUiOm51bGx9fQ.5VyfcYVoq6BLujfRsoVpWphc01tl6uqQKHAWutdbTeU',
-      // token: '',
+      token: initObject.config.api_key,
       method: 'GET',
     }).catch((error) => {
       return error
