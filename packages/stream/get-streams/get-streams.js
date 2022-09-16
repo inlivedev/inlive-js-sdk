@@ -29,7 +29,7 @@ export const getStreams = async (initObject) => {
       return error
     })
 
-    if (fetchResponse !== null || fetchResponse !== undefined) {
+    if (fetchResponse) {
       switch (fetchResponse.code) {
         case 200:
           fetchResponse = {
