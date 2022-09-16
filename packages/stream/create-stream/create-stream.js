@@ -1,4 +1,5 @@
 import { Internal } from '../../internal/index.js'
+import { InitializationInstance } from '../../app/init/init.js'
 
 /**
  * Function to cek if the input text has a space or not. If yes, then will replace space with "-"
@@ -20,15 +21,21 @@ function replaceWhiteSpace(text) {
 /**
  * A create stream module that should pass stream's name parameter, and user could pass the stream's slug & description parameter as well
  *
+ * @function
+ * @param {InitializationInstance} initObject -- initialization object
  * @param {string} name -- name of stream
  * @param {string} slug -- slug of stream
  * @param {string} description -- description of stream
  * @returns {Promise<FetchResponse>} returns the restructured data which content status & created stream data
  * @throws {Error}
  */
-export const createStream = async (name, slug, description) => {
+export const createStream = async (initObject, name, slug, description) => {
   // console.log('ini apa?', slug !== null && slug !== undefined)
-  if (name === null || name === undefined) {
+  if (!(initObject instanceof InitializationInstance)) {
+    throw new TypeError(
+      'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+    )
+  } else if (name === null || name === undefined) {
     throw new Error(
       'Failed to create a new stream because the name of the stream is empty. Please provide a stream name'
     )
@@ -55,8 +62,7 @@ export const createStream = async (name, slug, description) => {
 
     let fetchResponse = await Internal.fetchHttp({
       url: `${Internal.config.api.base_url}/${Internal.config.api.version}/streams/create`,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjMyOTM5NDcsImlzcyI6ImlubGl2ZSIsIlRva2VuVHlwZSI6InRva2VuIiwiVXNlciI6eyJpZCI6NjMsInVzZXJuYW1lIjoiIiwicGFzc3dvcmQiOiIiLCJjb25maXJtX3Bhc3N3b3JkIjoiIiwibmFtZSI6IiIsImxvZ2luX3R5cGUiOjAsImVtYWlsIjoiIiwicm9sZV9pZCI6MCwicGljdHVyZV91cmwiOiIiLCJpc19hY3RpdmUiOmZhbHNlLCJyZWdpc3Rlcl9kYXRlIjoiMDAwMS0wMS0wMVQwMDowMDowMFoiLCJ1cGRhdGVkX2RhdGUiOm51bGx9fQ.Bb5Pyf-9JN0VeiITKBenbDul32XfFyJrKUi0PX8usJg',
+      token: initObject.config.api_key,
       // token: '',
       method: 'POST',
       body: {

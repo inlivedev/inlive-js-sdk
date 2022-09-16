@@ -1,7 +1,8 @@
+import nock from 'nock'
 import { expect } from 'chai'
 import { createStream } from './create-stream.js'
 import { Internal } from '../../internal/index.js'
-import nock from 'nock'
+import { init } from '../../app/init/init.js'
 
 describe('Create Stream Module', function () {
   describe('Basic test', function () {
@@ -15,9 +16,55 @@ describe('Create Stream Module', function () {
       return nock.cleanAll()
     })
 
-    it('should return error response if function is called with no stream name argument', async function () {
+    it('should return error if initialization instance not input / not match format', async function () {
       try {
         await createStream()
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+        )
+      }
+
+      try {
+        await createStream({})
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+        )
+      }
+
+      try {
+        await createStream('blabla')
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+        )
+      }
+
+      try {
+        await createStream({ tes: 'blabla' })
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+        )
+      }
+    })
+
+    it('should return error response if function is called with no stream name argument', async function () {
+      try {
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          })
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -29,7 +76,12 @@ describe('Create Stream Module', function () {
 
     it('should return error response if function is called with stream name with not a string type', async function () {
       try {
-        await createStream(2)
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          2
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
@@ -39,7 +91,12 @@ describe('Create Stream Module', function () {
       }
 
       try {
-        await createStream({})
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          {}
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
@@ -49,7 +106,12 @@ describe('Create Stream Module', function () {
       }
 
       try {
-        await createStream([])
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          []
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
@@ -61,7 +123,13 @@ describe('Create Stream Module', function () {
 
     it('should return error response if function is called with stream slug with not a string type', async function () {
       try {
-        await createStream('shopping', 2)
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          'shopping',
+          2
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -71,7 +139,13 @@ describe('Create Stream Module', function () {
       }
 
       try {
-        await createStream('shopping', {})
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          'shopping',
+          {}
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -81,7 +155,13 @@ describe('Create Stream Module', function () {
       }
 
       try {
-        await createStream('shopping', [])
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          'shopping',
+          []
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -93,7 +173,14 @@ describe('Create Stream Module', function () {
 
     it('should return error response if function is called with stream description with not a string type', async function () {
       try {
-        await createStream('shopping', 'shopping', 2)
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          'shopping',
+          'shopping',
+          2
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -103,7 +190,14 @@ describe('Create Stream Module', function () {
       }
 
       try {
-        await createStream('shopping', 'shopping', {})
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          'shopping',
+          'shopping',
+          {}
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -113,7 +207,14 @@ describe('Create Stream Module', function () {
       }
 
       try {
-        await createStream('shopping', 'shopping', [])
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          'shopping',
+          'shopping',
+          []
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -132,7 +233,12 @@ describe('Create Stream Module', function () {
         })
         .reply(403, { code: 403, message: 'API Key is not valid', data: '' })
       try {
-        await createStream('tes')
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          'tes'
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -151,7 +257,12 @@ describe('Create Stream Module', function () {
         .reply(500, { code: 500, message: 'Server error', data: '' })
 
       try {
-        await createStream('tes')
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          }),
+          'tes'
+        )
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -196,14 +307,28 @@ describe('Create Stream Module', function () {
     })
 
     it('should return code 200', async function () {
-      const result = await createStream('tes', 'tes', 'tes')
+      const result = await createStream(
+        init({
+          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+        }),
+        'tes',
+        'tes',
+        'tes'
+      )
       // console.log(result)
 
       expect(result.status.code).to.equal(200)
     })
 
     it('should return success response', async function () {
-      const result = await createStream('tes', 'tes', 'tes')
+      const result = await createStream(
+        init({
+          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+        }),
+        'tes',
+        'tes',
+        'tes'
+      )
 
       expect(result).to.be.an('object')
       expect(result).to.have.property('status').to.be.an('object')
