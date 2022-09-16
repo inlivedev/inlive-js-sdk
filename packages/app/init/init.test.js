@@ -65,7 +65,6 @@ describe('Test cases for the init() function', function () {
     it('should returns a success response with api key data inside the object', function () {
       expect(init({ api_key: 'any api key' })).to.be.an('object')
       expect(init({ api_key: 'any api key' })).to.have.property('config')
-      expect(init({ api_key: 'any api key' })).to.have.property('name')
       expect(init({ api_key: 'any api key' })).to.have.deep.nested.property(
         'config.api_key'
       )
