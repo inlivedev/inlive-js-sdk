@@ -13,6 +13,13 @@ function replaceWhiteSpace(text) {
 }
 
 /**
+ * @typedef Config
+ * @property {string} name -- name of stream
+ * @property {string} slug -- slug of stream
+ * @property {string} description -- description of stream
+ */
+
+/**
  * @typedef FetchResponse
  * @property {object} status -- A status response
  * @property {object} data -- A return data as per endpoint
@@ -23,33 +30,39 @@ function replaceWhiteSpace(text) {
  *
  * @function
  * @param {InitializationInstance} initObject -- initialization object
- * @param {string} name -- name of stream
- * @param {string} slug -- slug of stream
- * @param {string} description -- description of stream
+ * @param {Config} config - passing param from user including name, description, slug
  * @returns {Promise<FetchResponse>} returns the restructured data which content status & created stream data
  * @throws {Error}
  */
-export const createStream = async (initObject, name, slug, description) => {
-  if (!(initObject instanceof InitializationInstance)) {
+export const createStream = async (initObject, config) => {
+  if (!(initObject instanceof InitializationInstance) || !config) {
     throw new TypeError(
-      'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+      'Failed to process because initialization is not valid and/or missing config. Please provide required initialization argument which is the initialization instance returned by the init() function and the configuration object'
     )
-  } else if (name === null || name === undefined) {
+  } else if (typeof config !== 'object') {
+    throw new TypeError(
+      'Failed to process because config argument must be in object format'
+    )
+  } else if (config.name === null || config.name === undefined) {
     throw new Error(
       'Failed to create a new stream because the name of the stream is empty. Please provide a stream name'
     )
-  } else if (typeof name !== 'string') {
+  } else if (typeof config.name !== 'string') {
     throw new TypeError(
       'Failed to create a new stream because the name of the stream is not in string format. A stream name must be in string format'
     )
-  } else if (slug !== null && slug !== undefined && typeof slug !== 'string') {
+  } else if (
+    config.slug !== null &&
+    config.slug !== undefined &&
+    typeof config.slug !== 'string'
+  ) {
     throw new Error(
       'Failed to create a new stream because the slug of the stream is not in string format. A slug must be in string format'
     )
   } else if (
-    description !== null &&
-    description !== undefined &&
-    typeof description !== 'string'
+    config.description !== null &&
+    config.description !== undefined &&
+    typeof config.description !== 'string'
   ) {
     throw new Error(
       'Failed to create a new stream because the description of the stream is not in string format. A description must be in string format'
@@ -60,9 +73,9 @@ export const createStream = async (initObject, name, slug, description) => {
       token: initObject.config.api_key,
       method: 'POST',
       body: {
-        name: name,
-        slug: slug || replaceWhiteSpace(name),
-        description: description || '',
+        name: config.name,
+        slug: config.slug || replaceWhiteSpace(config.name),
+        description: config.description || '',
       },
     }).catch((error) => {
       return error
