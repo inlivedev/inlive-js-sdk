@@ -4,18 +4,20 @@
  */
 
 /**
- * @typedef InitializationObject
- * @property {object} config - The key/value configuration inside the initialization object
- * @property {string} config.api_key - A string of key that will be used to access inLive protected API
- * @property {string} name - The name of initialization object instance
+ * A function to create object
+ *
+ * @param {Config} config -- being passed from init module parameter
  */
+function initializeConfig(config) {
+  this.config = config
+}
 
 /**
  * Initialize an initialization object
  *
  * @function
  * @param {Config} config - A set of key/value parameter configuration
- * @returns {InitializationObject} InitializationObject
+ * @returns {object} InitializationObject that contains config object of api_key
  * @throws {Error}
  */
 const init = (config) => {
@@ -32,12 +34,7 @@ const init = (config) => {
       'Failed to process because the API key field is an empty string. Please provide an API key.'
     )
   } else {
-    return {
-      config: {
-        api_key: config.api_key,
-      },
-      name: 'default',
-    }
+    return new initializeConfig(config)
   }
 }
 
