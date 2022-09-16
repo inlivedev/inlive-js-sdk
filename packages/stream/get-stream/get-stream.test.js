@@ -12,55 +12,9 @@ describe('Get Stream Module', function () {
   })
 
   describe('Negative test', function () {
-    it('should return error if initialization instance not input / not match format', async function () {
-      try {
-        await getStream()
-      } catch (error) {
-        expect(error).to.be.an('error')
-        expect(error.name).to.be.equal('TypeError')
-        expect(error.message).to.be.equal(
-          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
-        )
-      }
-
-      try {
-        await getStream({})
-      } catch (error) {
-        expect(error).to.be.an('error')
-        expect(error.name).to.be.equal('TypeError')
-        expect(error.message).to.be.equal(
-          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
-        )
-      }
-
-      try {
-        await getStream('blabla')
-      } catch (error) {
-        expect(error).to.be.an('error')
-        expect(error.name).to.be.equal('TypeError')
-        expect(error.message).to.be.equal(
-          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
-        )
-      }
-
-      try {
-        await getStream({ tes: 'blabla' })
-      } catch (error) {
-        expect(error).to.be.an('error')
-        expect(error.name).to.be.equal('TypeError')
-        expect(error.message).to.be.equal(
-          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
-        )
-      }
-    })
-
     it('should return error response if function is called with no stream ID argument', async function () {
       try {
-        await getStream(
-          init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
-          })
-        )
+        await getStream()
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -72,12 +26,7 @@ describe('Get Stream Module', function () {
 
     it('should return error response if function is called with stream ID with not a number type', async function () {
       try {
-        await getStream(
-          init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
-          }),
-          '1'
-        )
+        await getStream('1')
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
@@ -87,12 +36,7 @@ describe('Get Stream Module', function () {
       }
 
       try {
-        await getStream(
-          init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
-          }),
-          {}
-        )
+        await getStream({})
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
@@ -102,12 +46,7 @@ describe('Get Stream Module', function () {
       }
 
       try {
-        await getStream(
-          init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
-          }),
-          []
-        )
+        await getStream([])
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
@@ -124,12 +63,7 @@ describe('Get Stream Module', function () {
         .reply(404, { code: 404, message: 'ID not found', data: '' })
 
       try {
-        await getStream(
-          init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
-          }),
-          stream_id
-        )
+        await getStream(stream_id)
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -172,24 +106,14 @@ describe('Get Stream Module', function () {
     })
 
     it('should call the getStream function', async function () {
-      const result = await getStream(
-        init({
-          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
-        }),
-        stream_id
-      )
+      const result = await getStream(stream_id)
       // console.log(result)
 
       expect(result.status.code).to.equal(200)
     })
 
     it('should return success response', async function () {
-      const result = await getStream(
-        init({
-          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
-        }),
-        stream_id
-      )
+      const result = await getStream(stream_id)
 
       expect(result).to.be.an('object')
       expect(result).to.have.property('status').to.be.an('object')
