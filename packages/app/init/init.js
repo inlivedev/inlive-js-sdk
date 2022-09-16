@@ -8,7 +8,7 @@
  *
  * @param {Config} config -- being passed from init module parameter
  */
-function initializeConfig(config) {
+function InitializationInstance(config) {
   this.config = config
 }
 
@@ -34,7 +34,7 @@ const init = (config) => {
       'Failed to process because the API key field is an empty string. Please provide an API key.'
     )
   } else {
-    return new initializeConfig(config)
+    return new InitializationInstance(config)
   }
 }
 
