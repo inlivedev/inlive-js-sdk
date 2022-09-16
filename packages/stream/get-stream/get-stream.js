@@ -1,4 +1,5 @@
 import { Internal } from '../../internal/index.js'
+import { InitializationInstance } from '../../app/init/init.js'
 
 /**
  * @typedef FetchResponse
@@ -9,12 +10,17 @@ import { Internal } from '../../internal/index.js'
 /**
  * A get specific stream data module based on the stream ID passing parameter
  *
+ * @param {InitializationInstance} initObject -- initialization object
  * @param {number} stream_id -- stream ID
  * @returns {Promise<FetchResponse>} returns the restructured data which content status & specific stream data
  * @throws {Error}
  */
-export const getStream = async (stream_id) => {
-  if (stream_id === null || stream_id === undefined) {
+export const getStream = async (initObject, stream_id) => {
+  if (!(initObject instanceof InitializationInstance)) {
+    throw new TypeError(
+      'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+    )
+  } else if (stream_id === null || stream_id === undefined) {
     throw new Error(
       'Failed to get the stream data because the stream ID is empty. Please provide a stream ID'
     )
