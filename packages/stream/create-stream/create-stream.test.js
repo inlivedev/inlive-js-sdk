@@ -232,6 +232,7 @@ describe('Create Stream Module', function () {
           description: 'tes',
         })
         .reply(403, { code: 403, message: 'API Key is not valid', data: '' })
+
       try {
         await createStream(
           init({
@@ -247,6 +248,7 @@ describe('Create Stream Module', function () {
         )
       }
     })
+
     it('should return error response if unexpected error from server', async function () {
       nock(`${Internal.config.api.base_url}`)
         .post(`/${Internal.config.api.version}/streams/create`, {
@@ -315,12 +317,11 @@ describe('Create Stream Module', function () {
         'tes',
         'tes'
       )
-      // console.log(result)
 
       expect(result.status.code).to.equal(200)
     })
 
-    it('should return success response', async function () {
+    it('should return success response data', async function () {
       const result = await createStream(
         init({
           api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
@@ -333,15 +334,16 @@ describe('Create Stream Module', function () {
       expect(result).to.be.an('object')
       expect(result).to.have.property('status').to.be.an('object')
       expect(result).to.have.property('data').to.be.an('object')
-      expect(result.data).to.have.property('id')
+      expect(result.data).to.have.property('id').to.be.a('number')
       expect(result.data).to.have.property('name').to.be.a('string')
       expect(result.data).to.have.property('slug').to.be.a('string')
       expect(result.data).to.have.property('description').to.be.a('string')
+      expect(result.data)
+        .to.have.property('hls_manifest_path')
+        .to.be.a('string').to.be.empty
+      expect(result.data)
+        .to.have.property('dash_manifest_path')
+        .to.be.a('string').to.be.empty
     })
   })
-
-  // it('tes', async function () {
-  //   const result = await createStream('tes01')
-  //   console.log('res', result)
-  // })
 })

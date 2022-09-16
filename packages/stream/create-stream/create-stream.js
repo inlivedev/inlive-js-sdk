@@ -30,7 +30,6 @@ function replaceWhiteSpace(text) {
  * @throws {Error}
  */
 export const createStream = async (initObject, name, slug, description) => {
-  // console.log('ini apa?', slug !== null && slug !== undefined)
   if (!(initObject instanceof InitializationInstance)) {
     throw new TypeError(
       'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
@@ -44,7 +43,6 @@ export const createStream = async (initObject, name, slug, description) => {
       'Failed to create a new stream because the name of the stream is not in string format. A stream name must be in string format'
     )
   } else if (slug !== null && slug !== undefined && typeof slug !== 'string') {
-    // console.log('msk error slug')
     throw new Error(
       'Failed to create a new stream because the slug of the stream is not in string format. A slug must be in string format'
     )
@@ -53,17 +51,13 @@ export const createStream = async (initObject, name, slug, description) => {
     description !== undefined &&
     typeof description !== 'string'
   ) {
-    // console.log('msk error description')
     throw new Error(
       'Failed to create a new stream because the description of the stream is not in string format. A description must be in string format'
     )
   } else {
-    // console.log('msk else')
-
     let fetchResponse = await Internal.fetchHttp({
       url: `${Internal.config.api.base_url}/${Internal.config.api.version}/streams/create`,
       token: initObject.config.api_key,
-      // token: '',
       method: 'POST',
       body: {
         name: name,
@@ -74,7 +68,7 @@ export const createStream = async (initObject, name, slug, description) => {
       return error
     })
 
-    if (fetchResponse !== null || fetchResponse !== undefined) {
+    if (fetchResponse) {
       switch (fetchResponse.code) {
         case 200: {
           fetchResponse = {
