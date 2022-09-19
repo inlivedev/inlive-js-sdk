@@ -121,14 +121,23 @@ describe('Get Streams Module', function () {
       )
 
       expect(result).to.be.an('object')
-      expect(result).to.have.property('data').to.be.an('array')
-      for (let p of result.data) {
-        expect(p).to.have.own.property('id').that.is.a('number')
-        expect(p).to.have.own.property('name').that.is.a('string')
-        expect(p).to.have.own.property('slug').that.is.a('string')
-        expect(p).to.have.own.property('hls_manifest_path').that.is.a('string')
-        expect(p).to.have.own.property('dash_manifest_path').that.is.a('string')
-      }
+      expect(result)
+        .to.have.deep.property('data', [
+          {
+            id: 371,
+            name: 'a new stream',
+            slug: '',
+            hls_manifest_path: '',
+            dash_manifest_path: '',
+            description: '',
+            created_by: 6,
+            created_at: '2022-09-05T07:38:09.525329768Z',
+            updated_at: '2022-09-05T07:38:09.525329768Z',
+            quality: '360',
+            viewer_count: 0,
+          },
+        ])
+        .to.be.an('array')
     })
   })
 })
