@@ -109,7 +109,6 @@ describe('Get Streams Module', function () {
           api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
         })
       )
-      // console.log(result)
 
       expect(result.status.code).to.equal(200)
     })
