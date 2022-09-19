@@ -8,8 +8,16 @@ import { InitializationInstance } from '../../app/init/init.js'
  * @param {string} text -- stream's name
  * @returns {string} -- stream's slug as per stream's name but without space
  */
-function replaceWhiteSpace(text) {
-  return /\s/.test(text) ? text.split(' ').join('-') : text
+function slugify(text) {
+  return text
+    .toString() // Cast to string (optional)
+    .normalize('NFKD') // The normalize() using NFKD method returns the Unicode Normalization Form of a given string.
+    .toLowerCase() // Convert the string to lowercase letters
+    .trim() // Remove whitespace from both sides of a string (optional)
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\\-]+/g, '') // Remove all non-word chars
+    .replace(/--+/g, '-') // Replace multiple - with single -
+    .replace(/-$/g, '') // Remove trailing -
 }
 
 /**
@@ -74,7 +82,7 @@ export const createStream = async (initObject, config) => {
       method: 'POST',
       body: {
         name: config.name,
-        slug: config.slug || replaceWhiteSpace(config.name),
+        slug: config.slug || slugify(config.name),
         description: config.description || '',
       },
     }).catch((error) => {
