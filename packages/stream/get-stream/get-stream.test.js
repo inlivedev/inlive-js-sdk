@@ -107,7 +107,6 @@ describe('Get Stream Module', function () {
 
     it('should call the getStream function', async function () {
       const result = await getStream(streamId)
-      // console.log(result)
       expect(result.status.code).to.equal(200)
     })
 
