@@ -34,7 +34,7 @@ function slugify(text) {
  */
 
 /**
- * A create stream module that should pass stream's name parameter, and user could pass the stream's slug & description parameter as well
+ * A create stream module for creating a new stream
  *
  * @function
  * @param {InitializationInstance} initObject -- initialization object
