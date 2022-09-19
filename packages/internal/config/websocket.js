@@ -1,7 +1,7 @@
 /**
  * @typedef WebSocket
  * @property {string} base_url - The websocket base URL
- * @property {string} version - The version of the webSocket API
+ * @property {string} version - The version of the websocket API
  */
 
 /**
