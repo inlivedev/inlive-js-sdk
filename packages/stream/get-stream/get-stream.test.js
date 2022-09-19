@@ -107,24 +107,29 @@ describe('Get Stream Module', function () {
 
     it('should call the getStream function', async function () {
       const result = await getStream(streamId)
-      expect(result.status.code).to.equal(200)
+
+      if (result) {
+        expect(result.status.code).to.equal(200)
+      }
     })
 
     it('should return success response', async function () {
       const result = await getStream(streamId)
 
-      expect(result).to.be.an('object')
-      expect(result).to.have.property('status').to.be.an('object')
-      expect(result).to.have.property('data').to.be.an('object')
-      expect(result.data).to.have.property('id').to.be.equal(streamId)
-      expect(result.data).to.have.property('name').to.be.a('string')
-      expect(result.data).to.have.property('slug').to.be.a('string')
-      expect(result.data)
-        .to.have.property('hls_manifest_path')
-        .to.be.a('string')
-      expect(result.data)
-        .to.have.property('dash_manifest_path')
-        .to.be.a('string')
+      if (result) {
+        expect(result).to.be.an('object')
+        expect(result).to.have.property('status').to.be.an('object')
+        expect(result).to.have.property('data').to.be.an('object')
+        expect(result.data).to.have.property('id').to.be.equal(streamId)
+        expect(result.data).to.have.property('name').to.be.a('string')
+        expect(result.data).to.have.property('slug').to.be.a('string')
+        expect(result.data)
+          .to.have.property('hls_manifest_path')
+          .to.be.a('string')
+        expect(result.data)
+          .to.have.property('dash_manifest_path')
+          .to.be.a('string')
+      }
     })
   })
 })

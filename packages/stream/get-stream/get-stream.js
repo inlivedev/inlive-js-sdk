@@ -27,29 +27,21 @@ export const getStream = async (streamId) => {
       url: `${Internal.config.api.base_url}/${Internal.config.api.version}/streams/${streamId}`,
       method: 'GET',
     }).catch((error) => {
-      return error
+      if (error.code === 404) {
+        throw new Error(
+          'Failed to get the stream data because the stream ID is not found. Please provide a valid stream ID.'
+        )
+      }
     })
 
-    if (fetchResponse) {
-      switch (fetchResponse.code) {
-        case 200:
-          fetchResponse = {
-            status: {
-              code: fetchResponse.code,
-              message: 'Successfully got the stream data',
-              type: 'success',
-            },
-            data: fetchResponse.data,
-          }
-
-          break
-        case 404: {
-          throw new Error(
-            'Failed to get the stream data because the stream ID is not found. Please provide a valid stream ID.'
-          )
-        }
-        default:
-          break
+    if (fetchResponse && fetchResponse.code === 200) {
+      fetchResponse = {
+        status: {
+          code: fetchResponse.code,
+          message: 'Successfully got the stream data',
+          type: 'success',
+        },
+        data: fetchResponse.data,
       }
     }
 
