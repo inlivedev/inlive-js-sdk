@@ -2,7 +2,6 @@ import nock from 'nock'
 import { expect } from 'chai'
 import { getStream } from './get-stream.js'
 import { Internal } from '../../internal/index.js'
-import { init } from '../../app/init/init.js'
 
 describe('Get Stream Module', function () {
   describe('Basic test', function () {
