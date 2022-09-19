@@ -57,13 +57,13 @@ describe('Get Stream Module', function () {
     })
 
     it('should return error response if stream ID not found', async function () {
-      let stream_id = 1000
+      let streamId = 1000
       nock(`${Internal.config.api.base_url}`)
-        .get(`/${Internal.config.api.version}/streams/${stream_id}`)
+        .get(`/${Internal.config.api.version}/streams/${streamId}`)
         .reply(404, { code: 404, message: 'ID not found', data: '' })
 
       try {
-        await getStream(stream_id)
+        await getStream(streamId)
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -75,10 +75,10 @@ describe('Get Stream Module', function () {
   })
 
   describe('Positive test', function () {
-    let stream_id = 351
+    let streamId = 351
     beforeEach(function () {
       nock(`${Internal.config.api.base_url}`)
-        .get(`/${Internal.config.api.version}/streams/${stream_id}`)
+        .get(`/${Internal.config.api.version}/streams/${streamId}`)
         .reply(200, {
           status: {
             code: 200,
@@ -86,7 +86,7 @@ describe('Get Stream Module', function () {
             type: 'success',
           },
           data: {
-            id: stream_id,
+            id: streamId,
             name: 'a new stream',
             slug: '',
             hls_manifest_path: '',
@@ -106,19 +106,18 @@ describe('Get Stream Module', function () {
     })
 
     it('should call the getStream function', async function () {
-      const result = await getStream(stream_id)
+      const result = await getStream(streamId)
       // console.log(result)
-
       expect(result.status.code).to.equal(200)
     })
 
     it('should return success response', async function () {
-      const result = await getStream(stream_id)
+      const result = await getStream(streamId)
 
       expect(result).to.be.an('object')
       expect(result).to.have.property('status').to.be.an('object')
       expect(result).to.have.property('data').to.be.an('object')
-      expect(result.data).to.have.property('id').to.be.equal(stream_id)
+      expect(result.data).to.have.property('id').to.be.equal(streamId)
       expect(result.data).to.have.property('name').to.be.a('string')
       expect(result.data).to.have.property('slug').to.be.a('string')
       expect(result.data)
