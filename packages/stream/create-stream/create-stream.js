@@ -86,34 +86,25 @@ export const createStream = async (initObject, config) => {
         description: config.description || '',
       },
     }).catch((error) => {
-      return error
+      if (error.code === 403) {
+        throw new Error(
+          'Failed to create a new stream because the API Key is not valid. Please provide a valid and active API Key.'
+        )
+      } else if (error.code === 500) {
+        throw new Error(
+          'Failed to create a new stream because unexpected error from the server'
+        )
+      }
     })
 
-    if (fetchResponse) {
-      switch (fetchResponse.code) {
-        case 200: {
-          fetchResponse = {
-            status: {
-              code: fetchResponse.code,
-              message: 'Successfully created a new stream',
-              type: 'success',
-            },
-            data: fetchResponse?.data,
-          }
-          break
-        }
-        case 403: {
-          throw new Error(
-            'Failed to create a new stream because the API Key is not valid. Please provide a valid and active API Key.'
-          )
-        }
-        case 500: {
-          throw new Error(
-            'Failed to create a new stream because unexpected error from the server'
-          )
-        }
-        default:
-          break
+    if (fetchResponse && fetchResponse.code === 200) {
+      fetchResponse = {
+        status: {
+          code: fetchResponse.code,
+          message: 'Successfully created a new stream',
+          type: 'success',
+        },
+        data: fetchResponse.data,
       }
     }
 
