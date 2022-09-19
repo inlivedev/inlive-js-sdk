@@ -43,13 +43,13 @@ function slugify(text) {
  * @throws {Error}
  */
 export const createStream = async (initObject, config) => {
-  if (!(initObject instanceof InitializationInstance) || !config) {
+  if (!(initObject instanceof InitializationInstance)) {
     throw new TypeError(
-      'Failed to process because initialization is not valid and/or missing config. Please provide required initialization argument which is the initialization instance returned by the init() function and the configuration object'
+      'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
     )
-  } else if (typeof config !== 'object') {
+  } else if (!config || typeof config !== 'object') {
     throw new TypeError(
-      'Failed to process because config argument must be in object format'
+      'Failed to process because config argument must be input in object format'
     )
   } else if (config.name === null || config.name === undefined) {
     throw new Error(

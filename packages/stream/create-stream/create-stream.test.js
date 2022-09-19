@@ -16,19 +16,33 @@ describe('Create Stream Module', function () {
       return nock.cleanAll()
     })
 
-    it('should return error if initialization instance & config not input', async function () {
+    it('should return error if initialization instance', async function () {
       try {
         await createStream()
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
         expect(error.message).to.be.equal(
-          'Failed to process because initialization is not valid and/or missing config. Please provide required initialization argument which is the initialization instance returned by the init() function and the configuration object'
+          'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
         )
       }
     })
 
-    it('should return error response if function is called with config argument in not object format', async function () {
+    it('should return error response if function is called with no config argument or config argument in not object format', async function () {
+      try {
+        await createStream(
+          init({
+            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          })
+        )
+      } catch (error) {
+        expect(error).to.be.an('error')
+        expect(error.name).to.be.equal('TypeError')
+        expect(error.message).to.be.equal(
+          'Failed to process because config argument must be input in object format'
+        )
+      }
+
       const config = 'tes'
       try {
         await createStream(
@@ -41,7 +55,7 @@ describe('Create Stream Module', function () {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('TypeError')
         expect(error.message).to.be.equal(
-          'Failed to process because config argument must be in object format'
+          'Failed to process because config argument must be input in object format'
         )
       }
     })
