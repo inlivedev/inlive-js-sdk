@@ -109,10 +109,9 @@ describe('Get Streams Module', function () {
           api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
         })
       )
+      // console.log(result)
 
-      if (result) {
-        expect(result.status.code).to.equal(200)
-      }
+      expect(result.status.code).to.equal(200)
     })
 
     it('should return success response data', async function () {
@@ -122,20 +121,14 @@ describe('Get Streams Module', function () {
         })
       )
 
-      if (result) {
-        expect(result).to.be.an('object')
-        expect(result).to.have.property('data').to.be.an('array')
-        for (let p of result.data) {
-          expect(p).to.have.own.property('id').that.is.a('number')
-          expect(p).to.have.own.property('name').that.is.a('string')
-          expect(p).to.have.own.property('slug').that.is.a('string')
-          expect(p)
-            .to.have.own.property('hls_manifest_path')
-            .that.is.a('string')
-          expect(p)
-            .to.have.own.property('dash_manifest_path')
-            .that.is.a('string')
-        }
+      expect(result).to.be.an('object')
+      expect(result).to.have.property('data').to.be.an('array')
+      for (let p of result.data) {
+        expect(p).to.have.own.property('id').that.is.a('number')
+        expect(p).to.have.own.property('name').that.is.a('string')
+        expect(p).to.have.own.property('slug').that.is.a('string')
+        expect(p).to.have.own.property('hls_manifest_path').that.is.a('string')
+        expect(p).to.have.own.property('dash_manifest_path').that.is.a('string')
       }
     })
   })

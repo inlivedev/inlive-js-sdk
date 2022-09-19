@@ -26,21 +26,29 @@ export const getStreams = async (initObject) => {
       token: initObject.config.api_key,
       method: 'GET',
     }).catch((error) => {
-      if (error.code === 403) {
-        throw new Error(
-          'Failed to get a list of streams because the API Key is not valid. Please provide a valid and active API Key.'
-        )
-      }
+      return error
     })
 
-    if (fetchResponse && fetchResponse.code === 200) {
-      fetchResponse = {
-        status: {
-          code: fetchResponse.code,
-          message: 'Successfully got a list of streams',
-          type: 'success',
-        },
-        data: fetchResponse.data,
+    if (fetchResponse) {
+      switch (fetchResponse.code) {
+        case 200:
+          fetchResponse = {
+            status: {
+              code: fetchResponse.code,
+              message: 'Successfully got a list of streams',
+              type: 'success',
+            },
+            data: fetchResponse.data,
+          }
+
+          break
+        case 403: {
+          throw new Error(
+            'Failed to get a list of streams because the API Key is not valid. Please provide a valid and active API Key.'
+          )
+        }
+        default:
+          break
       }
     }
 
