@@ -98,7 +98,7 @@ export const createStream = async (initObject, config) => {
               message: 'Successfully created a new stream',
               type: 'success',
             },
-            data: fetchResponse?.data,
+            data: fetchResponse.data,
           }
           break
         }
