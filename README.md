@@ -75,7 +75,7 @@ const startStream = InLiveStream.startStream(inliveApp, stream_id);
 ```
 
 #### End live stream
-After the streaming started for a while, you can use endStream module to end the stream because it will stop the running stream pod in the server.
+After the streaming started for a while, you can use `endStream` module to end the stream because it will stop the running stream pod in the server.
 
 ```js
 const endStream = InLiveStream.endStream(inliveApp, stream_id);
