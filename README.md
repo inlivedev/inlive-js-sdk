@@ -1,5 +1,5 @@
 # inlive-js-sdk
-Inlive JavaScript SDK for developing with inLive platform so our user can use it easily on building their own live streaming website or application that use web based technology.
+Inlive JavaScript SDK for developing with inLive platform so our user can use it easily on building their own live streaming website or application that use web based technology without worrying about the manual process of integrating our inLive APIs into their platform.
 
 ## Prerequisites
 
@@ -47,14 +47,53 @@ You will need to use this module if you want to develop a live streaming applica
 5. Get a specific stream’s data based on the ID (so you will get HLS or MPEG-DASH manifest url for your video player)
 6. Get a list of streams data
 
-For a small example, in the component file where you want to use the live stream SDK for get a list of streams data, you can call the module name and must pass your `inliveApp` return value from [initialization](#initialization) step.
-```js
-import { InLiveStream } from '@inlivedev/inlive-js-sdk/stream';
+For the full list of features inside our live stream modules, as well as additional guides, see our [inLive Javascript SDK Live Stream Modules docs](#http:/link-to-sdk-website-documentation-part-live-stream-modules).
 
-const getStreams = InLiveStream.getStreams(inliveApp);
+#### Create a new stream
+You can create a new stream by calling `createStream` module. You're required to pass `inLiveApp` return value from [initialization step above](#initialization).
+
+```js
+const stream = InLiveStream.createStream(inliveApp, {
+ name: 'a new stream', //required
+ description: '', //optional
+ slug: 'new-stream'//optional
+});
 ```
 
-For the full list of features inside our live stream modules, as well as additional guides, see our [inLive Javascript SDK Live Stream Modules docs](#http:/link-to-sdk-website-documentation-part-live-stream-modules).
+#### Prepare live stream
+After stream created, you can prepare the live stream pod and initiate webRTC connection with `prepareStream` module. The `stream_id` can be got from `createdStream` return value.
+
+```js
+const prepareStream = InLiveStream.prepareStream(inliveApp, stream_id);
+```
+
+#### Start live stream
+Finally you can start a live stream by using `startStream` module to start running the stream pod in the server.
+
+```js
+const startStream = InLiveStream.startStream(inliveApp, stream_id);
+```
+
+#### End live stream
+After the streaming started for a while, you can use endStream module to end the stream because it will stop the running stream pod in the server.
+
+```js
+const endStream = InLiveStream.endStream(inliveApp, stream_id);
+```
+
+#### Get specific live stream
+For you to get a HLS or MPEG-DASH manifest URL to run the playing stream on your video player, you can use `getStream` module. On this module, we don't need to pass `inLiveApp` because no need of API Key.
+
+```js
+const getStream = InLiveStream.getStream(stream_id);
+```
+
+#### Get list of streams
+In case you would like to see your list streams that you've created, you can use `getStreams` module.
+
+```js
+const getStreams = InLiveStream.getStreams(inliveApp);
+```
 
 ## Help
 For more information regarding inLive Javascript SDK, you can read our [inLive Javascript SDK documentation](#http://link-to-sdk-website-documentation).
