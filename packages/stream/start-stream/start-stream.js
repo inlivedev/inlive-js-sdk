@@ -1,5 +1,6 @@
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
+import { getStream } from '../get-stream/get-stream.js'
 
 /**
  * @typedef Config
@@ -65,10 +66,7 @@ const startStream = async (initInstance, config) => {
         body: {},
       })
 
-      const latestStreamData = await fetchHttp({
-        url: `${baseUrl}/streams/${stream_id}`,
-        method: 'GET',
-      })
+      const latestStreamData = await getStream(stream_id)
 
       const successResponse = {
         status: {
