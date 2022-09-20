@@ -99,6 +99,3 @@ const getStreams = InLiveStream.getStreams(inliveApp);
 For more information regarding inLive Javascript SDK, you can read our [inLive Javascript SDK documentation](#http://link-to-sdk-website-documentation).
 
 If you're looking for help, kindly [contact us](mailto:hello@inlive.app).
-
-
-***this is just notes only (please erase this after reviewing) : I follow as this zoom SDK reference : https://github.com/zoom/meetingsdk-web/blob/master/README.md. Actually confused how to differentiate between the [SDK documentation for the website](https://docs.google.com/document/d/1fyxPrlgjqRCcby9_g-rgLHdW0F6dP4A7VeWFYGBbn58/edit?usp=sharing) and with this Readme. However, if I scanning through on exploring, most of the complete SDK documentation on the website, and this read me relatively refers to the website SDK documentation link so the user just read how to use it from the website. Readme mostly for informing the user about the versioning & upgrade if any. However, if would like the read me is so complete about how to use the modules, then it's okay for me though becase some of SDK also complete information on the readme.. ^^" This is a way just not double writing only.. ^^"**
