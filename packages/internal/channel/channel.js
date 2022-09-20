@@ -93,10 +93,10 @@ const channel = (() => {
   }
 
   return {
-    subscribe,
-    onOpen,
     onError,
     onMessage,
+    onOpen,
+    subscribe,
   }
 })()
 
