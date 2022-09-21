@@ -200,11 +200,17 @@ describe('Create Stream Module', function () {
             id: 371,
             name: 'a new stream',
             slug: '',
+            start_time: null,
+            end_time: null,
+            billing_start: null,
+            billing_end: null,
+            prepared_at: null,
             hls_manifest_path: '',
             dash_manifest_path: '',
             description: '',
             created_by: 6,
             created_at: '2022-09-05T07:38:09.525329768Z',
+            updated_by: null,
             updated_at: '2022-09-05T07:38:09.525329768Z',
             quality: '360',
           },
@@ -238,15 +244,28 @@ describe('Create Stream Module', function () {
       expect(result).to.have.property('status').to.be.an('object')
       expect(result).to.have.property('data').to.be.an('object')
       expect(result.data).to.have.property('id').to.be.a('number')
-      expect(result.data).to.have.property('name').to.be.a('string')
+      expect(result.data).to.have.property('name').to.be.a('string').to.not.be
+        .empty
       expect(result.data).to.have.property('slug').to.be.a('string')
       expect(result.data).to.have.property('description').to.be.a('string')
+      expect(result.data).to.have.property('start_time').to.be.null
+      expect(result.data).to.have.property('end_time').to.be.null
+      expect(result.data).to.have.property('billing_start').to.be.null
+      expect(result.data).to.have.property('billing_end').to.be.null
+      expect(result.data).to.have.property('prepared_at').to.be.null
       expect(result.data)
         .to.have.property('hls_manifest_path')
         .to.be.a('string').to.be.empty
       expect(result.data)
         .to.have.property('dash_manifest_path')
         .to.be.a('string').to.be.empty
+      expect(result.data).to.have.property('created_at').to.be.a('string').to
+        .not.be.empty
+      expect(result.data).to.have.property('updated_at').to.be.a('string').to
+        .not.be.empty
+      expect(result.data).to.have.property('quality').to.be.a('string').to.not
+        .be.empty
+      expect(result.data).to.not.have.property('viewer_count')
     })
   })
 })
