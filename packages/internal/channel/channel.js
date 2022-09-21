@@ -40,7 +40,9 @@ const channel = (() => {
         'Failed to process - A stream ID is required to subscribe to the channel'
       )
     } else if (typeof stream_id !== 'number') {
-      throw new TypeError(' Failed to process - Invalid stream ID format')
+      throw new TypeError(
+        ' Failed to process - Invalid stream ID format. Stream ID must use a number format'
+      )
     }
 
     if (!(connection.client instanceof WebSocket)) {
