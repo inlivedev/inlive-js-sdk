@@ -41,7 +41,7 @@ const channel = (() => {
       )
     } else if (typeof stream_id !== 'number') {
       throw new TypeError(
-        ' Failed to process - Invalid stream ID format. Stream ID must use a number format'
+        'Failed to process - Invalid stream ID format. Stream ID must use a number format'
       )
     }
 
