@@ -27,6 +27,7 @@ module.exports = {
     'unicorn',
   ],
   rules: {
+    'unicorn/no-null': 'off',
     'unicorn/prefer-ternary': ['error', 'only-single-line'],
     'jsdoc/require-jsdoc': [
       'error',
