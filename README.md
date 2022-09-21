@@ -64,21 +64,21 @@ const stream = InLiveStream.createStream(inliveApp, {
 After stream created, you can prepare the live stream pod and initiate webRTC connection with `prepareStream` module. The `stream_id` can be got from `createdStream` return value.
 
 ```js
-const prepareStream = InLiveStream.prepareStream(inliveApp, stream_id);
+const prepareStream = InLiveStream.prepareStream(inliveApp, { stream_id: 1 });
 ```
 
 #### Start live stream
 Finally you can start a live stream by using `startStream` module to start running the stream pod in the server.
 
 ```js
-const startStream = InLiveStream.startStream(inliveApp, stream_id);
+const startStream = InLiveStream.startStream(inliveApp, { stream_id: 1 });
 ```
 
 #### End live stream
 After the streaming started for a while, you can use `endStream` module to end the stream because it will stop the running stream pod in the server.
 
 ```js
-const endStream = InLiveStream.endStream(inliveApp, stream_id);
+const endStream = InLiveStream.endStream(inliveApp, { stream_id: 1 });
 ```
 
 #### Get specific live stream
