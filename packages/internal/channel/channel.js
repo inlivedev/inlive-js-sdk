@@ -1,6 +1,8 @@
+import { websocket as websocketConfig } from '../config/index.js'
+
 /**
  * @typedef Connection
- * @property {EventTarget | undefined} client - The client interface that manages the connection between the client and server channels
+ * @property {WebSocket | undefined} client - The client interface that manages the connection between the client and server channels
  */
 
 const channel = (() => {
@@ -17,6 +19,8 @@ const channel = (() => {
     client: undefined,
   }
 
+  const baseUrl = `${websocketConfig.base_url}/${websocketConfig.version}`
+
   /**
    * ======================================================
    *  Functions
@@ -24,16 +28,24 @@ const channel = (() => {
    */
 
   /**
+   * Subscribe to the channel
    *
-   * @param {EventTarget} clientInterface - The client interface that manages the connection between the client and server channels
-   * @returns {EventTarget | void} Returns the client interface
+   * @param {number} stream_id - The ID of the stream
+   * @returns {WebSocket | void} Returns the client interface
+   * @throws {Error | TypeError}
    */
-  const subscribe = (clientInterface) => {
-    if (
-      !(connection.client instanceof EventTarget) &&
-      clientInterface instanceof EventTarget
-    ) {
-      connection.client = clientInterface
+  const subscribe = (stream_id) => {
+    if (!stream_id) {
+      throw new Error(
+        'Failed to process - A stream ID is required to subscribe to the channel'
+      )
+    } else if (typeof stream_id !== 'number') {
+      throw new TypeError(' Failed to process - Invalid stream ID format')
+    }
+
+    if (!(connection.client instanceof WebSocket)) {
+      const subscribeUrl = `${baseUrl}/streams/${stream_id}/websocket`
+      connection.client = new WebSocket(subscribeUrl)
       return connection.client
     }
 
@@ -41,12 +53,24 @@ const channel = (() => {
   }
 
   /**
+   * Unsubscribe from the channel
+   */
+  const unsubscribe = () => {
+    if (connection.client instanceof WebSocket) {
+      connection.client.close()
+      connection.client = undefined
+    }
+    return
+  }
+
+  /**
+   * Listen to the open event
    *
    * @param {Function} callback - A callback function
    */
   const onOpen = (callback) => {
     if (
-      connection.client instanceof EventTarget &&
+      connection.client instanceof WebSocket &&
       callback instanceof Function
     ) {
       connection.client.addEventListener('open', (event) => {
@@ -56,12 +80,13 @@ const channel = (() => {
   }
 
   /**
+   * Listen to the error event
    *
    * @param {Function} callback - A callback function
    */
   const onError = (callback) => {
     if (
-      connection.client instanceof EventTarget &&
+      connection.client instanceof WebSocket &&
       callback instanceof Function
     ) {
       connection.client.addEventListener('error', (event) => {
@@ -71,12 +96,13 @@ const channel = (() => {
   }
 
   /**
+   * Listen to the message event
    *
    * @param {Function} callback - A callback function
    */
   const onMessage = (callback) => {
     if (
-      connection.client instanceof EventTarget &&
+      connection.client instanceof WebSocket &&
       callback instanceof Function
     ) {
       connection.client.addEventListener(
@@ -97,6 +123,7 @@ const channel = (() => {
     onMessage,
     onOpen,
     subscribe,
+    unsubscribe,
   }
 })()
 
