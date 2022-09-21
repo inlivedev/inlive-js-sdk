@@ -254,7 +254,7 @@ const prepareStream = async (initInstance, config) => {
    */
 
   /**
-   * Get the peer connection
+   * Check whether the stream has already ended
    */
   const latestStreamData = await getStream(stream_id)
 
