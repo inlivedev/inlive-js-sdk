@@ -180,7 +180,7 @@ const prepareStream = async (initInstance, config) => {
    */
   const observeConnectionStateChange = () => {
     event.subscribe(
-      'stream:ice-connection-state-change',
+      'stream:ice-connection-state-change-event',
       /** @param {ICEConnectionStateChangeEvent} data - The object data sent by the publisher method */
       async (data) => {
         const { detail } = data
