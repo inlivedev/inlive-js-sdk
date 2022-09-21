@@ -1,4 +1,4 @@
-import { pubsub } from '../pubsub/pubsub.js'
+import { event } from '../../event/event.js'
 import { webrtc as webrtcConfig } from '../config/webrtc.js'
 
 /**
@@ -158,7 +158,7 @@ const webrtc = (() => {
 
       peerConnection.addEventListener('iceconnectionstatechange', () => {
         if (peerConnection && peerConnection.iceConnectionState) {
-          pubsub.publish('stream:ice-connection-state-change', {
+          event.publish('stream:ice-connection-state-change', {
             type: 'stream:ice-connection-state-change',
             detail: {
               iceConnectionState: peerConnection.iceConnectionState,

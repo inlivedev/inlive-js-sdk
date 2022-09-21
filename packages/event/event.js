@@ -8,11 +8,11 @@
  */
 
 /**
- * The publisher / subscriber module manages a list of subscribers and is responsible to send an event to the subscribers
+ * The event module manages a list of subscribers and is responsible to send an event to the subscribers using pub/sub pattern
  *
  * @example
  * // publish an event
- * pubsub.publish('stream:ice-connection-state-change', {
+ * event.publish('stream:ice-connection-state-change', {
      type: 'stream:ice-connection-state-change',
      detail: {
        iceConnectionState: 'connected',
@@ -20,14 +20,14 @@
    })
  *
  * // subscribe to an event
- * pubsub.subscribe(
+ * event.subscribe(
       'stream:ice-connection-state-change',
       (data) => {
         // handle the event
       }
    )
  */
-const pubsub = (() => {
+const event = (() => {
   /**
    * ======================================================
    *  Variables
@@ -99,6 +99,6 @@ const pubsub = (() => {
   }
 })()
 
-Object.freeze(pubsub)
+Object.freeze(event)
 
-export { pubsub }
+export { event }
