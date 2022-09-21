@@ -136,8 +136,6 @@ describe('Get Stream Module', function () {
         .not.be.empty
       expect(result.data).to.have.property('billing_end').to.be.a('string').to
         .not.be.empty
-      expect(result.data).to.have.property('billing_end').to.be.a('string').to
-        .not.be.empty
       expect(result.data).to.have.property('prepared_at').to.be.a('string').to
         .not.be.empty
       expect(result.data)
