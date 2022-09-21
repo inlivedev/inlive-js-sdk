@@ -95,6 +95,30 @@ In case you would like to see your list streams that you've created, you can use
 const getStreams = InLiveStream.getStreams(inliveApp);
 ```
 
+#### Event module using Pub/Sub
+For the need for real-time communication for each part of your components, you can use our publisher/subscriber (pub/sub) communication pattern module.
+
+```js
+// publish an event
+  event.publish('stream:ice-connection-state-change', {
+    type: 'stream:ice-connection-state-change',
+    detail: {
+      iceConnectionState: 'connected',
+    },
+  })
+   
+// subscribe to an event
+  const subscriber = event.subscribe(
+    'stream:ice-connection-state-change',
+    (data) => {
+      // handle the event
+    }
+  )
+  
+//unsubscribe from the event
+  subscriber.unsubscribe()
+```
+
 ## Help
 For more information regarding inLive Javascript SDK, you can read our [inLive Javascript SDK documentation](#http://link-to-sdk-website-documentation).
 
