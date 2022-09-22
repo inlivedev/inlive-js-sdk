@@ -1,6 +1,6 @@
 /**
  * @typedef Config
- * @property {string | undefined} api_key - A string of key that will be used to access inLive protected API
+ * @property {string} api_key - A string of key that will be used to access inLive protected API
  */
 
 /**
