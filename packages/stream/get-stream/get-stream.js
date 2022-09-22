@@ -3,7 +3,7 @@ import { Internal } from '../../internal/index.js'
 /**
  * @typedef FetchResponse
  * @property {object} status -- A status response
- * @property {object} data -- A return data as per endpoint
+ * @property {Object<any, any>} data -- A return data as per endpoint
  */
 
 /**
