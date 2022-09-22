@@ -63,10 +63,20 @@ const webrtc = (() => {
   const setMediaStream = async (media) => {
     const mediaObject = {
       videoSelector: media.videoSelector || 'video',
-      videoOptions: media.videoOptions || {
-        autoplay: true,
-        muted: true,
-        playsInline: true,
+      videoOptions: {
+        autoplay:
+          media.videoOptions && typeof media.videoOptions.autoplay === 'boolean'
+            ? media.videoOptions.autoplay
+            : true,
+        muted:
+          media.videoOptions && typeof media.videoOptions.muted === 'boolean'
+            ? media.videoOptions.muted
+            : true,
+        playsInline:
+          media.videoOptions &&
+          typeof media.videoOptions.playsInline === 'boolean'
+            ? media.videoOptions.playsInline
+            : true,
       },
       videoConstraints: media.videoConstraints || defaultConstraints,
     }
@@ -79,12 +89,17 @@ const webrtc = (() => {
 
     if (videoSelector) {
       const element = document.querySelector(videoSelector)
-      if (element instanceof HTMLVideoElement) {
+      const isVideoElement = element instanceof HTMLVideoElement
+      if (isVideoElement) {
         mediaElement = element
         mediaElement.srcObject = mediaStream
         mediaElement.autoplay = videoOptions.autoplay
         mediaElement.muted = videoOptions.muted
         mediaElement.playsInline = videoOptions.playsInline
+      } else {
+        throw new Error(
+          'Failed to process because the video element could not be found by using that selector. Please use a valid selector for the video element and ensure the video element already exists'
+        )
       }
     }
   }
@@ -92,12 +107,16 @@ const webrtc = (() => {
   /**
    * Open the peer connection
    *
-   * @returns {RTCPeerConnection} Returns a new RTCPeerConnection object
+   * @returns {Promise<RTCPeerConnection>} Returns a new RTCPeerConnection object
    */
-  const openConnection = () => {
-    peerConnection = new RTCPeerConnection({
-      iceServers,
-    })
+  const openConnection = async () => {
+    if (!peerConnection) {
+      peerConnection = new RTCPeerConnection({
+        iceServers,
+      })
+
+      await createLocalOffer()
+    }
 
     return peerConnection
   }
@@ -158,8 +177,8 @@ const webrtc = (() => {
 
       peerConnection.addEventListener('iceconnectionstatechange', () => {
         if (peerConnection && peerConnection.iceConnectionState) {
-          event.publish('stream:ice-connection-state-change', {
-            type: 'stream:ice-connection-state-change',
+          event.publish('stream:ice-connection-state-change-event', {
+            type: 'stream:ice-connection-state-change-event',
             detail: {
               iceConnectionState: peerConnection.iceConnectionState,
             },
@@ -167,14 +186,8 @@ const webrtc = (() => {
         }
       })
 
-      try {
-        const localOffer = await peerConnection.createOffer()
-        await peerConnection.setLocalDescription(localOffer)
-      } catch (error) {
-        console.error('Failed to create and set a local offer', error)
-        throw error
-      }
-
+      const localOffer = await peerConnection.createOffer()
+      await peerConnection.setLocalDescription(localOffer)
       await iceGatheringPromise
     }
   }
@@ -206,7 +219,6 @@ const webrtc = (() => {
 
   return {
     closeConnection,
-    createLocalOffer,
     getClientState,
     getConnection,
     openConnection,

@@ -12,8 +12,8 @@
  *
  * @example
  * // publish an event
- * event.publish('stream:ice-connection-state-change', {
-     type: 'stream:ice-connection-state-change',
+ * event.publish('stream:ice-connection-state-change-event', {
+     type: 'stream:ice-connection-state-change-event',
      detail: {
        iceConnectionState: 'connected',
      },
@@ -21,7 +21,7 @@
  *
  * // subscribe to an event
  * event.subscribe(
-      'stream:ice-connection-state-change',
+      'stream:ice-connection-state-change-event',
       (data) => {
         // handle the event
       }
