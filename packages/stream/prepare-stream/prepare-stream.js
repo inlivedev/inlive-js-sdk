@@ -6,7 +6,7 @@ import { event } from '../../event/event.js'
 /**
  * @typedef Config
  * @property {number} stream_id - The ID of the stream
- * @property {import('../../internal/webrtc/webrtc').MediaObject} media - The media object argument to set the media for the stream
+ * @property {import('../../internal/webrtc/webrtc.js').MediaObject} media - The media object argument to set the media for the stream
  */
 
 /**
