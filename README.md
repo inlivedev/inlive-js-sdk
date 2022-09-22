@@ -64,7 +64,17 @@ const stream = InLiveStream.createStream(inliveApp, {
 After stream created, you can prepare the live stream pod and initiate webRTC connection with `prepareStream` module. The `stream_id` can be got from `createdStream` return value.
 
 ```js
-const prepareStream = InLiveStream.prepareStream(inliveApp, { stream_id: 1//input streamId });
+const prepareStream = InLiveStream.prepareStream(inliveApp, { 
+  stream_id: 1, //input streamId
+  media: {
+    videoSelector: "video", //required
+    videoOptions: {
+        autoplay: true, //optional
+        muted: true, //optional
+        playsInline: true, //optional
+    }
+  } 
+});
 ```
 
 #### Start live stream
@@ -100,8 +110,8 @@ For the need for real-time communication for each part of your components, you c
 
 ```js
 // publish an event
-  event.publish('stream:ice-connection-state-change', {
-    type: 'stream:ice-connection-state-change',
+  event.publish('stream:ice-connection-state-change-event', {
+    type: 'stream:ice-connection-state-change-event',
     detail: {
       iceConnectionState: 'connected',
     },
@@ -109,7 +119,7 @@ For the need for real-time communication for each part of your components, you c
    
 // subscribe to an event
   const subscriber = event.subscribe(
-    'stream:ice-connection-state-change',
+    'stream:ice-connection-state-change-event',
     (data) => {
       // handle the event
     }
