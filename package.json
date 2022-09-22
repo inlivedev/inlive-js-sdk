@@ -6,18 +6,11 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": {
-      "import": "./packages/index.js"
-    },
-    "./app": {
-      "import": "./packages/app/index.js"
-    },
-    "./stream": {
-      "import": "./packages/stream/index.js"
-    },
-    "./event": {
-      "import": "./packages/event/index.js"
-    }
+    ".": "./packages/index.js",
+    "./app": "./packages/app/index.js",
+    "./stream": "./packages/stream/index.js",
+    "./event": "./packages/event/index.js",
+    "./packages/internal/*": null
   },
   "files": [
     "packages"
