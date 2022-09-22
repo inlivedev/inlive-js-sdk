@@ -5,7 +5,6 @@
   "keywords": [],
   "license": "MIT",
   "type": "module",
-  "types": "./packages/index.d.ts",
   "exports": {
     ".": {
       "import": "./packages/index.js"
@@ -18,8 +17,7 @@
     },
     "./event": {
       "import": "./packages/event/index.js"
-    },
-    "./package.json": "./package.json"
+    }
   },
   "files": ["packages"],
   "repository": {
