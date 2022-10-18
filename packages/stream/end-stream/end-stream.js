@@ -44,11 +44,9 @@ const endStream = async (initInstance, config) => {
     config: { api_key },
   } = initInstance
 
-  const { fetchHttp, config: baseConfig, webrtc } = Internal
+  const { fetchHttp, config: baseConfig } = Internal
 
   const { stream_id } = config
-
-  const clientState = webrtc.getClientState()
 
   /**
    * ======================================================
@@ -56,36 +54,30 @@ const endStream = async (initInstance, config) => {
    * ======================================================
    */
 
-  if (clientState === 'live') {
-    const baseUrl = `${baseConfig.api.base_url}/${baseConfig.api.version}`
-    try {
-      const response = await fetchHttp({
-        url: `${baseUrl}/streams/${stream_id}/end`,
-        token: api_key,
-        method: 'POST',
-        body: {},
-      })
+  const baseUrl = `${baseConfig.api.base_url}/${baseConfig.api.version}`
+  try {
+    const response = await fetchHttp({
+      url: `${baseUrl}/streams/${stream_id}/end`,
+      token: api_key,
+      method: 'POST',
+      body: {},
+    })
 
-      const latestStreamData = await getStream(stream_id)
+    const latestStreamData = await getStream(stream_id)
 
-      const successResponse = {
-        status: {
-          code: response.code || null,
-          type: 'success',
-          message: 'Successfully ended the stream',
-        },
-        data: latestStreamData.data || null,
-      }
-
-      return successResponse
-    } catch (error) {
-      console.error(error)
-      throw error
+    const successResponse = {
+      status: {
+        code: response.code || null,
+        type: 'success',
+        message: 'Successfully ended the stream',
+      },
+      data: latestStreamData.data || null,
     }
-  } else {
-    throw new Error(
-      `Failed to end the stream because the stream was not currently running. Please make sure you have a stream that is currently running`
-    )
+
+    return successResponse
+  } catch (error) {
+    console.error(error)
+    throw error
   }
 }
 
