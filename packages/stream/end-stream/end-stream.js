@@ -4,7 +4,7 @@ import { getStream } from '../get-stream/get-stream.js'
 
 /**
  * @typedef Config
- * @property {number} stream_id - The ID of the stream
+ * @property {number} streamId - The ID of the stream
  */
 
 /**
@@ -24,11 +24,11 @@ const endStream = async (initInstance, config) => {
     throw new TypeError(
       `Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function`
     )
-  } else if (!config || config.stream_id === undefined) {
+  } else if (!config || config.streamId === undefined) {
     throw new Error(
       'Failed to process because the stream ID is not provided. Please provide the stream ID!'
     )
-  } else if (typeof config.stream_id !== 'number') {
+  } else if (typeof config.streamId !== 'number') {
     throw new TypeError(
       'Failed to process because the stream ID is not in a number format. The stream ID must be in a number format'
     )
@@ -46,7 +46,7 @@ const endStream = async (initInstance, config) => {
 
   const { fetchHttp, config: baseConfig } = Internal
 
-  const { stream_id } = config
+  const { streamId } = config
 
   /**
    * ======================================================
@@ -57,13 +57,13 @@ const endStream = async (initInstance, config) => {
   const baseUrl = `${baseConfig.api.base_url}/${baseConfig.api.version}`
   try {
     const response = await fetchHttp({
-      url: `${baseUrl}/streams/${stream_id}/end`,
+      url: `${baseUrl}/streams/${streamId}/end`,
       token: api_key,
       method: 'POST',
       body: {},
     })
 
-    const latestStreamData = await getStream(stream_id)
+    const latestStreamData = await getStream(streamId)
 
     const successResponse = {
       status: {
