@@ -1,5 +1,6 @@
 import { Internal } from '../../internal/index.js'
 import { InitializationInstance } from '../../app/init/init.js'
+import camelcaseKeys from 'camelcase-keys'
 
 /**
  * Function to cek if the input text has a space or not. If yes, then will replace space with "-"
@@ -98,7 +99,7 @@ export const createStream = async (initObject, config) => {
               message: 'Successfully created a new stream',
               type: 'success',
             },
-            data: fetchResponse.data,
+            data: camelcaseKeys(fetchResponse.data),
           }
           break
         }

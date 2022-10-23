@@ -1,5 +1,6 @@
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
+import camelcaseKeys from 'camelcase-keys'
 
 /**
  * @typedef FetchResponse
@@ -38,7 +39,7 @@ export const getStreams = async (initObject) => {
               message: 'Successfully got a list of streams',
               type: 'success',
             },
-            data: fetchResponse.data,
+            data: camelcaseKeys(fetchResponse.data),
           }
 
           break
