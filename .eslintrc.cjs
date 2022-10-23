@@ -41,6 +41,7 @@ module.exports = {
         },
       },
     ],
+    'jsdoc/no-undefined-types': 'off',
   },
   ignorePatterns: ['node_modules', 'dist', './*.js']
 }
