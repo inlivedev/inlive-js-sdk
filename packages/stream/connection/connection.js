@@ -185,7 +185,7 @@ const connection = (() => {
    * @returns {{connect: ConnectType}} - Returns an object with a connect method
    */
   const connect = (peerConnection) => {
-    if (!(peerConnection instanceof RTCSessionDescription)) {
+    if (!(peerConnection instanceof RTCPeerConnection)) {
       throw new TypeError(
         'Failed to process - Peer connection object is missing'
       )
