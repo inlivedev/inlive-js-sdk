@@ -1,54 +1,54 @@
 import { fetchHttp } from '../fetch-http/fetch-http.js'
 
 /**
- * @typedef {(url: string) => EventSource | void} SubscribeToSseType
+ * @typedef {(url: string) => { client: EventSource | void }} SubscribeToSseType
  */
 
 /**
- * @param {EventSource | undefined} client - The client EventSource object
+ * @param {{client: EventSource | undefined}} connection - Object with EventSource client
  * @returns {{ subscribe: SubscribeToSseType }} Returns an object with subscribe method
  */
-const subscribeToSse = (client) => ({
+const subscribeToSse = (connection) => ({
   /** @type {SubscribeToSseType} */
   subscribe: (url) => {
     if (typeof url !== 'string') {
       throw new TypeError('Failed to process - URL must be a string')
     } else if (url.trim().length === 0) {
       throw new Error('Failed to process - URL cannot be empty')
-    } else if (client !== undefined) {
+    } else if (connection.client !== undefined) {
       throw new Error(
         'Failed to process - Client was already subscribed to the specific channel. You can unsubscribe and resubscribe again to different channel'
       )
     }
 
-    client = new EventSource(url)
-    return client
+    connection.client = new EventSource(url)
+    return connection
   },
 })
 
 /**
- * @typedef {(url: string) => WebSocket | void} SubscribeToWebSocketType
+ * @typedef {(url: string) => { client: WebSocket | void }} SubscribeToWebSocketType
  */
 
 /**
- * @param {WebSocket | undefined} client - The client WebSocket object
+ * @param {{ client: WebSocket | undefined }} connection - Object with WebSocket client
  * @returns {{ subscribe: SubscribeToWebSocketType }} - Returns an object with subscribe method
  */
-const subscribeToWebSocket = (client) => ({
+const subscribeToWebSocket = (connection) => ({
   /** @type {SubscribeToWebSocketType} */
   subscribe: (url) => {
     if (typeof url !== 'string') {
       throw new TypeError('Failed to process - URL must be a string')
     } else if (url.trim().length === 0) {
       throw new Error('Failed to process - URL cannot be empty')
-    } else if (client !== undefined) {
+    } else if (connection.client !== undefined) {
       throw new Error(
         'Failed to process - Client was already subscribed to the specific channel. You can unsubscribe and resubscribe again to different channel'
       )
     }
 
-    client = new WebSocket(url)
-    return client
+    connection.client = new WebSocket(url)
+    return connection
   },
 })
 
@@ -57,30 +57,30 @@ const subscribeToWebSocket = (client) => ({
  */
 
 /**
- * @param {EventSource | undefined} client - The client EventSource object
+ * @param {{ client: EventSource | undefined }} connection - Object with EventSource client
  * @returns {{ unsubscribe: UnsubscribeType }} Returns an object with unsubscribe method
  */
-const unsubscribeFromSse = (client) => ({
+const unsubscribeFromSse = (connection) => ({
   /** @type {UnsubscribeType} */
   unsubscribe: () => {
-    if (client instanceof EventSource) {
-      client.close()
-      client = undefined
+    if (connection.client instanceof EventSource) {
+      connection.client.close()
+      connection.client = undefined
     }
     return
   },
 })
 
 /**
- * @param {WebSocket | undefined} client - The client WebSocket object
+ * @param {{ client: WebSocket | undefined }} connection - Object with WebSocket client
  * @returns {{ unsubscribe: UnsubscribeType }} Returns an object with unsubscribe method
  */
-const unsubscribeFromWebSocket = (client) => ({
+const unsubscribeFromWebSocket = (connection) => ({
   /** @type {UnsubscribeType} */
   unsubscribe: () => {
-    if (client instanceof WebSocket) {
-      client.close()
-      client = undefined
+    if (connection.client instanceof WebSocket) {
+      connection.client.close()
+      connection.client = undefined
     }
     return
   },
@@ -93,14 +93,17 @@ const unsubscribeFromWebSocket = (client) => ({
  */
 
 /**
- * @param {EventTarget | undefined} client - The client object
+ * @param {{ client: EventTarget | undefined }} connection - Object with client instance of EventTarget
  * @returns {{ onOpen: OnOpenType }} Returns an object with onOpen method
  */
-const onOpen = (client) => ({
+const onOpen = (connection) => ({
   /** @type {OnOpenType} */
   onOpen: (callback) => {
-    if (client instanceof EventTarget && callback instanceof Function) {
-      client.addEventListener('open', (event) => {
+    if (
+      connection.client instanceof EventTarget &&
+      callback instanceof Function
+    ) {
+      connection.client.addEventListener('open', (event) => {
         callback(event)
       })
     }
@@ -114,14 +117,17 @@ const onOpen = (client) => ({
  */
 
 /**
- * @param {EventTarget | undefined} client - The client object
+ * @param {{ client: EventTarget | undefined }} connection - Object with client instance of EventTarget
  * @returns {{ onError: OnErrorType }} Returns an object with onError method
  */
-const onError = (client) => ({
+const onError = (connection) => ({
   /** @type {OnErrorType} */
   onError: (callback) => {
-    if (client instanceof EventTarget && callback instanceof Function) {
-      client.addEventListener('error', (event) => {
+    if (
+      connection.client instanceof EventTarget &&
+      callback instanceof Function
+    ) {
+      connection.client.addEventListener('error', (event) => {
         callback(event)
       })
     }
@@ -141,14 +147,17 @@ const onError = (client) => ({
  */
 
 /**
- * @param {EventTarget | undefined} client - The client object
+ * @param {{ client: EventTarget | undefined }} connection - Object with client instance of EventTarget
  * @returns {{ onMessage: OnMessageType }} Returns an object with onMessage method
  */
-const onMessage = (client) => ({
+const onMessage = (connection) => ({
   /** @type {OnMessageType} */
   onMessage: (callback) => {
-    if (client instanceof EventTarget && callback instanceof Function) {
-      client.addEventListener(
+    if (
+      connection.client instanceof EventTarget &&
+      callback instanceof Function
+    ) {
+      connection.client.addEventListener(
         'message',
         /** @param {CustomEventType} event - The Event Object with additional data property */
         (event) => {
@@ -203,14 +212,17 @@ const publish = () => ({
  * }} Returns methods to handle SSE connection
  */
 const sse = () => {
-  let client
+  let connection = {
+    client: undefined,
+  }
+
   return Object.assign(
     {},
-    subscribeToSse(client),
-    unsubscribeFromSse(client),
-    onOpen(client),
-    onError(client),
-    onMessage(client),
+    subscribeToSse(connection),
+    unsubscribeFromSse(connection),
+    onOpen(connection),
+    onError(connection),
+    onMessage(connection),
     publish()
   )
 }
@@ -228,14 +240,17 @@ const sse = () => {
  * @returns {WebSocketChannelType} Returns methods to handle WebSocket connection
  */
 const websocket = () => {
-  let client
+  let connection = {
+    client: undefined,
+  }
+
   return Object.assign(
     {},
-    subscribeToWebSocket(client),
-    unsubscribeFromWebSocket(client),
-    onOpen(client),
-    onError(client),
-    onMessage(client)
+    subscribeToWebSocket(connection),
+    unsubscribeFromWebSocket(connection),
+    onOpen(connection),
+    onError(connection),
+    onMessage(connection)
   )
 }
 
