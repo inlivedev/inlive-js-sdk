@@ -200,18 +200,18 @@ describe('Create Stream Module', function () {
             id: 371,
             name: 'a new stream',
             slug: '',
-            start_time: null,
-            end_time: null,
-            billing_start: null,
-            billing_end: null,
-            prepared_at: null,
-            hls_manifest_path: '',
-            dash_manifest_path: '',
+            startTime: null,
+            endTime: null,
+            billingStart: null,
+            billingEnd: null,
+            preparedAt: null,
+            hlsManifestPath: '',
+            dashManifestPath: '',
             description: '',
-            created_by: 6,
-            created_at: '2022-09-05T07:38:09.525329768Z',
-            updated_by: null,
-            updated_at: '2022-09-05T07:38:09.525329768Z',
+            createdBy: 6,
+            createdAt: '2022-09-05T07:38:09.525329768Z',
+            updatedBy: null,
+            updatedAt: '2022-09-05T07:38:09.525329768Z',
             quality: '360',
           },
         })
@@ -248,24 +248,22 @@ describe('Create Stream Module', function () {
         .empty
       expect(result.data).to.have.property('slug').to.be.a('string')
       expect(result.data).to.have.property('description').to.be.a('string')
-      expect(result.data).to.have.property('start_time').to.be.null
-      expect(result.data).to.have.property('end_time').to.be.null
-      expect(result.data).to.have.property('billing_start').to.be.null
-      expect(result.data).to.have.property('billing_end').to.be.null
-      expect(result.data).to.have.property('prepared_at').to.be.null
-      expect(result.data)
-        .to.have.property('hls_manifest_path')
-        .to.be.a('string').to.be.empty
-      expect(result.data)
-        .to.have.property('dash_manifest_path')
-        .to.be.a('string').to.be.empty
-      expect(result.data).to.have.property('created_at').to.be.a('string').to
-        .not.be.empty
-      expect(result.data).to.have.property('updated_at').to.be.a('string').to
-        .not.be.empty
+      expect(result.data).to.have.property('startTime').to.be.null
+      expect(result.data).to.have.property('endTime').to.be.null
+      expect(result.data).to.have.property('billingStart').to.be.null
+      expect(result.data).to.have.property('billingEnd').to.be.null
+      expect(result.data).to.have.property('preparedAt').to.be.null
+      expect(result.data).to.have.property('hlsManifestPath').to.be.a('string')
+        .to.be.empty
+      expect(result.data).to.have.property('dashManifestPath').to.be.a('string')
+        .to.be.empty
+      expect(result.data).to.have.property('createdAt').to.be.a('string').to.not
+        .be.empty
+      expect(result.data).to.have.property('updatedAt').to.be.a('string').to.not
+        .be.empty
       expect(result.data).to.have.property('quality').to.be.a('string').to.not
         .be.empty
-      expect(result.data).to.not.have.property('viewer_count')
+      expect(result.data).to.not.have.property('viewerCount')
     })
   })
 })

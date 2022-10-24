@@ -55,7 +55,9 @@
     "typescript": "^4.8.2"
   },
   "dependencies": {
-    "node-fetch": "3.2.10"
+    "camelcase-keys": "^8.0.2",
+    "node-fetch": "3.2.10",
+    "snakecase-keys": "^5.4.4"
   },
   "engines": {
     "node": " >=14.16 || >=16.0.0"
