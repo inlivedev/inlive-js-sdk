@@ -1,19 +1,20 @@
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
-import { getStream } from '../get-stream/get-stream.js'
+import snakecaseKeys from 'snakecase-keys'
 
 /**
  * @typedef Config
  * @property {number} streamId - The ID of the stream
+ * @property {RTCSessionDescription | null} sessionDescription - The werbtc local session description
  */
 
 /**
- * Start a stream
+ * initialize a stream session
  *
  * @param {object} initInstance - The initialization instance received from the init() function
  * @param {Config} config - Key / value configuration
  */
-const startStream = async (initInstance, config) => {
+const initStream = async (initInstance, config) => {
   /**
    * ======================================================
    *  Validations
@@ -32,6 +33,14 @@ const startStream = async (initInstance, config) => {
     throw new TypeError(
       'Failed to process because the stream ID is not in a number format. The stream ID must be in a number format'
     )
+  } else if (
+    !config.sessionDescription ||
+    !config.sessionDescription.type ||
+    !config.sessionDescription.sdp
+  ) {
+    throw new TypeError(
+      'Failed to process because the local description has wrong format'
+    )
   }
 
   /**
@@ -46,7 +55,7 @@ const startStream = async (initInstance, config) => {
 
   const { fetchHttp, config: baseConfig } = Internal
 
-  const { streamId } = config
+  const { streamId, sessionDescription } = config
 
   /**
    * ======================================================
@@ -55,23 +64,31 @@ const startStream = async (initInstance, config) => {
    */
 
   const baseUrl = `${baseConfig.api.base_url}/${baseConfig.api.version}`
+
   try {
-    const response = await fetchHttp({
-      url: `${baseUrl}/streams/${streamId}/start`,
-      token: api_key,
-      method: 'POST',
-      body: {},
+    const body = snakecaseKeys({
+      sessionDescription,
     })
 
-    const latestStreamData = await getStream(streamId)
+    const response = await fetchHttp({
+      url: `${baseUrl}/streams/${streamId}/init`,
+      token: api_key,
+      method: 'POST',
+      body,
+    })
+
+    const { code, data } = response
 
     const successResponse = {
       status: {
-        code: response.code || null,
+        code: code || null,
         type: 'success',
-        message: 'Successfully started the stream',
+        message: 'Successfully initialize a stream session',
       },
-      data: latestStreamData.data || null,
+      data: {
+        sdp: data && data.sdp ? data.sdp : null,
+        type: data && data.type ? data.type : null,
+      },
     }
 
     return successResponse
@@ -81,4 +98,4 @@ const startStream = async (initInstance, config) => {
   }
 }
 
-export { startStream }
+export { initStream }
