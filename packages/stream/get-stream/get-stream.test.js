@@ -88,22 +88,22 @@ describe('Get Stream Module', function () {
             id: streamId,
             name: 'a new stream',
             slug: '',
-            start_time: '2022-09-06T02:11:39.954264Z',
-            end_time: '2022-09-06T02:38:50.746014Z',
-            billing_start: '2022-09-06T02:10:49.746014Z',
-            billing_end: '2022-09-06T02:38:50.746014Z',
-            prepared_at: '2022-09-06T02:10:49.746014Z',
-            hls_manifest_path:
+            startTime: '2022-09-06T02:11:39.954264Z',
+            endTime: '2022-09-06T02:38:50.746014Z',
+            billingStart: '2022-09-06T02:10:49.746014Z',
+            billingEnd: '2022-09-06T02:38:50.746014Z',
+            preparedAt: '2022-09-06T02:10:49.746014Z',
+            hlsManifestPath:
               'https://bifrost.inlive.app/streams/351/master.m3u8',
-            dash_manifest_path:
+            dashManifestPath:
               'https://bifrost.inlive.app/streams/351/manifest.mpd',
             description: '',
-            created_by: 6,
-            created_at: '2022-09-05T07:38:09.525329768Z',
-            updated_by: null,
-            updated_at: '2022-09-06T02:38:50.746014Z',
+            createdBy: 6,
+            createdAt: '2022-09-05T07:38:09.525329768Z',
+            updatedBy: null,
+            updatedAt: '2022-09-06T02:38:50.746014Z',
             quality: '360',
-            viewer_count: 0,
+            viewerCount: 0,
           },
         })
     })
@@ -128,29 +128,27 @@ describe('Get Stream Module', function () {
         .empty
       expect(result.data).to.have.property('slug').to.be.a('string')
       expect(result.data).to.have.property('description').to.be.a('string')
-      expect(result.data).to.have.property('start_time').to.be.a('string').to
-        .not.be.empty
-      expect(result.data).to.have.property('end_time').to.be.a('string').to.not
+      expect(result.data).to.have.property('startTime').to.be.a('string').to.not
         .be.empty
-      expect(result.data).to.have.property('billing_start').to.be.a('string').to
+      expect(result.data).to.have.property('endTime').to.be.a('string').to.not
+        .be.empty
+      expect(result.data).to.have.property('billingStart').to.be.a('string').to
         .not.be.empty
-      expect(result.data).to.have.property('billing_end').to.be.a('string').to
+      expect(result.data).to.have.property('billingEnd').to.be.a('string').to
         .not.be.empty
-      expect(result.data).to.have.property('prepared_at').to.be.a('string').to
+      expect(result.data).to.have.property('preparedAt').to.be.a('string').to
         .not.be.empty
-      expect(result.data)
-        .to.have.property('hls_manifest_path')
-        .to.be.a('string').to.not.be.empty
-      expect(result.data)
-        .to.have.property('dash_manifest_path')
-        .to.be.a('string').to.not.be.empty
-      expect(result.data).to.have.property('created_at').to.be.a('string').to
-        .not.be.empty
-      expect(result.data).to.have.property('updated_at').to.be.a('string').to
-        .not.be.empty
+      expect(result.data).to.have.property('hlsManifestPath').to.be.a('string')
+        .to.not.be.empty
+      expect(result.data).to.have.property('dashManifestPath').to.be.a('string')
+        .to.not.be.empty
+      expect(result.data).to.have.property('createdAt').to.be.a('string').to.not
+        .be.empty
+      expect(result.data).to.have.property('updatedAt').to.be.a('string').to.not
+        .be.empty
       expect(result.data).to.have.property('quality').to.be.a('string').to.not
         .be.empty
-      expect(result.data).to.have.property('viewer_count').to.be.a('number')
+      expect(result.data).to.have.property('viewerCount').to.be.a('number')
     })
   })
 })
