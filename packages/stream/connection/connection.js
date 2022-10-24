@@ -194,7 +194,11 @@ const connection = (() => {
     return {
       /** @type {ConnectType} */
       connect: (remoteSessionDescription) => {
-        if (!(remoteSessionDescription instanceof RTCSessionDescription)) {
+        if (
+          !remoteSessionDescription ||
+          !remoteSessionDescription.type ||
+          !remoteSessionDescription.sdp
+        ) {
           throw new TypeError(
             'Failed to process - Invalid session description format'
           )
