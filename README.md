@@ -139,7 +139,7 @@ To listen when a live stream session has finished the preparation and the sessio
 import { InliveEvent } from '@inlivedev/inlive-js-sdk/event';
 
 InliveEvent.subscribe('stream:ready-to-initialize-event', () => {
-  // handle when the live stream has finished the preparation
+  // handle when the live stream has finished preparing a stream session
 })
 ```
 
@@ -194,7 +194,7 @@ To listen any event triggered by the SDK, you can listen those events by using t
 import { InliveEvent } from '@inlivedev/inlive-js-sdk/event';
 
 const readyToInitializeEvent = InliveEvent.subscribe('stream:ready-to-initialize-event', () => {
-  // handle established connection after calling the connection.connect method
+  // handle when the live stream has finished preparing a stream session
 });
 
 const readyToStartEvent = InliveEvent.subscribe('stream:ready-to-start-event', () => {
