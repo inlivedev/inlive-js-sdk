@@ -155,7 +155,7 @@ await InliveStream.initStream(inliveApp, {
 ```
 
 
-#### Start live stream
+#### Start a live stream session
 Yu can start a live stream by using `startStream` module to start a live streaming session. This returns a promise.
 
 ```js
@@ -164,7 +164,7 @@ await InliveStream.startStream(inliveApp, {
 });
 ```
 
-#### End live stream
+#### End a live stream session
 You can use `endStream` module to end the stream session. This returns a promise.
 
 ```js
@@ -173,14 +173,14 @@ await InliveStream.endStream(inliveApp, {
 });
 ```
 
-#### Get specific live stream
+#### Get a specific live stream
 To get a spesific a live stream data, you can use `getStream` module. This will return a live stream data and consists of the live stream HLS or MPEG-DASH manifest URLs you can play using JavaScript player library such as [shaka player](https://github.com/shaka-project/shaka-player). This module doesn't require `inLiveApp` value from the SDK initialization step.
 
 ```js
 const getStream = InliveStream.getStream(streamId);
 ```
 
-#### Get list of streams
+#### Get a list of streams
 You can get to see the list of the streams that you've created by using the `getStreams` module.
 
 ```js
