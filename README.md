@@ -106,7 +106,7 @@ After you open the connection, it will expose other methods such as :
 - `getPeerConnection` method to check the current status of the peer connection between local and remote peer.
 - `close` method to close the all connections.
 - `connect` method to connect and established the connection after the live stream session is initialized and remote session description is received.
-- `on` method to listen to the event (however, you can also use our [event module](#event-module).
+- `on` method to listen to the event. However, you can also use our [event module](#event-module).
 
 ```js
 const peerConnection = connection.getPeerConnection();
