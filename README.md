@@ -10,6 +10,11 @@ You can verify if you have installed Node.js by running this command in your ter
 $ node -v
 ```
 
+You can verify if you have installed NPM by running this command in your terminal:
+```bash
+$ npm -v
+```
+
 ## Installation inLive JS SDK
 In your frontend project, install the inLive Javascript SDK by running this command:
 ```bash
@@ -28,7 +33,7 @@ Before starting to use those modules, you need to initialize it first with your 
 import { InLiveApp } from '@inlivedev/inlive-js-sdk/app';
 
 const inliveApp = InLiveApp.init({
-  apiKey: 'apiKey',
+  api_key: 'apiKey', // input your API Key here (required)
   widgetKey: '', // optional: define this when using the widget module
 });
 ```
@@ -41,13 +46,13 @@ import { InLiveStream } from '@inlivedev/inlive-js-sdk/stream';
 
 You will need to use this module if you want to develop a live streaming application. Our live stream module will help you to be able to :
 1. Create a new live streaming.
-2. Prepare the stream pod and initiate webRTC connection after stream created.
-3. Start a live stream after the stream preparation is finished and the stream is ready to start.
-4. End a live stream after the stream is started.
-5. Get a specific stream’s data based on the ID (so you will get HLS or MPEG-DASH manifest url for your video player)
-6. Get a list of streams data
-
-For the full list of features inside our live stream modules, as well as additional guides, see our [inLive Javascript SDK Live Stream Modules docs](#http:/link-to-sdk-website-documentation-part-live-stream-modules).
+2. Set local media, and manage channel connection & webRTC connection.
+3. Prepare the stream pod.
+4. Initiate webRTC connection.
+5. Start a live stream after the stream preparation is finished and the stream is ready to start.
+6. End a live stream after the stream is started.
+7. Get a specific stream’s data based on the ID (so you will get HLS or MPEG-DASH manifest url for your video player)
+8. Get a list of streams data
 
 #### Create a new stream
 You can create a new stream by calling `createStream` module. You're required to pass `inLiveApp` return value from [initialization step above](#initialization).
@@ -61,41 +66,102 @@ const stream = InLiveStream.createStream(inliveApp, {
 ```
 
 #### Prepare live stream
-After stream created, you can prepare the live stream pod and initiate webRTC connection with `prepareStream` module. The `stream_id` can be got from `createdStream` return value.
+After stream created, you can prepare the live stream pod and initiate webRTC connection with `prepareStream` module. The `streamId` can be got from `createdStream` return value.
 
 ```js
 const prepareStream = InLiveStream.prepareStream(inliveApp, { 
-  stream_id: 1, //input streamId
-  media: {
-    videoSelector: "video", //required
-    videoOptions: {
-        autoplay: true, //optional
-        muted: true, //optional
-        playsInline: true, //optional
-    }
-  } 
+  streamId: 1 //input streamId
 });
+```
+
+#### Init live stream
+After the pod is ready, then you can initiate webRTC connection with our `init` module. The `streamId` can be got from `createdStream` return value and the `sessionDescription` can be get from checking peer connection.
+
+```js
+const initializeStream = InLiveStream.initStream(inliveApp, { 
+  streamId: 1, //input streamId
+  // you can get this session description values by checking peer connection
+  sessionDescription: {
+    type: '..',
+    sdp: '..'
+  }
+});
+```
+
+#### Set media & managing connection
+To set media tools, you can use our `media` module which consists of this 2 methods :
+- `getUserMedia` to get the local user media which is method is same with [MediaDevices.getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
+- `attachMediaElement` to attach the video element and the media stream returned by `getUserMedia` method
+
+```js
+import { InliveStream } from '@inlivedev/inlive-js-sdk/stream';
+
+const videoElement = document.getElementById('#video');
+
+const mediaConstraints = {
+  // you can add your video & audio requirements in here
+  video: true, 
+  audio: true
+};
+
+const mediaStream = await InliveStream.media.getUserMedia(
+  mediaConstraints
+);
+
+const mediaElement = InliveStream.media.attachMediaElement(
+  videoElement,
+  mediaStream
+);
+```
+
+You can manage channel & webRTC connection by using our `connection` module :
+- First, you need to access the connection with our `open` method that will open the webrtc and channel connections. You can get the value of `mediaStream` and `mediaElement` by using our `media` module.
+
+```js
+const connection = await InliveStream.connection.open({
+  streamId,
+  mediaStream,
+  mediaElement
+});
+```
+
+After you open the connections, the you can access another method such as :
+- `getPeerConnection` method to check the current status of the peer connection between local and remote peer.
+- `close` method to close the webrtc and channel connections.
+- `connect` method to connect and established the connection after receiving the remote session description from the `/init` endpoint.
+- `on` method to listen to the event (however, you can also use our [event module](#event-module-using-Pub/Sub)).
+
+```js
+const peerConnection = connection.getPeerConnection();
+
+connection.on('stream:ready-to-start-event', () => {
+  //handle when the stream is ready to start
+});
+
+connection.connect(remoteSessionDescription);
+
+connection.close();
 ```
 
 #### Start live stream
 Finally you can start a live stream by using `startStream` module to start running the stream pod in the server.
 
 ```js
-const startStream = InLiveStream.startStream(inliveApp, { stream_id: 1//input streamId });
+const startStream = InLiveStream.startStream(inliveApp, { streamId: 1//input streamId });
 ```
 
 #### End live stream
 After the streaming started for a while, you can use `endStream` module to end the stream because it will stop the running stream pod in the server.
 
 ```js
-const endStream = InLiveStream.endStream(inliveApp, { stream_id: 1//input streamId });
+const endStream = InLiveStream.endStream(inliveApp, { streamId: 1//input streamId });
 ```
 
 #### Get specific live stream
 For you to get a HLS or MPEG-DASH manifest URL to run the playing stream on your video player, you can use `getStream` module. On this module, we don't need to pass `inLiveApp` because no need of API Key.
 
 ```js
-const getStream = InLiveStream.getStream(stream_id);
+const getStream = InLiveStream.getStream(streamId);
 ```
 
 #### Get list of streams
@@ -130,6 +196,4 @@ For the need for real-time communication for each part of your components, you c
 ```
 
 ## Help
-For more information regarding inLive Javascript SDK, you can read our [inLive Javascript SDK documentation](#http://link-to-sdk-website-documentation).
-
 If you're looking for help, kindly [contact us](mailto:hello@inlive.app).
