@@ -54,7 +54,7 @@ const endStream = async (initInstance, config) => {
    * ======================================================
    */
 
-  const baseUrl = `${baseConfig.api.base_url}/${baseConfig.api.version}`
+  const baseUrl = `${baseConfig.api.baseUrl}/${baseConfig.api.version}`
   try {
     const response = await fetchHttp({
       url: `${baseUrl}/streams/${streamId}/end`,

@@ -133,7 +133,7 @@ describe('Create Stream Module', function () {
     })
 
     it('should return error response if API Key is not valid', async function () {
-      nock(`${Internal.config.api.base_url}`)
+      nock(`${Internal.config.api.baseUrl}`)
         .post(`/${Internal.config.api.version}/streams/create`, {
           name: 'tes',
           slug: 'tes',
@@ -159,7 +159,7 @@ describe('Create Stream Module', function () {
     })
 
     it('should return error response if unexpected error from server', async function () {
-      nock(`${Internal.config.api.base_url}`)
+      nock(`${Internal.config.api.baseUrl}`)
         .post(`/${Internal.config.api.version}/streams/create`, {
           name: 'tes',
           slug: 'tes',
@@ -188,7 +188,7 @@ describe('Create Stream Module', function () {
   describe('Positive test', function () {
     const config = { name: 'tes', slug: 'tes', description: 'tes' }
     beforeEach(function () {
-      nock(`${Internal.config.api.base_url}`)
+      nock(`${Internal.config.api.baseUrl}`)
         .post(`/${Internal.config.api.version}/streams/create`, config)
         .reply(200, {
           status: {

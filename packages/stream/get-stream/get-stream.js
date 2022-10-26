@@ -25,7 +25,7 @@ export const getStream = async (streamId) => {
     )
   } else {
     let fetchResponse = await Internal.fetchHttp({
-      url: `${Internal.config.api.base_url}/${Internal.config.api.version}/streams/${streamId}`,
+      url: `${Internal.config.api.baseUrl}/${Internal.config.api.version}/streams/${streamId}`,
       method: 'GET',
     }).catch((error) => {
       return error
