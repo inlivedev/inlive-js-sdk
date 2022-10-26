@@ -138,8 +138,8 @@ To listen when a live stream session has finished the preparation and the sessio
 ```js
 import { InliveEvent } from '@inlivedev/inlive-js-sdk/event';
 
-InliveEvent.on('stream:ready-to-initialize-event', () => {
-  // handle when the live stream has finished the preparation
+InliveEvent.subscribe('stream:ready-to-initialize-event', () => {
+  // handle when the live stream has finished preparing a stream session
 })
 ```
 
@@ -193,24 +193,24 @@ To listen any event triggered by the SDK, you can listen those events by using t
 ```js
 import { InliveEvent } from '@inlivedev/inlive-js-sdk/event';
 
-const readyToInitializeEvent = InliveEvent.on('stream:ready-to-initialize-event', () => {
+const readyToInitializeEvent = InliveEvent.subscribe('stream:ready-to-initialize-event', () => {
+  // handle when the live stream has finished preparing a stream session
+});
+
+const readyToStartEvent = InliveEvent.subscribe('stream:ready-to-start-event', () => {
   // handle established connection after calling the connection.connect method
 });
 
-const readyToStartEvent = InliveEvent.on('stream:ready-to-start-event', () => {
-  // handle established connection after calling the connection.connect method
-});
-
-const iceConnectionStateChange = InliveEvent.on('stream:ice-connection-state-change-event', (data) => {
+const iceConnectionStateChange = InliveEvent.subscribe('stream:ice-connection-state-change-event', (data) => {
   // handle ice connection state change event
   // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/iceConnectionState
 });
 
-InliveEvent.on('stream:start-event', () => {
+InliveEvent.subscribe('stream:start-event', () => {
   // handle live stream start event
 });
 
-InliveEvent.on('stream:end-event', () => {
+InliveEvent.subscribe('stream:end-event', () => {
   // handle live stream end event
 });
 
