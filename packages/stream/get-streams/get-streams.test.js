@@ -55,12 +55,12 @@ describe('Get Streams Module', function () {
     })
 
     it('should return error response if API key is not valid', async function () {
-      nock(`${Internal.config.api.base_url}`)
+      nock(`${Internal.config.api.baseUrl}`)
         .get(`/${Internal.config.api.version}/streams/`)
         .reply(403, { code: 403, message: 'API key is not valid', data: '' })
 
       try {
-        await getStreams(init({ api_key: 'blabla' }))
+        await getStreams(init({ apiKey: 'blabla' }))
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -73,7 +73,7 @@ describe('Get Streams Module', function () {
 
   describe('Positive test', function () {
     beforeEach(function () {
-      nock(`${Internal.config.api.base_url}`)
+      nock(`${Internal.config.api.baseUrl}`)
         .get(`/${Internal.config.api.version}/streams/`)
         .reply(200, {
           status: {
@@ -114,7 +114,7 @@ describe('Get Streams Module', function () {
     it('should return success response', async function () {
       const result = await getStreams(
         init({
-          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
         })
       )
 
@@ -124,7 +124,7 @@ describe('Get Streams Module', function () {
     it('should return success response data', async function () {
       const result = await getStreams(
         init({
-          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
         })
       )
 
