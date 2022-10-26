@@ -1,11 +1,11 @@
-# Contributing
+# Contributing to InLive JavaScript SDK
 
 ## Local Setup
 
 Ensure you have already installed [git](https://git-scm.com/), and [npm](https://nodejs.org/en/) in your local machine.
 
 1. Clone this repository to your local machine
-2. Install the dependencies by using [npm install](https://docs.npmjs.com/cli/v8/commands/npm-install) command
+2. Navigate to the SDK directory and install the dependencies by using [npm install](https://docs.npmjs.com/cli/v8/commands/npm-install) command
 ```
 npm install
 ```
