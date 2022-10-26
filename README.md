@@ -27,7 +27,7 @@ InLive Javascript SDK consists of 2 main modules :
 - Widget module (coming soon)
 
 ### Initialization
-Before starting to use those modules, you need to initialize it first with your API Key & Widget Key on your project. If you do not have any API Key or Widget Key, kindly read [this documentation](#http://link-to-sdk-website-documentation-part-initialize) on how to get it.
+Before starting to use those modules, you need to initialize it first with your API Key & Widget Key on your project. If you do not have any API Key or Widget Key, kindly read [this documentation for the API Key](https://inlive.app/docs/getting-started/#get-an-application-key) and [this documentation for the widget key](https://inlive.app/docs/tutorial/tutorial-creating-and-managing-widget/#generating-the-widget-key) on how to get them.
 
 ```js
 import { InLiveApp } from '@inlivedev/inlive-js-sdk/app';
