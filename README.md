@@ -32,7 +32,7 @@ const inliveApp = InliveApp.init({
 });
 ```
 
-### Live stream module
+### Live Stream Module
 The live stream module can be imported in your project like this
 
 ```js
