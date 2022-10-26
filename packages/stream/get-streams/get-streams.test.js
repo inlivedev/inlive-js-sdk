@@ -60,7 +60,7 @@ describe('Get Streams Module', function () {
         .reply(403, { code: 403, message: 'API key is not valid', data: '' })
 
       try {
-        await getStreams(init({ api_key: 'blabla' }))
+        await getStreams(init({ apiKey: 'blabla' }))
       } catch (error) {
         expect(error).to.be.an('error')
         expect(error.name).to.be.equal('Error')
@@ -114,7 +114,7 @@ describe('Get Streams Module', function () {
     it('should return success response', async function () {
       const result = await getStreams(
         init({
-          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
         })
       )
 
@@ -124,7 +124,7 @@ describe('Get Streams Module', function () {
     it('should return success response data', async function () {
       const result = await getStreams(
         init({
-          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
         })
       )
 

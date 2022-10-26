@@ -41,7 +41,7 @@ const endStream = async (initInstance, config) => {
    */
 
   const {
-    config: { api_key },
+    config: { apiKey },
   } = initInstance
 
   const { fetchHttp, config: baseConfig } = Internal
@@ -58,7 +58,7 @@ const endStream = async (initInstance, config) => {
   try {
     const response = await fetchHttp({
       url: `${baseUrl}/streams/${streamId}/end`,
-      token: api_key,
+      token: apiKey,
       method: 'POST',
       body: {},
     })

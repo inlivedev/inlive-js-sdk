@@ -24,7 +24,7 @@ export const getStreams = async (initObject) => {
   } else {
     let fetchResponse = await Internal.fetchHttp({
       url: `${Internal.config.api.base_url}/${Internal.config.api.version}/streams/`,
-      token: initObject.config.api_key,
+      token: initObject.config.apiKey,
       method: 'GET',
     }).catch((error) => {
       return error

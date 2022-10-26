@@ -32,7 +32,7 @@ describe('Create Stream Module', function () {
       try {
         await createStream(
           init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+            apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
           })
         )
       } catch (error) {
@@ -47,7 +47,7 @@ describe('Create Stream Module', function () {
       try {
         await createStream(
           init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+            apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
           }),
           config
         )
@@ -65,7 +65,7 @@ describe('Create Stream Module', function () {
       try {
         await createStream(
           init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+            apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
           }),
           config
         )
@@ -83,7 +83,7 @@ describe('Create Stream Module', function () {
       try {
         await createStream(
           init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+            apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
           }),
           config
         )
@@ -101,7 +101,7 @@ describe('Create Stream Module', function () {
       try {
         await createStream(
           init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+            apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
           }),
           config
         )
@@ -119,7 +119,7 @@ describe('Create Stream Module', function () {
       try {
         await createStream(
           init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+            apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
           }),
           config
         )
@@ -145,7 +145,7 @@ describe('Create Stream Module', function () {
       try {
         await createStream(
           init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+            apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
           }),
           config
         )
@@ -171,7 +171,7 @@ describe('Create Stream Module', function () {
       try {
         await createStream(
           init({
-            api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+            apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
           }),
           config
         )
@@ -224,7 +224,7 @@ describe('Create Stream Module', function () {
     it('should return code 200', async function () {
       const result = await createStream(
         init({
-          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
         }),
         config
       )
@@ -235,7 +235,7 @@ describe('Create Stream Module', function () {
     it('should return success response data', async function () {
       const result = await createStream(
         init({
-          api_key: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
+          apiKey: 'eyJhbGciOiJ.eyJleHAi.B01hriveOMR',
         }),
         config
       )

@@ -50,7 +50,7 @@ const initStream = async (initInstance, config) => {
    */
 
   const {
-    config: { api_key },
+    config: { apiKey },
   } = initInstance
 
   const { fetchHttp, config: baseConfig } = Internal
@@ -72,7 +72,7 @@ const initStream = async (initInstance, config) => {
 
     const response = await fetchHttp({
       url: `${baseUrl}/streams/${streamId}/init`,
-      token: api_key,
+      token: apiKey,
       method: 'POST',
       body,
     })
