@@ -1,6 +1,6 @@
 /**
  * @typedef Config
- * @property {string} api_key - A string of key that will be used to access inLive protected API
+ * @property {string} apiKey - A string of key that will be used to access inLive protected API
  */
 
 /**
@@ -17,19 +17,19 @@ export function InitializationInstance(config) {
  *
  * @function
  * @param {Config} config - A set of key/value parameter configuration
- * @returns {object} InitializationInstance that contains config object of api_key
+ * @returns {object} InitializationInstance that contains config object of apiKey
  * @throws {Error}
  */
 const init = (config) => {
-  if (!config || config.api_key === undefined) {
+  if (!config || config.apiKey === undefined) {
     throw new Error(
       'Failed to process because the API key is not provided. Please provide an API key.'
     )
-  } else if (typeof config.api_key !== 'string') {
+  } else if (typeof config.apiKey !== 'string') {
     throw new TypeError(
       'Failed to process because the API key is not in a valid string format. API key must be in a string format'
     )
-  } else if (config.api_key.trim().length === 0) {
+  } else if (config.apiKey.trim().length === 0) {
     throw new Error(
       'Failed to process because the API key field is an empty string. Please provide an API key.'
     )

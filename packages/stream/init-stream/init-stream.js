@@ -50,7 +50,7 @@ const initStream = async (initInstance, config) => {
    */
 
   const {
-    config: { api_key },
+    config: { apiKey },
   } = initInstance
 
   const { fetchHttp, config: baseConfig } = Internal
@@ -63,7 +63,7 @@ const initStream = async (initInstance, config) => {
    * ======================================================
    */
 
-  const baseUrl = `${baseConfig.api.base_url}/${baseConfig.api.version}`
+  const baseUrl = `${baseConfig.api.baseUrl}/${baseConfig.api.version}`
 
   try {
     const body = snakecaseKeys({
@@ -72,7 +72,7 @@ const initStream = async (initInstance, config) => {
 
     const response = await fetchHttp({
       url: `${baseUrl}/streams/${streamId}/init`,
-      token: api_key,
+      token: apiKey,
       method: 'POST',
       body,
     })

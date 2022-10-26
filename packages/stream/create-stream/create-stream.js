@@ -78,8 +78,8 @@ export const createStream = async (initObject, config) => {
     )
   } else {
     let fetchResponse = await Internal.fetchHttp({
-      url: `${Internal.config.api.base_url}/${Internal.config.api.version}/streams/create`,
-      token: initObject.config.api_key,
+      url: `${Internal.config.api.baseUrl}/${Internal.config.api.version}/streams/create`,
+      token: initObject.config.apiKey,
       method: 'POST',
       body: {
         name: config.name,

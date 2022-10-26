@@ -57,7 +57,7 @@ describe('Get Stream Module', function () {
 
     it('should return error response if stream ID not found', async function () {
       let streamId = 1000
-      nock(`${Internal.config.api.base_url}`)
+      nock(`${Internal.config.api.baseUrl}`)
         .get(`/${Internal.config.api.version}/streams/${streamId}`)
         .reply(404, { code: 404, message: 'ID not found', data: '' })
 
@@ -76,7 +76,7 @@ describe('Get Stream Module', function () {
   describe('Positive test', function () {
     let streamId = 351
     beforeEach(function () {
-      nock(`${Internal.config.api.base_url}`)
+      nock(`${Internal.config.api.baseUrl}`)
         .get(`/${Internal.config.api.version}/streams/${streamId}`)
         .reply(200, {
           status: {
