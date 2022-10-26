@@ -129,7 +129,7 @@ After you open the connections, the you can access another method such as :
 - `getPeerConnection` method to check the current status of the peer connection between local and remote peer.
 - `close` method to close the webrtc and channel connections.
 - `connect` method to connect and established the connection after receiving the remote session description from the `/init` endpoint.
-- `on` method to listen to the event (however, you can also use our [event module](#event-module-using-Pub/Sub)).
+- `on` method to listen to the event (however, you can also use our [event module](#event-module-using-pubsub)).
 
 ```js
 const peerConnection = connection.getPeerConnection();
