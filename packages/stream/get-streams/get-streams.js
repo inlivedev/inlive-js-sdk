@@ -22,9 +22,21 @@ export const getStreams = async (initObject) => {
       'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
     )
   } else {
+    const {
+      config: { apiKey, apiOrigin, apiVersion },
+    } = initObject
+
+    const baseUrl = `${
+      typeof apiOrigin != 'undefined' ? apiOrigin : Internal.config.api.baseUrl
+    }/${
+      typeof apiVersion != 'undefined'
+        ? apiVersion
+        : Internal.config.api.version
+    }`
+
     let fetchResponse = await Internal.fetchHttp({
-      url: `${Internal.config.api.baseUrl}/${Internal.config.api.version}/streams/`,
-      token: initObject.config.apiKey,
+      url: `${baseUrl}/streams/`,
+      token: apiKey,
       method: 'GET',
     }).catch((error) => {
       return error
