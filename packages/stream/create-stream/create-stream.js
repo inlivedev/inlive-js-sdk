@@ -77,9 +77,21 @@ export const createStream = async (initObject, config) => {
       'Failed to create a new stream because the description of the stream is not in string format. A description must be in string format'
     )
   } else {
+    const {
+      config: { apiKey, apiOrigin, apiVersion },
+    } = initObject
+
+    const baseUrl = `${
+      typeof apiOrigin != 'undefined' ? apiOrigin : Internal.config.api.baseUrl
+    }/${
+      typeof apiVersion != 'undefined'
+        ? apiVersion
+        : Internal.config.api.version
+    }`
+
     let fetchResponse = await Internal.fetchHttp({
-      url: `${Internal.config.api.baseUrl}/${Internal.config.api.version}/streams/create`,
-      token: initObject.config.apiKey,
+      url: `${baseUrl}/streams/create`,
+      token: apiKey,
       method: 'POST',
       body: {
         name: config.name,

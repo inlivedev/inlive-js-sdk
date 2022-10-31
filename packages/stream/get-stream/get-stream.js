@@ -1,3 +1,4 @@
+import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
 import camelcaseKeys from 'camelcase-keys'
 
@@ -10,11 +11,18 @@ import camelcaseKeys from 'camelcase-keys'
 /**
  * A get specific stream data module based on the stream ID passing parameter
  *
+ * @param {InitializationInstance} initObject -- initialization object
  * @param {number} streamId -- stream ID
  * @returns {Promise<FetchResponse>} returns the restructured data which content status & specific stream data
  * @throws {Error}
  */
-export const getStream = async (streamId) => {
+export const getStream = async (initObject, streamId) => {
+  if (!(initObject instanceof InitializationInstance)) {
+    throw new TypeError(
+      'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
+    )
+  }
+
   if (streamId === null || streamId === undefined) {
     throw new Error(
       'Failed to get the stream data because the stream ID is empty. Please provide a stream ID'
@@ -24,8 +32,21 @@ export const getStream = async (streamId) => {
       'Failed to get the stream data because the stream ID is not in number format. A stream ID must be number format'
     )
   } else {
+    const {
+      config: { apiKey, apiOrigin, apiVersion },
+    } = initObject
+
+    const baseUrl = `${
+      typeof apiOrigin != 'undefined' ? apiOrigin : Internal.config.api.baseUrl
+    }/${
+      typeof apiVersion != 'undefined'
+        ? apiVersion
+        : Internal.config.api.version
+    }`
+
     let fetchResponse = await Internal.fetchHttp({
-      url: `${Internal.config.api.baseUrl}/${Internal.config.api.version}/streams/${streamId}`,
+      url: `${baseUrl}/streams/${streamId}`,
+      token: apiKey,
       method: 'GET',
     }).catch((error) => {
       return error
