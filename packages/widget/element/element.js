@@ -66,12 +66,36 @@ const widgetElementTemplate = (BaseElement) => (initialData) => {
           detail.message.status === 'join'
         ) {
           this.handleUserJoin()
+
+          this.event.publish('widget:user-join-event', {
+            type: 'widget:user-join-event',
+            detail: {
+              viewerCount: this.viewerCount,
+            },
+          })
         } else if (
           detail.type === 'system' &&
           detail.message &&
           detail.message.status === 'leave'
         ) {
           this.handleUserLeave()
+
+          this.event.publish('widget:user-leave-event', {
+            type: 'widget:user-leave-event',
+            detail: {
+              viewerCount: this.viewerCount,
+            },
+          })
+        } else if (detail.type === 'broadcast') {
+          this.event.publish('widget:receive-broadcast-message', {
+            type: 'widget:receive-broadcast-message',
+            detail: detail,
+          })
+        } else if (detail.type === 'request') {
+          this.event.publish('widget:receive-broadcast-history', {
+            type: 'widget:receive-broadcast-history',
+            detail: detail,
+          })
         }
       })
     }
