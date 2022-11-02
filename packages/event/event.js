@@ -27,6 +27,14 @@
       }
    )
  */
+
+/**
+ * @typedef EventType
+ * @property {Function} subscribe - The subscribe method
+ * @property {Function} publish - The publish method
+ */
+
+/** @type {EventType} */
 const event = (() => {
   /**
    * ======================================================
@@ -58,10 +66,20 @@ const event = (() => {
    * @param {string} eventName - The name of the event
    * @param {any} data - The actual data sent
    */
-  const publish = (eventName, data) => {
+  const publish = (eventName = '', data = {}) => {
+    if (!eventName) {
+      throw new Error('Failed to process - event name is required')
+    } else if (typeof eventName !== 'string') {
+      throw new TypeError(
+        'Failed to process - event name must be in a string format'
+      )
+    } else if (eventName.trim().length === 0) {
+      throw new Error('Failed to process - event name must not be empty')
+    }
+
     if (isInstanceOfSet(events, eventName)) {
       for (const callback of events[eventName]) {
-        callback(data)
+        typeof callback === 'function' && callback(data)
       }
     } else {
       events[eventName] = new Set()
@@ -76,6 +94,20 @@ const event = (() => {
    * @returns {SubscribeReturn} An object that contains the unsubscribe function
    */
   const subscribe = (eventName, callback) => {
+    if (!eventName) {
+      throw new Error('Failed to process - event name is required')
+    } else if (typeof eventName !== 'string') {
+      throw new TypeError(
+        'Failed to process - event name must be in a string format'
+      )
+    } else if (eventName.trim().length === 0) {
+      throw new Error('Failed to process - event name must not be empty')
+    } else if (typeof callback !== 'function') {
+      throw new TypeError(
+        'Failed to process - please provide a callback function'
+      )
+    }
+
     if (!isInstanceOfSet(events, eventName)) {
       events[eventName] = new Set()
     }
