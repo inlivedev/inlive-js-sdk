@@ -1,4 +1,6 @@
 import { fetchHttp } from '../fetch-http/fetch-http.js'
+import snakecaseKeys from 'snakecase-keys'
+import camelcaseKeys from 'camelcase-keys'
 
 /**
  * @typedef {(url: string) => { client: EventSource | void }} SubscribeToSseType
@@ -143,7 +145,7 @@ const onError = (connection) => ({
 /**
  * @typedef EventDataType
  * @property {string} [data] - The string data received from the server sent event
- * @typedef {Event & EventDataType} CustomEventType
+ * @typedef {Event & EventDataType} MessageEventType
  */
 
 /**
@@ -159,12 +161,16 @@ const onMessage = (connection) => ({
     ) {
       connection.client.addEventListener(
         'message',
-        /** @param {CustomEventType} event - The Event Object with additional data property */
+        /** @param {MessageEventType} event - The message event object with additional data property */
         (event) => {
           if (event.data) {
             let data = JSON.parse(event.data)
             data = typeof data === 'object' ? data : {}
-            callback(data)
+            callback(
+              camelcaseKeys(data, {
+                deep: true,
+              })
+            )
           }
         }
       )
@@ -196,20 +202,28 @@ const publish = () => ({
       )
     }
 
-    const response = await fetchHttp({ url, method: 'POST', body: data })
+    const response = await fetchHttp({
+      url,
+      method: 'POST',
+      body: snakecaseKeys(data),
+    })
+
     return response
   },
 })
 
 /**
- * @returns {{
- *  subscribe: SubscribeToSseType,
- *  unsubscribe: UnsubscribeType,
- *  onOpen: OnOpenType,
- *  onError: OnErrorType,
- *  onMessage: OnMessageType,
- *  publish: PublishType
- * }} Returns methods to handle SSE connection
+ * @typedef SSEChannelType
+ * @property {SubscribeToSseType} subscribe - Subscribe method
+ * @property {UnsubscribeType} unsubscribe - Unsubscribe method
+ * @property {OnOpenType} onOpen - onOpen method
+ * @property {OnErrorType} onError - onError method
+ * @property {OnMessageType} onMessage - onMessage method
+ * @property {PublishType} publish - publish method
+ */
+
+/**
+ * @returns {SSEChannelType} Returns methods to handle SSE connection
  */
 const sse = () => {
   let connection = {
