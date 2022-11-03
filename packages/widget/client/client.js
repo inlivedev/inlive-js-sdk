@@ -176,7 +176,7 @@ const makeWidgetRegistration =
             widgetKey: newConfig.widgetKey,
           }
 
-          metaData.widget(makeWidgetElement(newData), InliveEvent)
+          metaData.widget(makeWidgetElement(newData))
         }
       },
     }
