@@ -123,14 +123,23 @@ const widgetElementTemplate = (BaseElement) => (initialData) => {
      */
 
     /**
+     * @typedef SendBroadcastOptionsType
+     * @property {number} [timestamp] - The current video player timestamp
+     */
+
+    /**
      * Method to broadcast a message to all clients
      *
-     * @param {SendBroadcastType} input - The broadcast input
+     * @param {SendBroadcastType} message - The send broadcast input message
+     * @param {SendBroadcastOptionsType} options - The send broadcast options
      */
-    async sendBroadcast(input) {
+    async sendBroadcast(message, options) {
+      const defaultMessages = typeof message === 'object' ? message : {}
+      const defaultOptions = typeof options === 'object' ? options : {}
+
       const defaultData = {
-        message: {},
-        timestamp: 0,
+        message: defaultMessages,
+        timestamp: defaultOptions.timestamp || 0,
       }
 
       const data = {
@@ -138,7 +147,6 @@ const widgetElementTemplate = (BaseElement) => (initialData) => {
         timestamp: defaultData.timestamp,
         widgetKey: this._widgetKey,
         type: 'broadcast',
-        ...(typeof input === 'object' ? input : {}),
       }
 
       return await this.channel.publish(this.publishUrl, data)
