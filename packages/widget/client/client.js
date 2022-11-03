@@ -6,8 +6,8 @@ import { makeWidgetElement } from '../element/element.js'
 /**
  * @typedef WidgetConfigType
  * @property {string} [channelOrigin] - Stream channel server origin
- * @property {number} [streamId] - The ID of the stream
- * @property {string} [widgetKey] - The widget key
+ * @property {number} streamId - The ID of the stream
+ * @property {string} widgetKey - The widget key
  */
 
 /**
@@ -16,7 +16,7 @@ import { makeWidgetElement } from '../element/element.js'
  * @property {string} message.token - Temporary token
  * @property {string} message.userId - Temporary user ID
  * @property {number} message.viewerCount - Total of current viewer counts
- * @property {string} streamId - The ID of the stream
+ * @property {number} streamId - The ID of the stream
  * @property {string} type - The type of the event
  */
 
@@ -85,22 +85,17 @@ const handleConnectToChannel = async (channelClient, subscribeUrl) => {
     try {
       channelClient.subscribe(subscribeUrl)
 
-      let subscriptionData = {
-        message: {
-          token: '',
-          userId: '',
-          viewerCount: 0,
-        },
-      }
-
-      channelClient.onMessage((/** @type {any} */ message) => {
+      channelClient.onMessage((/** @type {any} */ message = {}) => {
+        let data = {}
         if (message.type === 'init') {
-          subscriptionData = {
-            ...subscriptionData,
+          const streamId = Number.parseInt(message.streamId, 10)
+
+          data = {
             ...message,
+            streamId: streamId,
           }
         }
-        resolve(subscriptionData)
+        resolve(data)
       })
     } catch (error) {
       reject(error)
@@ -137,15 +132,13 @@ const makeWidgetRegistration =
     return {
       /** @type {RegisterType} */
       register(config) {
-        const defaultConfig = {
-          widgetKey: (config && config.widgetKey) || baseConfig.widgetKey,
-          widgets: [],
-        }
+        const defaultConfig = config || {}
 
         const newConfig = {
-          widgetKey: defaultConfig.widgetKey,
-          widgets: defaultConfig.widgets,
-          ...(typeof config === 'object' ? config : {}),
+          widgetKey: defaultConfig.widgetKey || baseConfig.widgetKey,
+          widgets: Array.isArray(defaultConfig.widgets)
+            ? defaultConfig.widgets
+            : [],
         }
 
         if (!newConfig.widgetKey) {
@@ -153,10 +146,6 @@ const makeWidgetRegistration =
         } else if (typeof newConfig.widgetKey !== 'string') {
           throw new TypeError(
             'Failed to process - widget key must be in a string format'
-          )
-        } else if (!Array.isArray(newConfig.widgets)) {
-          throw new TypeError(
-            'Failed to process - widgets input type must be an array'
           )
         }
 
@@ -173,22 +162,21 @@ const makeWidgetRegistration =
             )
           }
 
-          const initialdata = data.initialSubscription || {}
-          const messageData = initialdata.message || {}
+          const initialData = data.initialSubscription || {}
+          const messageData = initialData.message || {}
           const metaData = widgetMetaData
 
-          const streamId = Number.parseInt(initialdata.streamId, 10)
-          const initialData = {
+          const newData = {
             channel: channelClient,
             event: InliveEvent,
-            publishUrl: `${baseConfig.channelOrigin}/publish/${streamId}?token=${messageData.token}`,
-            streamId: streamId,
+            publishUrl: `${baseConfig.channelOrigin}/publish/${initialData.streamId}?token=${messageData.token}`,
+            streamId: initialData.streamId,
             userId: messageData.userId,
             viewerCount: messageData.viewerCount,
             widgetKey: newConfig.widgetKey,
           }
 
-          metaData.widget(makeWidgetElement(initialData), InliveEvent)
+          metaData.widget(makeWidgetElement(newData), InliveEvent)
         }
       },
     }
@@ -208,7 +196,7 @@ const makeWidgetRegistration =
  */
 
 /** @type {makeClientType} */
-const makeClient = function (channelConnection, widgetRegistration) {
+const makeClient = (channelConnection, widgetRegistration) => {
   return Object.assign({}, channelConnection, widgetRegistration)
 }
 
@@ -221,12 +209,12 @@ const makeClient = function (channelConnection, widgetRegistration) {
  * { register: RegisterType }} makeWidgetRegistration - Widget registration factory function
  * @returns {(config: WidgetConfigType) => WidgetMethodsType} Returns the widget methods
  */
-const makeWidgetClient = function (
+const makeWidgetClient = (
   makeChannelConnection,
   makeClient,
   makeWidgetRegistration
-) {
-  return function (config = {}) {
+) => {
+  return (config) => {
     const defaultConfig = {
       channelOrigin: sseConfig.baseUrl,
       streamId: 0,
@@ -240,6 +228,20 @@ const makeWidgetClient = function (
       ...(typeof config === 'object' ? config : {}),
     }
 
+    if (!baseConfig.streamId) {
+      throw new Error('Failed to process - please provide a valid stream ID')
+    } else if (typeof baseConfig.streamId !== 'number') {
+      throw new TypeError(
+        'Failed to process - stream ID is not in a number format'
+      )
+    } else if (!baseConfig.widgetKey) {
+      throw new Error('Failed to process - widget key is required')
+    } else if (typeof baseConfig.widgetKey !== 'string') {
+      throw new TypeError(
+        'Failed to process - widget key must be in a string format'
+      )
+    }
+
     const data = {
       initialSubscription: {
         message: {
@@ -248,7 +250,7 @@ const makeWidgetClient = function (
           viewerCount: 0,
         },
         type: 'init',
-        streamId: '0',
+        streamId: baseConfig.streamId,
       },
     }
 
