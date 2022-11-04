@@ -17,6 +17,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "prepare": "husky install",
+    "prepublish": "npm run build",
     "lint": "eslint --cache",
     "lint:packages": "npm run lint \"packages/**/*.js\"",
     "prettier": "prettier --write",
@@ -60,7 +61,7 @@
   },
   "dependencies": {
     "camelcase-keys": "^8.0.2",
-    "lit": "^2.4.0",
+    "lit": "^2.4.1",
     "node-fetch": "3.2.10",
     "snakecase-keys": "^5.4.4"
   },
