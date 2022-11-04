@@ -50,10 +50,8 @@ const initStream = async (initInstance, config) => {
    */
 
   const {
-    config: { apiKey },
+    config: { apiKey, apiOrigin, apiVersion },
   } = initInstance
-
-  const { fetchHttp, config: baseConfig } = Internal
 
   const { streamId, sessionDescription } = config
 
@@ -63,14 +61,18 @@ const initStream = async (initInstance, config) => {
    * ======================================================
    */
 
-  const baseUrl = `${baseConfig.api.baseUrl}/${baseConfig.api.version}`
+  const baseUrl = `${
+    typeof apiOrigin != 'undefined' ? apiOrigin : Internal.config.api.baseUrl
+  }/${
+    typeof apiVersion != 'undefined' ? apiVersion : Internal.config.api.version
+  }`
 
   try {
     const body = snakecaseKeys({
       sessionDescription,
     })
 
-    const response = await fetchHttp({
+    const response = await Internal.fetchHttp({
       url: `${baseUrl}/streams/${streamId}/init`,
       token: apiKey,
       method: 'POST',
