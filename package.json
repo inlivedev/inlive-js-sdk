@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "files": [
-    "dist"
+    "dist/**/*"
   ],
   "module": "dist/inlive-js-sdk.js",
   "types": "dist/inlive-js-sdk.d.ts",
@@ -16,8 +16,7 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "prepare": "husky install",
-    "prepublish": "npm run build",
+    "prepare": "husky install && npm run build",
     "lint": "eslint --cache",
     "lint:packages": "npm run lint \"packages/**/*.js\"",
     "prettier": "prettier --write",
