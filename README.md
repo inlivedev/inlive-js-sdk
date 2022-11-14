@@ -25,7 +25,7 @@ InLive Javascript SDK consists of 2 main modules :
 To get started, the first thing you need to do is to initialize the SDK on your project. If you do not have any API Key, you can read [how to get an API Key](https://inlive.app/docs/getting-started/#get-an-application-key). Some modules required to pass the returned object from the SDK initialization.
 
 ```js
-import { InliveApp } from '@inlivedev/inlive-js-sdk/app';
+import { InliveApp } from '@inlivedev/inlive-js-sdk';
 
 const inliveApp = InliveApp.init({
   apiKey: 'apiKey', // input your API Key here (required)
@@ -36,7 +36,7 @@ const inliveApp = InliveApp.init({
 The live stream module can be imported in your project like this
 
 ```js
-import { InliveStream } from '@inlivedev/inlive-js-sdk/stream';
+import { InliveStream } from '@inlivedev/inlive-js-sdk';
 ```
 
 You will need to use the live stream module if you want to develop a live stream platform. The live stream module will help you to:
@@ -68,7 +68,7 @@ To set media the user want to use, you can use our `media` module. Currently it 
 - `attachMediaElement`: This will attach the media element required to display the camera from the user device to the browser. We recommend to use a HTML video element for the media element.
 
 ```js
-import { InliveStream } from '@inlivedev/inlive-js-sdk/stream';
+import { InliveStream } from '@inlivedev/inlive-js-sdk';
 
 const videoElement = document.getElementById('#video');
 
@@ -136,7 +136,7 @@ await InliveStream.prepareStream(inliveApp, {
 To listen when a live stream session has finished the preparation and the session is ready to be initialized, you can use the event module we have provided
 
 ```js
-import { InliveEvent } from '@inlivedev/inlive-js-sdk/event';
+import { InliveEvent } from '@inlivedev/inlive-js-sdk';
 
 InliveEvent.subscribe('stream:ready-to-initialize-event', () => {
   // handle when the live stream has finished preparing a stream session
@@ -177,7 +177,7 @@ await InliveStream.endStream(inliveApp, {
 To get a spesific a live stream data, you can use `getStream` module. This will return a live stream data and consists of the live stream HLS or MPEG-DASH manifest URLs you can play using JavaScript player library such as [shaka player](https://github.com/shaka-project/shaka-player). This module doesn't require `inLiveApp` value from the SDK initialization step.
 
 ```js
-const getStream = InliveStream.getStream(streamId);
+const getStream = InliveStream.getStream(inliveApp, streamId);
 ```
 
 #### Get a list of streams
@@ -191,7 +191,7 @@ const getStreams = InliveStream.getStreams(inliveApp);
 To listen any event triggered by the SDK, you can listen those events by using the SDK event module.
 
 ```js
-import { InliveEvent } from '@inlivedev/inlive-js-sdk/event';
+import { InliveEvent } from '@inlivedev/inlive-js-sdk';
 
 const readyToInitializeEvent = InliveEvent.subscribe('stream:ready-to-initialize-event', () => {
   // handle when the live stream has finished preparing a stream session

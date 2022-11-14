@@ -2,7 +2,7 @@ module.exports = {
   root: true,
   env: {
     browser: true,
-    node: true
+    node: true,
   },
   extends: [
     'eslint:recommended',
@@ -27,6 +27,8 @@ module.exports = {
     'unicorn',
   ],
   rules: {
+    camelcase: ['error', { properties: 'always' }],
+    eqeqeq: ['error', 'always'],
     'unicorn/no-null': 'off',
     'unicorn/prefer-ternary': ['error', 'only-single-line'],
     'jsdoc/require-jsdoc': [
@@ -43,5 +45,5 @@ module.exports = {
     ],
     'jsdoc/no-undefined-types': 'off',
   },
-  ignorePatterns: ['node_modules', 'dist', './*.js']
+  ignorePatterns: ['node_modules', 'dist'],
 }

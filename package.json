@@ -1,35 +1,36 @@
 {
   "name": "@inlivedev/inlive-js-sdk",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "InLive JavaScript SDK",
   "keywords": [],
   "license": "MIT",
   "type": "module",
-  "exports": {
-    ".": "./packages/index.js",
-    "./app": "./packages/app/index.js",
-    "./stream": "./packages/stream/index.js",
-    "./event": "./packages/event/index.js",
-    "./packages/internal/*": null
-  },
   "files": [
-    "packages"
+    "dist/**/*"
   ],
+  "module": "dist/inlive-js-sdk.js",
+  "types": "dist/inlive-js-sdk.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/inlivedev/inlive-js-sdk/"
   },
   "scripts": {
-    "prepare": "husky install",
+    "clean": "rimraf dist",
+    "prepare": "husky install && npm run build",
     "lint": "eslint --cache",
     "lint:packages": "npm run lint \"packages/**/*.js\"",
     "prettier": "prettier --write",
     "typecheck": "tsc",
     "test": "mocha \"packages/**/*.test.js\"",
     "test:watch": "mocha \"packages/**/*.test.js\" --parallel --watch",
-    "test:coverage": "nyc npm run test"
+    "test:coverage": "nyc npm run test",
+    "build": "npm run clean && rollup -c",
+    "dev": "npm run clean && rollup -c -w"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^23.0.2",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.1.0",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.7.18",
@@ -51,11 +52,15 @@
     "nock": "^13.2.9",
     "nyc": "^15.1.0",
     "prettier": "^2.7.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^3.2.5",
+    "rollup-plugin-dts": "^5.0.0",
     "sinon": "^14.0.0",
     "typescript": "^4.8.2"
   },
   "dependencies": {
     "camelcase-keys": "^8.0.2",
+    "lit": "^2.4.1",
     "node-fetch": "3.2.10",
     "snakecase-keys": "^5.4.4"
   },
