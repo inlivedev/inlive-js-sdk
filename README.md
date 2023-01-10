@@ -1,27 +1,50 @@
 # InLive JavaScript SDK
-Inlive JavaScript SDK is the official JavaScript SDK client for developing a live streaming platform with [inLive](https://inlive.app) infrastructure.
+InLive JavaScript SDK is the official JavaScript SDK client for developing a live streaming platform with [inLive](https://inlive.app) infrastructure. It provides functionalities to interact with InLive live streaming API.
 
-## Prerequisites
+## Installation
+You have two installation options in order to use the InLive JavaScript SDK. You can either use a package manager to install the SDK or use the CDN links available.
 
-Before you run your project, please make sure that you have a package manager. We recommend you to use [NPM](https://www.npmjs.com/) which should already be installed alongside [Node.js](https://nodejs.org/en/).
+### Option 1: Install with package managers (recommended)
+You can install the InLive JavaScript SDK as a package using package managers such as [npm](https://www.npmjs.com/package/@inlivedev/inlive-js-sdk), [yarn](https://yarnpkg.com/package/@inlivedev/inlive-js-sdk), or [pnpm](https://pnpm.io). For most users, this is the recommended choice.
 
-You can verify if you have installed NPM by running this command in your terminal:
-```bash
-$ npm -v
-```
+**Install with npm**
 
-## How to Install
-You can install the InLive JavaScript SDK by running this command
 ```bash
 $ npm install @inlivedev/inlive-js-sdk
 ```
 
-## Usage
-InLive Javascript SDK consists of 2 main modules :
-- Live streaming module
-- Widget module (coming soon)
+The SDK package will be downloaded and installed. Then, you're ready to import it into your code.
 
-### Get Started
+### Option 2: Use CDN links available
+The InLive JavaScript SDK is also available via CDN links.
+
+**Access via jsdelivr**
+
+Access the latest version.
+
+```bash
+https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk/dist/inlive-js-sdk.js
+```
+
+Access the specific version. You may change the version based on the release version number on GitHub.
+
+```bash
+https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@0.3.0/dist/inlive-js-sdk.js
+```
+
+The sample above uses [jsdelivr](https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@latest/). But you can also use any CDN that serves npm packages. Other alternatives are [unpkg](https://unpkg.com/browse/@inlivedev/inlive-js-sdk@latest/), and [jspm](https://jspm.dev/@inlivedev/inlive-js-sdk). You can also download the file and serve it yourself.
+
+Because the InLive JavaScript SDK relies on [ES modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) syntax, it can only be used inside the JavaScript module. For example, you can import the SDK from CDN like this
+
+```html
+<script type="module">
+  import { InliveStream } from 'https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk/dist/inlive-js-sdk.js'
+</script>
+```
+
+## Usage
+
+### Initialize the SDK
 To get started, the first thing you need to do is to initialize the SDK on your project. If you do not have any API Key, you can read [how to get an API Key](https://inlive.app/docs/getting-started/#get-an-application-key). Some modules required to pass the returned object from the SDK initialization.
 
 ```js
