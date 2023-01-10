@@ -32,7 +32,7 @@ Access the specific version. You may change the version based on the release ver
 https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@0.3.0/dist/inlive-js-sdk.js
 ```
 
-The sample above uses [jsdelivr](https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@latest/). But you can also use any CDN that serves npm packages. Other alternatives are [unpkg](https://unpkg.com/browse/@inlivedev/inlive-js-sdk@latest/), and [jspm](https://jspm.dev/@inlivedev/inlive-js-sdk). You can also download the file and serve it yourself.
+The above links use [jsdelivr](https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@latest/). But you can also use any CDN that serves npm packages. Other alternatives are [unpkg](https://unpkg.com/browse/@inlivedev/inlive-js-sdk@latest/), and [jspm](https://jspm.dev/@inlivedev/inlive-js-sdk). You can also download the file and serve it yourself.
 
 Because the InLive JavaScript SDK relies on [ES modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) syntax, it can only be used inside the JavaScript module. For example, you can import the SDK from CDN like this
 
