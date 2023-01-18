@@ -1,8 +1,10 @@
+import { api, webrtc } from '../../internal/config/index.js'
+import { merge } from 'lodash'
 /**
  * @typedef Config
- * @property {string} apiKey - A string of key that will be used to access inLive protected API
- * @property {string} apiOrigin - A string of the API origin, by default it will pointed to https://api.inlive.app
- * @property {string} apiVersion - A string of API version, by default it will be use v1
+ * @property {string} apiKey - A string key for API authentication
+ * @property {api} api - config for API
+ * @property {webrtc} webrtc - config for WebRTC
  */
 
 /**
@@ -19,7 +21,7 @@ export function InitializationInstance(config) {
  *
  * @function
  * @param {Config} config - A set of key/value parameter configuration
- * @returns {object} InitializationInstance that contains config object of apiKey
+ * @returns {InitializationInstance} InitializationInstance that contains config object of apiKey
  * @throws {Error}
  */
 const init = (config) => {
@@ -35,9 +37,17 @@ const init = (config) => {
     throw new Error(
       'Failed to process because the API key field is an empty string. Please provide an API key.'
     )
-  } else {
-    return new InitializationInstance(config)
   }
+
+  const defaultConfig = {
+    apiKey: config.apiKey,
+    api: api,
+    webrtc: webrtc,
+  }
+
+  merge(defaultConfig, config)
+
+  return new InitializationInstance(defaultConfig)
 }
 
 export { init }

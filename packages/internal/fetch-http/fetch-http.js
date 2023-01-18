@@ -84,7 +84,7 @@ export const fetchHttp = async (config = baseConfig) => {
     json = await response.json()
   } else {
     const text = await response.text()
-    json = { data: text }
+    json = text
   }
 
   return response.ok && response.status >= 200 && response.status < 300

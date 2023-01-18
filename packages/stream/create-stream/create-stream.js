@@ -1,6 +1,6 @@
 import { Internal } from '../../internal/index.js'
 import { InitializationInstance } from '../../app/init/init.js'
-import camelcaseKeys from 'camelcase-keys'
+import { Stream } from '../stream.js'
 
 /**
  * Function to cek if the input text has a space or not. If yes, then will replace space with "-"
@@ -22,7 +22,7 @@ function slugify(text) {
 }
 
 /**
- * @typedef Config
+ * @typedef Parameters
  * @property {string} name -- name of stream
  * @property {string} slug -- slug of stream
  * @property {string} description -- description of stream
@@ -39,97 +39,81 @@ function slugify(text) {
  *
  * @function
  * @param {InitializationInstance} initObject -- initialization object
- * @param {Config} config - passing param from user including name, description, slug
- * @returns {Promise<FetchResponse>} returns the restructured data which content status & created stream data
+ * @param {Parameters} parameters - passing param from user including name, description, slug
+ * @returns {Promise<Stream>} returns the restructured data which content status & created stream data
  * @throws {Error}
  */
-export const createStream = async (initObject, config) => {
-  if (!(initObject instanceof InitializationInstance)) {
+export const createStream = async (initObject, parameters) => {
+  if (initObject.constructor.name !== 'InitializationInstance') {
     throw new TypeError(
       'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
     )
-  } else if (!config || typeof config !== 'object') {
+  } else if (!parameters || typeof parameters !== 'object') {
     throw new TypeError(
-      'Failed to process because config argument must be input in object format'
+      'Failed to process because params argument must be input in object format'
     )
-  } else if (config.name === null || config.name === undefined) {
+  } else if (parameters.name === null || parameters.name === undefined) {
     throw new Error(
       'Failed to create a new stream because the name of the stream is empty. Please provide a stream name'
     )
-  } else if (typeof config.name !== 'string') {
+  } else if (typeof parameters.name !== 'string') {
     throw new TypeError(
       'Failed to create a new stream because the name of the stream is not in string format. A stream name must be in string format'
     )
   } else if (
-    config.slug !== null &&
-    config.slug !== undefined &&
-    typeof config.slug !== 'string'
+    parameters.slug !== null &&
+    parameters.slug !== undefined &&
+    typeof parameters.slug !== 'string'
   ) {
     throw new Error(
       'Failed to create a new stream because the slug of the stream is not in string format. A slug must be in string format'
     )
   } else if (
-    config.description !== null &&
-    config.description !== undefined &&
-    typeof config.description !== 'string'
+    parameters.description !== null &&
+    parameters.description !== undefined &&
+    typeof parameters.description !== 'string'
   ) {
     throw new Error(
       'Failed to create a new stream because the description of the stream is not in string format. A description must be in string format'
     )
   } else {
-    const {
-      config: { apiKey, apiOrigin, apiVersion },
-    } = initObject
-
-    const baseUrl = `${
-      typeof apiOrigin != 'undefined' ? apiOrigin : Internal.config.api.baseUrl
-    }/${
-      typeof apiVersion != 'undefined'
-        ? apiVersion
-        : Internal.config.api.version
-    }`
+    const baseUrl = `${initObject.config.api.baseUrl}/${initObject.config.api.version}`
 
     let fetchResponse = await Internal.fetchHttp({
       url: `${baseUrl}/streams/create`,
-      token: apiKey,
+      token: initObject.config.apiKey,
       method: 'POST',
       body: {
-        name: config.name,
-        slug: config.slug || slugify(config.name),
-        description: config.description || '',
+        name: parameters.name,
+        slug: parameters.slug || slugify(parameters.name),
+        description: parameters.description || '',
       },
     }).catch((error) => {
       return error
     })
 
-    if (fetchResponse) {
-      switch (fetchResponse.code) {
-        case 200: {
-          fetchResponse = {
-            status: {
-              code: fetchResponse.code,
-              message: 'Successfully created a new stream',
-              type: 'success',
-            },
-            data: camelcaseKeys(fetchResponse.data),
-          }
-          break
-        }
-        case 403: {
-          throw new Error(
-            'Failed to create a new stream because the API Key is not valid. Please provide a valid and active API Key.'
-          )
-        }
-        case 500: {
-          throw new Error(
-            'Failed to create a new stream because unexpected error from the server'
-          )
-        }
-        default:
-          break
-      }
+    if (fetchResponse && fetchResponse.code === 403) {
+      throw new Error(
+        'Failed to create a new stream because the API Key is not valid. Please provide a valid and active API Key.'
+      )
+    } else if (fetchResponse && fetchResponse.code !== 200) {
+      throw new Error(
+        'Failed to create a new stream because unexpected error from the server'
+      )
     }
 
-    return fetchResponse
+    const stream = fetchResponse.data
+    const streamResponse = {
+      id: stream.id,
+      name: stream.name,
+      slug: stream.slug,
+      description: stream.description,
+      hlsManifestURL: stream.hls_manifest_path,
+      dashManifestURL: stream.dash_manifest_path,
+      createdAt: stream.created_at,
+      startedAt: stream.start_time,
+      endedAt: stream.end_time,
+    }
+    return new Stream(initObject, streamResponse)
   }
 }
