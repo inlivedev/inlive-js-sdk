@@ -1,9 +1,8 @@
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
-import snakecaseKeys from 'snakecase-keys'
 
 /**
- * @typedef Config
+ * @typedef Parameters
  * @property {number} streamId - The ID of the stream
  * @property {RTCSessionDescription | null} sessionDescription - The werbtc local session description
  */
@@ -11,32 +10,32 @@ import snakecaseKeys from 'snakecase-keys'
 /**
  * initialize a stream session
  *
- * @param {object} initInstance - The initialization instance received from the init() function
- * @param {Config} config - Key / value configuration
+ * @param {InitializationInstance} initInstance - The initialization instance received from the init() function
+ * @param {Parameters} parameters - Key / value configuration
  */
-const initStream = async (initInstance, config) => {
+const initStream = async (initInstance, parameters) => {
   /**
    * ======================================================
    *  Validations
    * ======================================================
    */
 
-  if (!(initInstance instanceof InitializationInstance)) {
+  if (initInstance.constructor.name !== InitializationInstance.name) {
     throw new TypeError(
       `Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function`
     )
-  } else if (!config || config.streamId === undefined) {
+  } else if (!parameters || parameters.streamId === undefined) {
     throw new Error(
       'Failed to process because the stream ID is not provided. Please provide the stream ID!'
     )
-  } else if (typeof config.streamId !== 'number') {
+  } else if (typeof parameters.streamId !== 'number') {
     throw new TypeError(
       'Failed to process because the stream ID is not in a number format. The stream ID must be in a number format'
     )
   } else if (
-    !config.sessionDescription ||
-    !config.sessionDescription.type ||
-    !config.sessionDescription.sdp
+    !parameters.sessionDescription ||
+    !parameters.sessionDescription.type ||
+    !parameters.sessionDescription.sdp
   ) {
     throw new TypeError(
       'Failed to process because the local description has wrong format'
@@ -49,11 +48,7 @@ const initStream = async (initInstance, config) => {
    * ======================================================
    */
 
-  const {
-    config: { apiKey, apiOrigin, apiVersion },
-  } = initInstance
-
-  const { streamId, sessionDescription } = config
+  const { streamId, sessionDescription } = parameters
 
   /**
    * ======================================================
@@ -61,20 +56,14 @@ const initStream = async (initInstance, config) => {
    * ======================================================
    */
 
-  const baseUrl = `${
-    typeof apiOrigin != 'undefined' ? apiOrigin : Internal.config.api.baseUrl
-  }/${
-    typeof apiVersion != 'undefined' ? apiVersion : Internal.config.api.version
-  }`
+  const baseUrl = `${initInstance.config.api.baseUrl}/${initInstance.config.api.version}`
 
   try {
-    const body = snakecaseKeys({
-      sessionDescription,
-    })
+    const body = sessionDescription.toJSON()
 
     const response = await Internal.fetchHttp({
       url: `${baseUrl}/streams/${streamId}/init`,
-      token: apiKey,
+      token: initInstance.config.apiKey,
       method: 'POST',
       body,
     })
