@@ -29,8 +29,36 @@ const config = [
     plugins: plugins,
     external: external,
     watch: {
-      include: 'packages/**',
-      exclude: 'packages/**/*.test.js',
+      include: 'packages/app/**',
+      exclude: 'packages/app/**/*.test.js',
+    },
+  },
+  {
+    input: 'packages/event/index.js',
+    output: {
+      file: 'dist/event.js',
+      format: 'es',
+      sourcemap: true,
+    },
+    plugins: plugins,
+    external: external,
+    watch: {
+      include: 'packages/event/**',
+      exclude: 'packages/event/**/*.test.js',
+    },
+  },
+  {
+    input: 'packages/stream/index.js',
+    output: {
+      file: 'dist/stream.js',
+      format: 'es',
+      sourcemap: true,
+    },
+    plugins: plugins,
+    external: external,
+    watch: {
+      include: 'packages/stream/**',
+      exclude: 'packages/stream/**/*.test.js',
     },
   },
   {
