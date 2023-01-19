@@ -20,45 +20,17 @@ const plugins = [
 
 const config = [
   {
-    input: 'packages/app/index.js',
+    input: 'packages/index.js',
     output: {
-      file: 'dist/app.js',
+      file: 'dist/inlive-js-sdk.js',
       format: 'es',
       sourcemap: true,
     },
     plugins: plugins,
     external: external,
     watch: {
-      include: 'packages/app/**',
-      exclude: 'packages/app/**/*.test.js',
-    },
-  },
-  {
-    input: 'packages/event/index.js',
-    output: {
-      file: 'dist/event.js',
-      format: 'es',
-      sourcemap: true,
-    },
-    plugins: plugins,
-    external: external,
-    watch: {
-      include: 'packages/event/**',
-      exclude: 'packages/event/**/*.test.js',
-    },
-  },
-  {
-    input: 'packages/stream/index.js',
-    output: {
-      file: 'dist/stream.js',
-      format: 'es',
-      sourcemap: true,
-    },
-    plugins: plugins,
-    external: external,
-    watch: {
-      include: 'packages/stream/**',
-      exclude: 'packages/stream/**/*.test.js',
+      include: 'packages/**',
+      exclude: 'packages/**/*.test.js',
     },
   },
   {

@@ -1,12 +1,12 @@
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
-import { getStream } from '../get-stream/get-stream.js'
 
 /**
  * End and stop a stream
  *
  * @param {InitializationInstance} initInstance - The initialization instance received from the init() function
  * @param {number} streamId - the stream ID to end
+ * @returns {Promise<boolean>} - return true if no error
  */
 const endStream = async (initInstance, streamId) => {
   /**
@@ -38,25 +38,14 @@ const endStream = async (initInstance, streamId) => {
   const baseUrl = `${initInstance.config.api.baseUrl}/${initInstance.config.api.version}`
 
   try {
-    const response = await Internal.fetchHttp({
+    await Internal.fetchHttp({
       url: `${baseUrl}/streams/${streamId}/end`,
       token: initInstance.config.apiKey,
       method: 'POST',
       body: {},
     })
 
-    const latestStreamData = await getStream(initInstance, streamId)
-
-    const successResponse = {
-      status: {
-        code: response.code || null,
-        type: 'success',
-        message: 'Successfully ended the stream',
-      },
-      data: latestStreamData.data || null,
-    }
-
-    return successResponse
+    return true
   } catch (error) {
     console.error(error)
     throw error

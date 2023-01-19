@@ -417,5 +417,7 @@ export class Stream {
   async end() {
     await endStream(this.app, this.id)
     if (this.peerConnection) this.peerConnection.close()
+    this.data = await fetchStream(this.app, this.id)
+    this.changeState(Stream.STATE_ENDED)
   }
 }
