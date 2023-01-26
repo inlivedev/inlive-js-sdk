@@ -35,6 +35,8 @@ export const fetchHttp = async (config = baseConfig) => {
 
   const options = {
     method: method || 'GET',
+    mode: 'cors',
+    referrerPolicy: 'origin-when-cross-origin',
     headers: {
       Authorization: token ? `Bearer ${token}` : '',
       'Content-Type': 'application/json',

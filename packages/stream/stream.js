@@ -128,6 +128,14 @@ export class Stream {
       dash: '',
       hls: '',
     }
+
+    /**
+     * The pending ice candidates that can't be added because the remote SDP is not received yet
+     *
+     * @type {Array.<RTCIceCandidate>}
+     * @private
+     */
+    this.pandingIceCandidates = []
   }
 
   /**
@@ -202,6 +210,14 @@ export class Stream {
     }
 
     const remoteIceCandidate = new RTCIceCandidate(iceCandidate)
+
+    if (
+      this.peerConnection.remoteDescription === null ||
+      this.peerConnection.pendingRemoteDescription !== null
+    ) {
+      this.pandingIceCandidates.push(remoteIceCandidate)
+      return
+    }
 
     this.peerConnection.addIceCandidate(remoteIceCandidate)
   }
@@ -333,6 +349,21 @@ export class Stream {
   }
 
   /**
+   * Adding pending ice candidates after set remote local description
+   *
+   * @private
+   */
+
+  /**
+   *
+   */
+  addPendingIceCandidates() {
+    for (const iceCandidate of this.pandingIceCandidates) {
+      this.peerConnection?.addIceCandidate(iceCandidate)
+    }
+  }
+
+  /**
    * Initiate the stream for live streaming
    *
    * @param {MediaStream} mediaStream - The video and audio stream tracks for going live
@@ -361,6 +392,8 @@ export class Stream {
     const resp = await initStream(this.app, parameters)
 
     this.peerConnection.setRemoteDescription(resp.data)
+
+    this.addPendingIceCandidates()
 
     return true
   }
