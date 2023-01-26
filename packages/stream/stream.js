@@ -40,7 +40,7 @@ export class Stream {
   static STATE_ENDED = 'ended'
 
   /**
-   * Create a stream.
+   * Stream constructor.
    *
    * @param {App} app - The app instance with configurations.
    * @param {StreamResponse} streamResponse - The stream response from the stream API endpoint.
@@ -376,9 +376,6 @@ export class Stream {
 
     this.listenForWebRTCEvent()
 
-    // subscribe for remote ice candidate
-    await this.subscribe()
-
     for (const track of mediaStream.getTracks()) {
       this.peerConnection.addTrack(track, mediaStream)
     }
@@ -428,9 +425,10 @@ export class Stream {
   }
 
   /**
-   * Prepare the stream server for going live.
+   * Subscribe to events and prepare the stream server for going live.
    */
   async prepare() {
+    await this.subscribe()
     await prepareStream(this.app, this.id)
     this.changeState(Stream.STATE_READY)
   }
