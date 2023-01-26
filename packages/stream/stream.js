@@ -437,6 +437,12 @@ export class Stream {
    * Start the live streaming
    */
   async live() {
+    if (this.state !== Stream.STATE_CONNECTED) {
+      throw new Error(
+        "The live function is called before the state change to connected. Use stream.on('connected',()=>...) to know when the connection is ready for live."
+      )
+    }
+
     this.manifests = await startStream(this.app, this.id)
     this.data = await fetchStream(this.app, this.id)
     this.changeState(Stream.STATE_LIVE)
