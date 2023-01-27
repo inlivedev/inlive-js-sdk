@@ -89,7 +89,7 @@ Once you have the stream instance you can continue to this next step.
 A media stream is a medium that contains the audio and video tracks captured from your webcam and microphone and will be streamed into your live stream as HLS or Dash format.
 
 To set the media the user wants to use, you can use our `media` module. Currently, it consists of 2 methods:
-`getUserMedia`To gets the local user media which will prompt the user to get user permission for camera and audio. This method is similar to [MediaDevices.](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
+- `getUserMedia`To gets the local user media which will prompt the user to get user permission for camera and audio. This method is similar to [MediaDevices.](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
 - `attachMediaElement`: This will attach the media element required to display the camera from the user's device to the browser. We recommend using an HTML video element for the media element.
 
 ```js
