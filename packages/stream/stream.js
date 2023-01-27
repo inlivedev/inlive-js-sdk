@@ -392,7 +392,12 @@ export class Stream {
 
     this.addPendingIceCandidates()
 
-    return true
+    const waitConnected = new Promise((resolve, reject) => {
+      this.on(Stream.STATE_CONNECTED, () => resolve(true))
+
+      this.on(Stream.ERROR, () => reject(false))
+    })
+    return waitConnected
   }
 
   /**
