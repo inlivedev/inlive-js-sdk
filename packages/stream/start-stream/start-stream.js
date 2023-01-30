@@ -6,7 +6,7 @@ import { Internal } from '../../internal/index.js'
  *
  * @param {InitializationInstance} initInstance - The initialization instance received from the init() function
  * @param {number} streamID - the stream ID
- * @returns {Promise<Array<string>>} - return true if no error
+ * @returns {Promise<import('../stream.js').Manifests>} - return true if no error
  */
 const startStream = async (initInstance, streamID) => {
   /**

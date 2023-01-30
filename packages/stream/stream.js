@@ -21,6 +21,12 @@ const { webrtc } = Internal
  * @typedef {import('./fetch-stream/fetch-stream.js').StreamResponse} StreamResponse
  */
 
+/**
+ * @typedef Manifests
+ * @property {string} hls
+ * @property {string} dash
+ */
+
 /*  Class representing a Stream. */
 export class Stream {
   static READY = 'streamReady'
@@ -120,13 +126,18 @@ export class Stream {
     /**
      * The eventHandler map object streaming event
      *
-     * @type {object}
+     * @type {Manifests}
      * @public
      */
 
     this.manifests = {
       dash: '',
       hls: '',
+    }
+
+    if (streamResponse.dashUrl !== '' && streamResponse.hlsUrl !== '') {
+      this.manifests.dash = streamResponse.dashUrl
+      this.manifests.hls = streamResponse.hlsUrl
     }
 
     /**

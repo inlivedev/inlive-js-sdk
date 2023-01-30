@@ -7,8 +7,8 @@ import { Internal } from '../../internal/index.js'
  * @property {string} name - name of stream
  * @property {string} slug - slug or URL friendly name
  * @property {string} description - description for the stream
- * @property {string} hlsManifestURL - HLS manifest URL
- * @property {string} dashManifestURL - a Dash format URL
+ * @property {string} hlsUrl - HLS manifest URL
+ * @property {string} dashUrl - a Dash format URL
  * @property {string} createdAt - a time string when the stream is created
  * @property {string} startedAt - a time string when the stream is started
  * @property {string} endedAt - a time string when the stream is ended
@@ -61,8 +61,8 @@ export const fetchStream = async (initObject, streamId) => {
       name: stream.name,
       slug: stream.slug,
       description: stream.description,
-      hlsManifestURL: stream.hls_manifest_path,
-      dashManifestURL: stream.dash_manifest_path,
+      hlsUrl: stream.hls_url,
+      dashUrl: stream.dash_url,
       createdAt: stream.created_at,
       startedAt: stream.start_time,
       endedAt: stream.end_time,
