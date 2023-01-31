@@ -1,5 +1,7 @@
 import { api, webrtc } from '../../internal/config/index.js'
-import { merge } from 'lodash'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import merge from 'lodash.merge'
 /**
  * @typedef Config
  * @property {string} apiKey - A string key for API authentication

@@ -89,7 +89,7 @@ export const createStream = async (initObject, parameters) => {
         description: parameters.description || '',
       },
     }).catch((error) => {
-      return error
+      throw error
     })
 
     if (fetchResponse && fetchResponse.code === 403) {
