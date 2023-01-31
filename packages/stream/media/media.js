@@ -44,6 +44,7 @@ const media = (() => {
   }
 
   /**
+   * Capture the MediaStream and return Media instance
    *
    * @param {MediaStreamConstraints} mediaConstraints - The media stream constraints
    * @returns {Promise<Media>} - Return a promise resolve to Media instance

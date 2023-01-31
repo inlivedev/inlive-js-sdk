@@ -1,4 +1,3 @@
-export { connection } from './connection/connection.js'
 export { createStream } from './create-stream/create-stream.js'
 export { endStream } from './end-stream/end-stream.js'
 export { getStreams } from './get-streams/get-streams.js'
