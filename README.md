@@ -86,11 +86,11 @@ const stream = InliveStream.getStream(inliveApp, streamID);
 Once you have the stream instance you can continue to this next step.
 
 #### Set the local media stream
-A media stream is a medium that contains the audio and video tracks captured from your webcam and microphone and will be streamed into your live stream as HLS or Dash format.
+A media stream is a medium that contains the audio and video tracks captured from your webcam and microphone and will be streamed into your live stream in HLS or Dash format.
 
-To set the media the user wants to use, you can use our `media` module. Currently, it consists of 2 methods:
-- `getUserMedia`To gets the local user media which will prompt the user to get user permission for camera and audio. This method is similar to [MediaDevices.](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
-- `attachMediaElement`: This will attach the media element required to display the camera from the user's device to the browser. We recommend using an HTML video element for the media element.
+To set the media the user wants to use, you can use our `media` module. To use  you only need to do these two steps:
+- `getUserMedia`To gets the local user media which will prompt the user to get user permission for camera and audio. This method is similar to [MediaDevices.](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia). It will return a Promise that will resolve to Media instance.
+- `media.attachTo(videoElement)`: This will attach the video element required to display the camera from the user's device to the browser. 
 
 ```js
 import { InliveStream } from '@inlivedev/inlive-js-sdk';
@@ -103,14 +103,11 @@ const mediaConstraints = {
   audio: true
 };
 
-const mediaStream = await InliveStream.media.getUserMedia(
+const media = await InliveStream.media.getUserMedia(
   mediaConstraints
 );
 
-const mediaElement = InliveStream.media.attachMediaElement(
-  videoElement,
-  mediaStream
-);
+media.attachTo(videoElement)
 ```
 
 #### Prepare a live-stream session
