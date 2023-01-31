@@ -107,7 +107,7 @@ const media = await InliveStream.media.getUserMedia(
   mediaConstraints
 );
 
-media.attachTo(videoElement)
+media.attachTo(videoElement);
 ```
 
 #### Prepare a live-stream session
@@ -123,7 +123,8 @@ You just need to wait for the promise to be resolved before continuing to the ne
 After the live stream session has been prepared, the live stream session needs to be initialized. This process initiates the WebRTC connection using the previous media stream that was requested.
 
 ```js
-await stream.init(mediaStream)
+// passing the media.stream that we captured before
+await stream.init(media.stream)
 ```
 
 The init method will be resolved once the WebRTC connection is connected. Once connected, we're ready to go live.
@@ -176,4 +177,4 @@ To see other stream events, check the [Stream class](packages/stream/stream.js)
 Please read our [contributing guide](CONTRIBUTING.md) for more information.
 
 ## Help
-If you're looking for help, you can [contact us](mailto:hello@inlive.app).
+If you're looking for help, you can [contact us](mailto:hello@inlive.app) or use our [Github discussion](https://github.com/orgs/inlivedev/discussions)
