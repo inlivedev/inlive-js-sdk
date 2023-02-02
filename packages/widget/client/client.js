@@ -1,6 +1,6 @@
 import { sse } from '../../internal/channel/channel.js'
 import { sse as sseConfig } from '../../internal/config/sse.js'
-import { InliveEvent } from '../../index.js'
+import { InliveEvent } from '../../event/index.js'
 import { makeWidgetElement } from '../element/element.js'
 
 /**

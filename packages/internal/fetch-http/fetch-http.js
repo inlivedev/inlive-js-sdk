@@ -35,6 +35,8 @@ export const fetchHttp = async (config = baseConfig) => {
 
   const options = {
     method: method || 'GET',
+    mode: 'cors',
+    referrerPolicy: 'origin-when-cross-origin',
     headers: {
       Authorization: token ? `Bearer ${token}` : '',
       'Content-Type': 'application/json',
@@ -84,7 +86,7 @@ export const fetchHttp = async (config = baseConfig) => {
     json = await response.json()
   } else {
     const text = await response.text()
-    json = { data: text }
+    json = text
   }
 
   return response.ok && response.status >= 200 && response.status < 300

@@ -12,31 +12,21 @@ import camelcaseKeys from 'camelcase-keys'
  * A get list of streams module based on the API Key (per project)
  *
  * @function
- * @param {InitializationInstance} initObject -- initialization object
+ * @param {InitializationInstance} initInstance -- initialization object
  * @returns {Promise<FetchResponse>} returns the restructured data which content status & list of streams data
  * @throws {Error}
  */
-export const getStreams = async (initObject) => {
-  if (!(initObject instanceof InitializationInstance)) {
+export const getStreams = async (initInstance) => {
+  if (initInstance.constructor.name !== InitializationInstance.name) {
     throw new TypeError(
       'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
     )
   } else {
-    const {
-      config: { apiKey, apiOrigin, apiVersion },
-    } = initObject
-
-    const baseUrl = `${
-      typeof apiOrigin != 'undefined' ? apiOrigin : Internal.config.api.baseUrl
-    }/${
-      typeof apiVersion != 'undefined'
-        ? apiVersion
-        : Internal.config.api.version
-    }`
+    const baseUrl = `${initInstance.config.api.baseUrl}/${initInstance.config.api.version}`
 
     let fetchResponse = await Internal.fetchHttp({
       url: `${baseUrl}/streams/`,
-      token: apiKey,
+      token: initInstance.config.apiKey,
       method: 'GET',
     }).catch((error) => {
       return error

@@ -1,28 +1,51 @@
 # InLive JavaScript SDK
-Inlive JavaScript SDK is the official JavaScript SDK client for developing a live streaming platform with [inLive](https://inlive.app) infrastructure.
+InLive JavaScript SDK is the official JavaScript SDK client for developing a live streaming platform with [inLive](https://inlive.app) infrastructure. It provides functionalities to interact with InLive live streaming API.
 
-## Prerequisites
+## Installation
+You have two installation options in order to use the InLive JavaScript SDK. You can either use a package manager to install the SDK or use the CDN links available.
 
-Before you run your project, please make sure that you have a package manager. We recommend you to use [NPM](https://www.npmjs.com/) which should already be installed alongside [Node.js](https://nodejs.org/en/).
+### Option 1: Install with package managers (recommended)
+You can install the InLive JavaScript SDK as a package using package managers such as [npm](https://www.npmjs.com/package/@inlivedev/inlive-js-sdk), [yarn](https://yarnpkg.com/package/@inlivedev/inlive-js-sdk), or [pnpm](https://pnpm.io). For most users, this is the recommended choice.
 
-You can verify if you have installed NPM by running this command in your terminal:
-```bash
-$ npm -v
-```
+**Install with npm**
 
-## How to Install
-You can install the InLive JavaScript SDK by running this command
 ```bash
 $ npm install @inlivedev/inlive-js-sdk
 ```
 
-## Usage
-InLive Javascript SDK consists of 2 main modules :
-- Live streaming module
-- Widget module (coming soon)
+The SDK package will be downloaded and installed. Then, you're ready to import it into your code.
 
-### Get Started
-To get started, the first thing you need to do is to initialize the SDK on your project. If you do not have any API Key, you can read [how to get an API Key](https://inlive.app/docs/getting-started/#get-an-application-key). Some modules required to pass the returned object from the SDK initialization.
+### Option 2: Use CDN links available
+The InLive JavaScript SDK is also available via CDN links.
+
+**Access via jsdelivr**
+
+Access the latest version.
+
+```bash
+https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk/dist/inlive-js-sdk.js
+```
+
+Access the specific version. You may change the version based on the release version number on GitHub.
+
+```bash
+https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@0.3.0/dist/inlive-js-sdk.js
+```
+
+The above links use [jsdelivr](https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@latest/). But you can also use any CDN that serves npm packages. Other alternatives are [unpkg](https://unpkg.com/browse/@inlivedev/inlive-js-sdk@latest/), and [jspm](https://jspm.dev/@inlivedev/inlive-js-sdk). You can also download the file and serve it yourself.
+
+Because the InLive JavaScript SDK relies on [ES modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) syntax, it can only be used inside the JavaScript module. For example, you can import the SDK from CDN like this
+
+```html
+<script type="module">
+  import { InliveStream } from 'https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk/dist/inlive-js-sdk.js'
+</script>
+```
+
+## Usage
+
+### Initialize the SDK
+To get started, the first thing you need to do is to initialize the SDK on your project. If you do not have an API Key, you can read [how to get an API Key](https://inlive.app/docs/getting-started/#get-an-application-key). Some modules are required to pass the returned object from the SDK initialization.
 
 ```js
 import { InliveApp } from '@inlivedev/inlive-js-sdk';
@@ -33,23 +56,15 @@ const inliveApp = InliveApp.init({
 ```
 
 ### Live Stream Module
-The live stream module can be imported in your project like this
+The live stream module can be imported into your project like this
 
 ```js
 import { InliveStream } from '@inlivedev/inlive-js-sdk';
 ```
 
-You will need to use the live stream module if you want to develop a live stream platform. The live stream module will help you to:
-1. Create a new live stream.
-2. Set local stream media and manage the client connection.
-3. Prepare a stream session.
-4. Initialize a stream session.
-5. Start a live stream session.
-6. Stop and end a live stream session.
-7. Get a specific live stream’s data based on the ID of the stream
-8. Get a list of live streams you have created
+using the live stream module is very simple. You just need to get the stream instance by creating a stream or getting an existing stream. Once you have the stream instance, you can just call the methods to go live or end the live stream. Let us show you below.
 
-#### Create a new live stream
+#### Create or get a stream instance
 You can create a new live stream by calling `createStream` module. You're required to pass the `inLiveApp` variable which is a returned value from the [SDK initialization step above](#get-started).
 
 ```js
@@ -58,14 +73,24 @@ const stream = InliveStream.createStream(inliveApp, {
  description: '', //optional
  slug: 'new-stream' //optional
 });
+
+console.log(stream.ID) // printed 1 as stream.ID generated in the API server when the stream succesfully created
 ```
 
-When the live stream has already created and you want to do a live streaming session, you need to do these steps
+The stream variable that you receive from `createStream` method is the stream instance. You only need to use this to go live. To get the stream instance from the stream that you created before you can do this with this code:
 
-#### Set the local stream media
-To set media the user want to use, you can use our `media` module. Currently it consists of 2 methods:
-- `getUserMedia`: To get the local user media which will prompt the user to get a user permission for camera and audio. This method is similar with [MediaDevices.getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
-- `attachMediaElement`: This will attach the media element required to display the camera from the user device to the browser. We recommend to use a HTML video element for the media element.
+```js
+const stream = InliveStream.getStream(inliveApp, streamID);
+```
+
+Once you have the stream instance you can continue to this next step.
+
+#### Set the local media stream
+A media stream is a medium that contains the audio and video tracks captured from your webcam and microphone and will be streamed into your live stream in HLS or Dash format.
+
+To set the media the user wants to use, you can use our `media` module. To use  you only need to do these two steps:
+- `getUserMedia`To gets the local user media which will prompt the user to get user permission for camera and audio. This method is similar to [MediaDevices.](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia). It will return a Promise that will resolve to Media instance.
+- `media.attachTo(videoElement)`: This will attach the video element required to display the camera from the user's device to the browser. 
 
 ```js
 import { InliveStream } from '@inlivedev/inlive-js-sdk';
@@ -78,149 +103,78 @@ const mediaConstraints = {
   audio: true
 };
 
-const mediaStream = await InliveStream.media.getUserMedia(
+const media = await InliveStream.media.getUserMedia(
   mediaConstraints
 );
 
-const mediaElement = InliveStream.media.attachMediaElement(
-  videoElement,
-  mediaStream
-);
+media.attachTo(videoElement);
 ```
 
-#### Manage the client connection
-
-You can manage the client connection by using our `connection` module.
-- First, you need to open the connection with our `open` method that will open all connections. Under the hood it will open webrtc connection and connection to the channel server. You can get the value of `mediaStream` and `mediaElement` by using our `media` module.
+#### Prepare a live-stream session
+A live stream session is needed to prepare first before you can start doing live streaming. You can use your previous stream instance to prepare by calling the `stream.prepare()` method.
 
 ```js
-// open all client connections
-const connection = await InliveStream.connection.open({
-  streamId,
-  mediaStream,
-  mediaElement
-});
+await stream.prepare()
 ```
 
-After you open the connection, it will expose other methods such as :
-- `getPeerConnection` method to check the current status of the peer connection between local and remote peer.
-- `close` method to close the all connections.
-- `connect` method to connect and established the connection after the live stream session is initialized and remote session description is received.
-- `on` method to listen to the event. However, you can also use our [event module](#event-module).
+You just need to wait for the promise to be resolved before continuing to the next step.
+
+#### Initialize a live-stream session
+After the live stream session has been prepared, the live stream session needs to be initialized. This process initiates the WebRTC connection using the previous media stream that was requested.
 
 ```js
-const peerConnection = connection.getPeerConnection();
-
-connection.on('stream:ready-to-start-event', () => {
-  // handle when the stream is ready to start
-});
-
-// remote session description is received when a live stream session is initialized
-connection.connect(remoteSessionDescription);
-
-// close all connections
-connection.close();
+// passing the media.stream that we captured before
+await stream.init(media.stream)
 ```
 
-After the client connection is opened, you need to prepare a live stream session and initialize a live stream session.
+The init method will be resolved once the WebRTC connection is connected. Once connected, we're ready to go live.
 
-#### Prepare a live stream session
-A live stream session is needed to prepare first before you can start doing live streaming. You can get the `streamId` when you are creating a new live stream. This returns a promise.
+#### Start a live-stream session
+You can start a live stream by using `stream.start()` method to start a live streaming session. This method will start the video encoding process and start uploading the Dash and HLS video segments to our CDN origin server.
 
 ```js
-await InliveStream.prepareStream(inliveApp, {
-  streamId: 1 //input streamId
-});
+  const manifests = await stream.start()
+
+  console.log(manifests) // ['dash' => 'https://.../manifest.mpd', 'hls' => 'https://.../master.m3u8']
 ```
 
-To listen when a live stream session has finished the preparation and the session is ready to be initialized, you can use the event module we have provided
+The start method will return a Dash manifest and HLS master playlist that you can use for any video player that supports those formats.
+
+#### End a live-stream session
+You can use `stream.end()` method to end the stream session. This returns a promise.
 
 ```js
-import { InliveEvent } from '@inlivedev/inlive-js-sdk';
-
-InliveEvent.subscribe('stream:ready-to-initialize-event', () => {
-  // handle when the live stream has finished preparing a stream session
-})
+await stream.end()
 ```
 
-#### Initialize a live stream session
-After the live stream session has prepared, the live stream session needs to be initialized. The `streamId` and `sessionDescription` are needed for inputs. You can get the `sessionDescription` by accessing the `localDescription` when you call the `getPeerConnection` method. This returns a promise.
-
-```js
-await InliveStream.initStream(inliveApp, {
-  streamId: 1,
-  // the local session description received from the getPeerConnection()
-  sessionDescription: peerConnection.localDescription
-});
-```
-
-
-#### Start a live stream session
-Yu can start a live stream by using `startStream` module to start a live streaming session. This returns a promise.
-
-```js
-await InliveStream.startStream(inliveApp, {
-  streamId: 1
-});
-```
-
-#### End a live stream session
-You can use `endStream` module to end the stream session. This returns a promise.
-
-```js
-await InliveStream.endStream(inliveApp, {
-  streamId: 1
-});
-```
-
-#### Get a specific live stream
-To get a spesific a live stream data, you can use `getStream` module. This will return a live stream data and consists of the live stream HLS or MPEG-DASH manifest URLs you can play using JavaScript player library such as [shaka player](https://github.com/shaka-project/shaka-player). This module doesn't require `inLiveApp` value from the SDK initialization step.
-
-```js
-const getStream = InliveStream.getStream(inliveApp, streamId);
-```
 
 #### Get a list of streams
 You can get to see the list of the streams that you've created by using the `getStreams` module.
 
 ```js
-const getStreams = InliveStream.getStreams(inliveApp);
+const streamList = InliveStream.getStreams(inliveApp)
 ```
 
-### Event Module
-To listen any event triggered by the SDK, you can listen those events by using the SDK event module.
+### Events
+To listen to any event triggered by the SDK, you can listen to those events after you have the stream instance. Use the `stream.on(eventType, callbackFunction)` to add event listener. For example, to listen to WebRTC-connected events, you can do this.
 
 ```js
-import { InliveEvent } from '@inlivedev/inlive-js-sdk';
+import { InliveStream,Stream } from '@inlivedev/inlive-js-sdk';
 
-const readyToInitializeEvent = InliveEvent.subscribe('stream:ready-to-initialize-event', () => {
-  // handle when the live stream has finished preparing a stream session
+// create stream instance
+const stream = InliveStream.createStream(inliveApp, {
+ name: 'a new stream', //required
+ description: '', //optional
+ slug: 'new-stream' //optional
 });
 
-const readyToStartEvent = InliveEvent.subscribe('stream:ready-to-start-event', () => {
-  // handle established connection after calling the connection.connect method
-});
-
-const iceConnectionStateChange = InliveEvent.subscribe('stream:ice-connection-state-change-event', (data) => {
-  // handle ice connection state change event
-  // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/iceConnectionState
-});
-
-InliveEvent.subscribe('stream:start-event', () => {
-  // handle live stream start event
-});
-
-InliveEvent.subscribe('stream:end-event', () => {
-  // handle live stream end event
-});
-
-// you can unsubscribe from those events
-readyToStartEvent.unsubscribe();
-iceConnectionStateChange.unsubscribe();
+stream.on(Stream.STATE_CONNECTED,() => console.log('Connected'))
 ```
+
+To see other stream events, check the [Stream class](packages/stream/stream.js)
 
 ## Contributing
 Please read our [contributing guide](CONTRIBUTING.md) for more information.
 
 ## Help
-If you're looking for help, you can [contact us](mailto:hello@inlive.app).
+If you're looking for help, you can [contact us](mailto:hello@inlive.app) or use our [Github discussion](https://github.com/orgs/inlivedev/discussions)

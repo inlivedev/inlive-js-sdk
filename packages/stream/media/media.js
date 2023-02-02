@@ -1,3 +1,37 @@
+/* media constructor */
+class Media {
+  /**
+   *
+   * @param {MediaStream} localStream - a media stream from getUserMedia()
+   */
+  constructor(localStream) {
+    /**
+     * The media stream
+     *
+     * @type {MediaStream}
+     * @public
+     */
+    this.stream = localStream
+  }
+
+  /**
+   * Attach media stream to video element
+   *
+   * @param {HTMLVideoElement} videoElement - a video element to attach the media stream
+   */
+  attachTo(videoElement) {
+    if (videoElement instanceof HTMLVideoElement) {
+      videoElement.srcObject = this.stream
+      videoElement.autoplay = true
+      videoElement.muted = true
+      videoElement.playsInline = true
+      videoElement.controls = false
+    } else {
+      throw new TypeError('Failed to process - input must be a video element')
+    }
+  }
+}
+
 const media = (() => {
   /** @type {MediaStreamConstraints} */
   const defaultMediaConstraints = {
@@ -10,8 +44,10 @@ const media = (() => {
   }
 
   /**
+   * Capture the MediaStream and return Media instance
    *
    * @param {MediaStreamConstraints} mediaConstraints - The media stream constraints
+   * @returns {Promise<Media>} - Return a promise resolve to Media instance
    */
   const getUserMedia = async (mediaConstraints = {}) => {
     const userMedia = await navigator.mediaDevices.getUserMedia({
@@ -20,31 +56,10 @@ const media = (() => {
       ...mediaConstraints,
     })
 
-    return userMedia
-  }
-
-  /**
-   *
-   * @param {HTMLVideoElement} videoElement - The HTML Video Element
-   * @param {MediaStream} mediaStream - The media stream object
-   * @returns {HTMLVideoElement} Returns the HTML video element
-   */
-  const attachMediaElement = (videoElement, mediaStream) => {
-    if (videoElement instanceof HTMLVideoElement) {
-      videoElement.srcObject = mediaStream
-      videoElement.autoplay = true
-      videoElement.muted = true
-      videoElement.playsInline = true
-      videoElement.controls = false
-
-      return videoElement
-    } else {
-      throw new TypeError('Failed to process - input must be a video element')
-    }
+    return new Media(userMedia)
   }
 
   return {
-    attachMediaElement,
     getUserMedia,
   }
 })()

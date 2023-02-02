@@ -12,6 +12,4 @@ const api = {
   version: 'v1',
 }
 
-Object.freeze(api)
-
 export { api }
