@@ -75,6 +75,21 @@ const stream = InliveStream.createStream(inliveApp, {
 });
 
 console.log(stream.ID) // printed 1 as stream.ID generated in the API server when the stream succesfully created
+
+```
+
+The stream variable that you receive from `createStream` method is the stream instance. You only need to use this to go live. To get the stream instance from the stream that you created before you can do this with this code:
+
+```js
+const stream = InliveStream.getStream(inliveApp, streamID);
+```
+
+Once you have the stream instance you can continue to this next step.
+
+#### Set the local media stream
+A media stream is a medium that contains the audio and video tracks captured from your webcam and microphone and will be streamed into your live stream in HLS or Dash format.
+
+=======
 ```
 
 The stream variable that you receive from `createStream` method is the stream instance. You only need to use this to go live. To get the stream instance from the stream that you created before you can do this with this code:
@@ -168,10 +183,11 @@ const stream = InliveStream.createStream(inliveApp, {
  slug: 'new-stream' //optional
 });
 
+
 stream.on(Stream.STATE_CONNECTED,() => console.log('Connected'))
 ```
 
-Available stream events are:
+Other available stream events are:
 * `Stream.READY` can be used for listening if we already able to call `stream.init()`
 * `Stream.STARTED` can be used on viewer page to replace bumper image with played video
 * `Stream.ENDED` can be used to stop the video player and tell the viewer that the stream is ended
@@ -180,14 +196,7 @@ Available stream events are:
   ```js
   stream.on(Stream.STATECHANGED,e => console.log(e.state))
   ```
-```js
-static READY = 'streamReady'
-static STARTED = 'streamStarted'
-static ENDED = 'streamEnded'
-static ERROR = 'streamError'
-static STATECHANGED = 'stateChanged'
-```
- 
+
 
 ## Contributing
 Please read our [contributing guide](CONTRIBUTING.md) for more information.

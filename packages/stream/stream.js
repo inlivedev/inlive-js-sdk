@@ -354,7 +354,6 @@ export class Stream {
         case 'closed':
           this.changeState(Stream.STATE_ENDED)
           break
-        case 'failed':
           this.changeState(Stream.STATE_FAILED)
           break
         default:
@@ -390,7 +389,7 @@ export class Stream {
       // the prepare method is not called
       await this.prepare()
     }
-
+    
     this.mediaStream = mediaStream
     this.peerConnection = webrtc.openConnection()
 
