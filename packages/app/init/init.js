@@ -22,29 +22,27 @@ export function InitializationInstance(config) {
  * Initialize an initialization instance
  *
  * @function
- * @param {Config} config - A set of key/value parameter configuration
+ * @param {Config=} config - A set of key/value parameter configuration
  * @returns {InitializationInstance} InitializationInstance that contains config object of apiKey
  * @throws {Error}
  */
 const init = (config) => {
-  if (!config || config.apiKey === undefined) {
-    throw new Error(
-      'Failed to process because the API key is not provided. Please provide an API key.'
-    )
-  } else if (typeof config.apiKey !== 'string') {
-    throw new TypeError(
-      'Failed to process because the API key is not in a valid string format. API key must be in a string format'
-    )
-  } else if (config.apiKey.trim().length === 0) {
-    throw new Error(
-      'Failed to process because the API key field is an empty string. Please provide an API key.'
-    )
-  }
-
   const defaultConfig = {
-    apiKey: config.apiKey,
+    apiKey: '',
     api: api,
     webrtc: webrtc,
+  }
+
+  if (config !== undefined && config.apiKey !== undefined) {
+    if (typeof config.apiKey !== 'string') {
+      throw new TypeError(
+        'Failed to process because the API key is not in a valid string format. API key must be in a string format'
+      )
+    } else if (config.apiKey.trim().length === 0) {
+      throw new Error(
+        'Failed to process because the API key field is an empty string. Please provide an API key.'
+      )
+    }
   }
 
   merge(defaultConfig, config)
