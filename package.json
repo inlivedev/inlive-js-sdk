@@ -1,6 +1,6 @@
 {
   "name": "@inlivedev/inlive-js-sdk",
-  "version": "0.4.1-rc1",
+  "version": "0.4.2",
   "description": "InLive JavaScript SDK",
   "keywords": [],
   "license": "MIT",
@@ -61,9 +61,10 @@
   },
   "dependencies": {
     "camelcase-keys": "^8.0.2",
-    "lit": "^2.4.1",
+    "lit": "^2.6.1",
     "lodash-es": "^4.17.21",
     "node-fetch": "3.2.10",
+    "shaka-player": "^4.3.4",
     "snakecase-keys": "^5.4.4"
   },
   "engines": {

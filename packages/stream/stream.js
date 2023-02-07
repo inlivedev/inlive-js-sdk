@@ -23,8 +23,8 @@ const { webrtc } = Internal
 
 /**
  * @typedef Manifests
- * @property {string} hls
- * @property {string} dash
+ * @property {string} hls - hls master playlist
+ * @property {string} dash - dash manifest
  */
 
 /*  Class representing a Stream. */
@@ -42,7 +42,7 @@ export class Stream {
   static STATE_DISCONNECTED = 'disconnected'
   static STATE_READY = 'ready'
   static STATE_LIVE = 'live'
-  static STATE_ERROR = 'error'
+  static STATE_FAILED = 'failed'
   static STATE_ENDED = 'ended'
 
   /**
@@ -240,10 +240,9 @@ export class Stream {
    * @param {object }data - Data to pass into event handler
    */
   dispatchEvent(eventName, data) {
-    console.log('event dispatched', eventName, data)
     if (!(eventName in this.eventHandlers)) {
       throw new Error(
-        'Unknown event, available events are streamStarted|streamEnded|streamError|iceCandidate'
+        'Unknown event, available events are Stream.READY|Stream.STARTED|Stream.ENDED|Stream.ERROR|Stream.STATECHANGED'
       )
     }
 
@@ -253,10 +252,15 @@ export class Stream {
   }
 
   /**
+   * @callback eventHandler
+   * @param {object=} data - Data to pass into event handler
+   */
+
+  /**
    * Add event handler to specific event
    *
    * @param {string} eventName - Name of event to listen
-   * @param {Function} handlerFunction  - function to handle the event
+   * @param {eventHandler} handlerFunction  - function to handle the event
    */
   on(eventName, handlerFunction) {
     if (typeof this.eventHandlers[eventName] === 'undefined') {
@@ -351,7 +355,7 @@ export class Stream {
           this.changeState(Stream.STATE_ENDED)
           break
         case 'failed':
-          this.changeState(Stream.STATE_ERROR)
+          this.changeState(Stream.STATE_FAILED)
           break
         default:
           break
@@ -382,6 +386,11 @@ export class Stream {
    * @todo need to refactor because sometimes the ice event arrive before the answer is added. Maybe need to wait the answer first but make sure we're not lost all the ice candidates.
    */
   async init(mediaStream) {
+    if (this.state === Stream.STATE_NEW) {
+      // the prepare method is not called
+      await this.prepare()
+    }
+
     this.mediaStream = mediaStream
     this.peerConnection = webrtc.openConnection()
 
@@ -393,21 +402,33 @@ export class Stream {
     const offer = await this.peerConnection.createOffer()
     await this.peerConnection.setLocalDescription(offer)
 
+    const waitConnected = new Promise((resolve, reject) => {
+      this.on(Stream.STATECHANGED, (event_) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        if (event_.state === Stream.STATE_CONNECTED) {
+          resolve(true)
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+        } else if (event_.state === Stream.STATE_FAILED) {
+          reject(false)
+        }
+      })
+
+      this.on(Stream.ERROR, () => reject(false))
+    })
+
     const parameters = {
       streamId: this.id,
       sessionDescription: this.peerConnection.localDescription,
     }
+
     const resp = await initStream(this.app, parameters)
 
     this.peerConnection.setRemoteDescription(resp.data)
 
     this.addPendingIceCandidates()
 
-    const waitConnected = new Promise((resolve, reject) => {
-      this.on(Stream.STATE_CONNECTED, () => resolve(true))
-
-      this.on(Stream.ERROR, () => reject(false))
-    })
     return waitConnected
   }
 

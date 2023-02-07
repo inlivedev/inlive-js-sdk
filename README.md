@@ -171,7 +171,23 @@ const stream = InliveStream.createStream(inliveApp, {
 stream.on(Stream.STATE_CONNECTED,() => console.log('Connected'))
 ```
 
-To see other stream events, check the [Stream class](packages/stream/stream.js)
+Available stream events are:
+* `Stream.READY` can be used for listening if we already able to call `stream.init()`
+* `Stream.STARTED` can be used on viewer page to replace bumper image with played video
+* `Stream.ENDED` can be used to stop the video player and tell the viewer that the stream is ended
+* `Stream.ERROR` can be used to inform viewer if there is an issue with the streaming
+* `Stream.STATECHANGED` can be used to know the WebRTC connection state, it also provide the connection state through `event.state` property. So you can use it like this:
+  ```js
+  stream.on(Stream.STATECHANGED,e => console.log(e.state))
+  ```
+```js
+static READY = 'streamReady'
+static STARTED = 'streamStarted'
+static ENDED = 'streamEnded'
+static ERROR = 'streamError'
+static STATECHANGED = 'stateChanged'
+```
+ 
 
 ## Contributing
 Please read our [contributing guide](CONTRIBUTING.md) for more information.
