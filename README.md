@@ -29,7 +29,7 @@ https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk/dist/inlive-js-sdk.js
 Access the specific version. You may change the version based on the release version number on GitHub.
 
 ```bash
-https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@0.3.0/dist/inlive-js-sdk.js
+https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@0.4.3/dist/inlive-js-sdk.js
 ```
 
 The above links use [jsdelivr](https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk@latest/). But you can also use any CDN that serves npm packages. Other alternatives are [unpkg](https://unpkg.com/browse/@inlivedev/inlive-js-sdk@latest/), and [jspm](https://jspm.dev/@inlivedev/inlive-js-sdk). You can also download the file and serve it yourself.
@@ -68,7 +68,7 @@ using the live stream module is very simple. You just need to get the stream ins
 You can create a new live stream by calling `createStream` module. You're required to pass the `inLiveApp` variable which is a returned value from the [SDK initialization step above](#get-started).
 
 ```js
-const stream = InliveStream.createStream(inliveApp, {
+const stream = await InliveStream.createStream(inliveApp, {
  name: 'a new stream', //required
  description: '', //optional
  slug: 'new-stream' //optional
@@ -81,7 +81,7 @@ console.log(stream.ID) // printed 1 as stream.ID generated in the API server whe
 The stream variable that you receive from `createStream` method is the stream instance. You only need to use this to go live. To get the stream instance from the stream that you created before you can do this with this code:
 
 ```js
-const stream = InliveStream.getStream(inliveApp, streamID);
+const stream = await InliveStream.getStream(inliveApp, streamID);
 ```
 
 Once you have the stream instance you can continue to this next step.
@@ -95,7 +95,7 @@ A media stream is a medium that contains the audio and video tracks captured fro
 The stream variable that you receive from `createStream` method is the stream instance. You only need to use this to go live. To get the stream instance from the stream that you created before you can do this with this code:
 
 ```js
-const stream = InliveStream.getStream(inliveApp, streamID);
+const stream = await InliveStream.getStream(inliveApp, streamID);
 ```
 
 Once you have the stream instance you can continue to this next step.
@@ -167,7 +167,7 @@ await stream.end()
 You can get to see the list of the streams that you've created by using the `getStreams` module.
 
 ```js
-const streamList = InliveStream.getStreams(inliveApp)
+const streamList = await InliveStream.getStreams(inliveApp)
 ```
 
 ### Events
@@ -177,7 +177,7 @@ To listen to any event triggered by the SDK, you can listen to those events afte
 import { InliveStream,Stream } from '@inlivedev/inlive-js-sdk';
 
 // create stream instance
-const stream = InliveStream.createStream(inliveApp, {
+const stream = await InliveStream.createStream(inliveApp, {
  name: 'a new stream', //required
  description: '', //optional
  slug: 'new-stream' //optional
