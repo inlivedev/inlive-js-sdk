@@ -95,7 +95,7 @@ A media stream is a medium that contains the audio and video tracks captured fro
 The stream variable that you receive from `createStream` method is the stream instance. You only need to use this to go live. To get the stream instance from the stream that you created before you can do this with this code:
 
 ```js
-const stream = InliveStream.getStream(inliveApp, streamID);
+const stream = await InliveStream.getStream(inliveApp, streamID);
 ```
 
 Once you have the stream instance you can continue to this next step.
