@@ -16,11 +16,11 @@
 const webrtc = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    // {
-    //   urls: 'turn:34.101.37.212:3478',
-    //   username: 'username',
-    //   credential: 'password',
-    // },
+    {
+      urls: 'turn:turn.inlive.app:3478',
+      username: 'inlive',
+      credential: 'inlivesdkturn',
+    },
   ],
 }
 
