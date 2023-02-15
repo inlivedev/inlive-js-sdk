@@ -410,7 +410,10 @@ export class Stream {
       this.on(Stream.STATECHANGED, (event_) => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        if (event_.state === Stream.STATE_CONNECTED) {
+        if (
+          event_.state === Stream.STATE_CONNECTED ||
+          event_.state === Stream.STATE_COMPLETED
+        ) {
           resolve(true)
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
