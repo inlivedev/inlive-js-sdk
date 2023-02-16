@@ -486,7 +486,7 @@ export class Stream {
       this.state !== Stream.STATE_COMPLETED
     ) {
       throw new Error(
-        'The live function is called before the state change to connected/completed. Use stream.on(Stream.STATE_CONNECTED,()=>...) to know when the connection is ready for live.'
+        'The live function is called before the state change to connected/completed. Use stream.on(Stream.STATECHANGED,(ev) => if(ev.state ===Stream.STATE_COMPLETED || ev.state ===Stream.STATE_CONNECTED){...}) to know when the connection is ready for live.'
       )
     }
 
