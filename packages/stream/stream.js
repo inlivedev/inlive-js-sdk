@@ -482,7 +482,7 @@ export class Stream {
    */
   async live() {
     if (
-      this.state !== Stream.STATE_CONNECTED ||
+      this.state !== Stream.STATE_CONNECTED &&
       this.state !== Stream.STATE_COMPLETED
     ) {
       throw new Error(

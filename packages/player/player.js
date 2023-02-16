@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // import { shaka } from 'shaka-player/dist/shaka-player.ui.js'
-import * as shaka from 'shaka-player'
+import shaka from 'shaka-player'
 import { html, css, LitElement } from 'lit'
 
 /**
@@ -21,12 +21,15 @@ export class InlivePlayer extends LitElement {
     }
   `
 
+  static properties = {
+    src: { type: String },
+  }
+
   /**
    *
    */
   constructor() {
     super()
-
     this.src = ''
     this.config = {
       player: {
@@ -41,25 +44,23 @@ export class InlivePlayer extends LitElement {
   }
 
   /**
-   * Callback to be invoked when attribute is changed
+   * Callback to be invoked when a property changes
    *
-   * @param {string} name - attribute name
-   * @param {string} oldValue - old value
-   * @param {string} newValue - new value
+   * @param changedProperties - the property that changes
    */
-  attributeChangedCallback(name, oldValue, newValue) {
-    console.log(name, newValue)
-    super.attributeChangedCallback(name, oldValue, newValue)
-    if (name === 'src' && newValue !== oldValue) {
-      this.loadManifest()
+  updated(changedProperties) {
+    if (changedProperties.has('src')) {
+      const oldValue = changedProperties.get('src')
+      if (this.src !== oldValue && this.src.length > 0) {
+        this.loadManifest()
+      }
     }
   }
 
   /**
-   * Callback to be invoked when element is connected to the DOM
+   * Called after the component's DOM has been updated the first time
    */
-  connectedCallback() {
-    super.connectedCallback()
+  firstUpdated() {
     this.init()
   }
 
