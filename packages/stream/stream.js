@@ -39,6 +39,7 @@ export class Stream {
   static STATE_NEW = 'new'
   static STATE_CONNECTING = 'connecting'
   static STATE_CONNECTED = 'connected'
+  static STATE_COMPLETED = 'completed'
   static STATE_DISCONNECTED = 'disconnected'
   static STATE_READY = 'ready'
   static STATE_LIVE = 'live'
@@ -338,15 +339,18 @@ export class Stream {
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    this.peerConnection.addEventListener('connectionstatechange', () => {
+    this.peerConnection.addEventListener('iceconnectionstatechange', () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      switch (this.peerConnection.connectionState) {
+      switch (this.peerConnection.iceConnectionState) {
         case 'new':
           this.changeState(Stream.STATE_CONNECTING)
           break
         case 'connected':
           this.changeState(Stream.STATE_CONNECTED)
+          break
+        case 'completed':
+          this.changeState(Stream.STATE_COMPLETED)
           break
         case 'disconnected':
           this.changeState(Stream.STATE_DISCONNECTED)
@@ -354,6 +358,7 @@ export class Stream {
         case 'closed':
           this.changeState(Stream.STATE_ENDED)
           break
+        case 'failed':
           this.changeState(Stream.STATE_FAILED)
           break
         default:
@@ -389,7 +394,7 @@ export class Stream {
       // the prepare method is not called
       await this.prepare()
     }
-    
+
     this.mediaStream = mediaStream
     this.peerConnection = webrtc.openConnection()
 
@@ -405,7 +410,10 @@ export class Stream {
       this.on(Stream.STATECHANGED, (event_) => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        if (event_.state === Stream.STATE_CONNECTED) {
+        if (
+          event_.state === Stream.STATE_CONNECTED ||
+          event_.state === Stream.STATE_COMPLETED
+        ) {
           resolve(true)
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -473,9 +481,12 @@ export class Stream {
    * Start the live streaming
    */
   async live() {
-    if (this.state !== Stream.STATE_CONNECTED) {
+    if (
+      this.state !== Stream.STATE_CONNECTED &&
+      this.state !== Stream.STATE_COMPLETED
+    ) {
       throw new Error(
-        "The live function is called before the state change to connected. Use stream.on('connected',()=>...) to know when the connection is ready for live."
+        'The live function is called before the state change to connected/completed. Use stream.on(Stream.STATECHANGED,(ev) => if(ev.state ===Stream.STATE_COMPLETED || ev.state ===Stream.STATE_CONNECTED){...}) to know when the connection is ready for live.'
       )
     }
 

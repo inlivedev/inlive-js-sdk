@@ -62,6 +62,20 @@ const config = [
     },
   },
   {
+    input: 'packages/player/player.js',
+    output: {
+      file: 'dist/player.js',
+      format: 'es',
+      sourcemap: true,
+    },
+    plugins: plugins,
+    external: external,
+    watch: {
+      include: 'packages/player/**',
+      exclude: 'packages/player/**/*.test.js',
+    },
+  },
+  {
     input: 'packages/index.js',
     output: [
       {
