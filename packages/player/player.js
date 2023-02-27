@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-// import { shaka } from 'shaka-player/dist/shaka-player.ui.js'
+/*@ts-ignore */
 import shaka from 'shaka-player'
 import { html, css, LitElement } from 'lit'
+import snakecaseKeys from 'snakecase-keys'
+import { Internal } from '../internal/index.js'
+
+const { fetchHttp, config, uuidv4 } = Internal
 
 /**
  * @class InlivePlayer
@@ -23,6 +27,10 @@ export class InlivePlayer extends LitElement {
 
   static properties = {
     src: { type: String },
+    muted: { type: Boolean },
+    autoplay: { type: Boolean },
+    playsinline: { type: Boolean },
+    counter: { state: true },
   }
 
   /**
@@ -31,6 +39,12 @@ export class InlivePlayer extends LitElement {
   constructor() {
     super()
     this.src = ''
+    this.muted = false
+    this.autoplay = false
+    this.playsinline = false
+    this.video = null
+    this.player = null
+    this.counter = 0
     this.config = {
       player: {
         streaming: {
@@ -38,22 +52,11 @@ export class InlivePlayer extends LitElement {
           lowLatencyMode: true,
           inaccurateManifestTolerance: 0,
           rebufferingGoal: 0.01,
+          stallEnabled: true,
+          stallThreshold: 1000,
+          stallSkip: 0,
         },
       },
-    }
-  }
-
-  /**
-   * Callback to be invoked when a property changes
-   *
-   * @param changedProperties - the property that changes
-   */
-  updated(changedProperties) {
-    if (changedProperties.has('src')) {
-      const oldValue = changedProperties.get('src')
-      if (this.src !== oldValue && this.src.length > 0) {
-        this.loadManifest()
-      }
     }
   }
 
@@ -65,16 +68,28 @@ export class InlivePlayer extends LitElement {
   }
 
   /**
+   * Callback to be invoked when a property changes
+   *
+   * @param {import('lit').PropertyValues} changedProperties - the property that changes
+   */
+  updated(changedProperties) {
+    if (changedProperties.has('src')) {
+      const oldValue = changedProperties.get('src')
+      if (this.src !== oldValue && this.src.length > 0) {
+        this.loadManifest()
+      }
+    }
+  }
+
+  /**
    *
    */
   init() {
     shaka.polyfill.installAll()
-    // Check to see if the browser supports the basic APIs Shaka needs.
+
     if (shaka.Player.isBrowserSupported()) {
-      // Everything looks good!
       this.initPlayer()
     } else {
-      // This browser does not have the minimum set of APIs we need.
       console.error('Browser not supported!')
     }
   }
@@ -83,32 +98,323 @@ export class InlivePlayer extends LitElement {
    * init Shaka player and configure it
    */
   initPlayer() {
-    // Create a Player instance.
-    // @ts-ignore
-    this.video = this.shadowRoot.querySelector('video')
-    this.player = new shaka.Player(this.video)
-    this.player.configure(this.config.player)
+    this.video = this.renderRoot.querySelector('video')
 
-    // Listen for error events.
-    this.player.addEventListener('error', (event_) => {
-      console.log(event_)
-    })
+    if (this.video instanceof HTMLVideoElement) {
+      this.video.autoplay = this.autoplay
+      this.video.muted = this.muted
+      this.video.playsInline = this.playsinline
+
+      this.player = new shaka.Player(this.video)
+      this.player.configure(this.config.player)
+
+      console.log('player', this.player)
+
+      this.attachListener()
+    } else {
+      throw new TypeError('Element is not a valid video element')
+    }
   }
 
   /**
    *    Load a manifest into the player
    */
   async loadManifest() {
-    // Try to load a manifest.
-    // This is an asynchronous process.
     try {
-      await this.player.load(this.src)
-      // This runs if the asynchronous load is successful.
-      console.log('The video has now been loaded!')
+      this.player.load(this.src)
     } catch (error) {
-      // onError is executed if the asynchronous load fails.
       console.log(error)
     }
+  }
+
+  /**
+   * Attach listeners
+   */
+  attachListener() {
+    const networkingEngine = this.player.getNetworkingEngine()
+
+    networkingEngine.registerResponseFilter(
+      /**
+       * @param {number} type - The request type
+       * @param {Object<string, any>} response - The response object. This includes the response data and header info
+       */
+      (type, response) => {
+        if (type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
+          const stats = this.player.getStats()
+
+          const segmentBitrate = this.getSegmentBitrate(
+            response.data.byteLength,
+            stats.maxSegmentDuration
+          )
+
+          const liveLatencyInSeconds = stats.liveLatency
+          const liveLatencyInMs = liveLatencyInSeconds * 1000
+
+          const bufferedInfo = this.player.getBufferedInfo()
+          const bufferedTotal = bufferedInfo.total
+
+          let newestBuffer = 0
+
+          for (const buffer of bufferedTotal) {
+            newestBuffer = Math.max(newestBuffer, buffer.end)
+          }
+
+          const eventData = {
+            event: {
+              name: 'segmentDownloaded',
+              data: {
+                segmentFile: this.getSegmentId(response.uri),
+                bufferLevel: newestBuffer - (this.video?.currentTime || 0),
+                liveLatency: liveLatencyInMs,
+                segmentBitrate: segmentBitrate,
+              },
+            },
+          }
+
+          this.sendReport(eventData)
+        }
+      }
+    )
+
+    this.player.addEventListener('loaded', () => {
+      const stats = this.player.getStats()
+
+      const eventData = {
+        event: {
+          name: 'loadedEvent',
+          data: {
+            selectedBitrate: this.bitToKb(stats.streamBandwidth),
+            manifestTime: stats.manifestTimeSeconds,
+          },
+        },
+      }
+
+      this.sendReport(eventData)
+    })
+
+    this.player.addEventListener(
+      'stalldetected',
+      /** @param {Object<string, any>} event - stalldetected event object */
+      (event) => {
+        console.log('stalldetected', event)
+
+        const stats = this.player.getStats()
+
+        const eventData = {
+          event: {
+            name: 'stallEvent',
+            data: {
+              selectedBitrate: this.bitToKb(stats.streamBandwidth),
+              estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
+              // stallDuration: 23,
+            },
+          },
+        }
+
+        this.sendReport(eventData)
+      }
+    )
+
+    this.video &&
+      this.video.addEventListener('canplaythrough', (event) => {
+        console.log('canplaythrough video', event)
+      })
+
+    this.video &&
+      this.video.addEventListener('stalled', (event) => {
+        console.log('stalled video', event)
+      })
+
+    this.player.addEventListener('adaptation', () => {
+      const stats = this.player.getStats()
+
+      const eventData = {
+        event: {
+          name: 'adaptationEvent',
+          data: {
+            selectedBitrate: this.bitToKb(stats.streamBandwidth),
+            estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
+          },
+        },
+      }
+
+      this.sendReport(eventData)
+    })
+
+    // this.player.addEventListener('buffering', (event) => {
+    //   console.log('buffering', event)
+    // })
+
+    // this.player.addEventListener('abrstatuschanged', (event) => {
+    //   console.log('abrstatuschanged', event)
+    // })
+
+    this.player.addEventListener(
+      'error',
+      /** @param {Object<string, any>} event - Error event object */
+      (event) => {
+        const { detail } = event
+
+        const eventData = {
+          event: {
+            name: 'errorEvent',
+            data: {
+              code: detail.code,
+            },
+          },
+        }
+
+        this.sendReport(eventData)
+      }
+    )
+  }
+
+  /**
+   *
+   * @param {number} bits - Number of bits provided
+   * @returns {number} kb - Returns the number of kilobytes from the provided bits
+   */
+  bitToKb(bits) {
+    return bits / 8 / 1000
+  }
+
+  /**
+   *
+   * @param {number} bytes - Number of bytes provided
+   * @returns {number} bit - Returns the number of bits from the provided bytes
+   */
+  byteToBit(bytes) {
+    return bytes * 8
+  }
+
+  /**
+   * Get the base URL of API endpoint
+   *
+   * @returns {string} baseURL - return string of API base URL
+   */
+  getBaseUrl() {
+    return `${config.api.baseUrl}/${config.api.version}`
+  }
+
+  /**
+   * Get the ID of the stream from manifest URL
+   *
+   * @param {string} source - Manifest URL source
+   * @returns {number} streamId - The ID of the stream from manifest URL
+   */
+  getStreamId(source) {
+    if (typeof source !== 'string' || source.trim().length === 0) return 0
+
+    const splitUrl = source.split('/')
+    const streamId = Number.parseInt(splitUrl[splitUrl.length - 2], 10)
+
+    return !Number.isNaN(streamId) ? streamId : 0
+  }
+
+  /**
+   * Generate a client ID
+   *
+   * @returns {string} clientId - A client ID
+   */
+  generateClientId() {
+    return uuidv4()
+  }
+
+  /**
+   *
+   * @returns {number} elapsedTime - Live stream elapsed time in seconds
+   */
+  getElapsedTime() {
+    if (this.video instanceof HTMLVideoElement) {
+      return this.video.currentTime
+    }
+
+    return 0
+  }
+
+  /**
+   * Get the ID of the segment from segment URI loaded
+   *
+   * @param {string} segmentURI - The segment URI
+   * @returns {number} segmentId - The ID of the segment based on the segment URI
+   */
+  getSegmentId(segmentURI) {
+    const fileSegment = this.getFileNameWithoutExtension(segmentURI)
+
+    if (fileSegment.indexOf('init') === 0) {
+      console.log(`fileSegment.indexOf('init')`, fileSegment.indexOf('init'))
+    } else if (fileSegment.indexOf('chunk') === 0) {
+      console.log(`fileSegment.indexOf('chunk')`, fileSegment.indexOf('chunk'))
+    }
+
+    const sliceResult = fileSegment.slice(
+      Math.max(0, fileSegment.lastIndexOf('-') + 1)
+    )
+    const segmentId = Number.parseInt(sliceResult, 10)
+    return !Number.isNaN(segmentId) ? segmentId : 0
+  }
+
+  /**
+   *
+   * @param {number} segmentSizeInByte - The size of the segment in byte
+   * @param {number} segmentDurationInSeconds - The segment duration in seconds
+   * @returns {number} kilobit/sec - Returns the segment bitrate in kilobit/sec
+   */
+  getSegmentBitrate(segmentSizeInByte, segmentDurationInSeconds) {
+    const segmentSizeInBit = this.byteToBit(segmentSizeInByte)
+    const bitPerSec = segmentSizeInBit / segmentDurationInSeconds
+    const kilobitPerSec = bitPerSec / 1000
+    return Math.floor(kilobitPerSec)
+  }
+
+  /**
+   *
+   * @param {string} fileURI - The URI of the file
+   * @returns {string} fileName - Returns the file name without extension based on the URI of the file
+   */
+  getFileNameWithoutExtension(fileURI) {
+    if (typeof fileURI !== 'string' || fileURI.trim().length === 0) {
+      return ''
+    }
+
+    return fileURI.slice(
+      Math.max(0, fileURI.lastIndexOf('/') + 1),
+      Math.min(fileURI.length, fileURI.lastIndexOf('.'))
+    )
+  }
+
+  /**
+   * Get the report URL of API endpoint
+   *
+   * @returns {string} reportUrl - return string of API report URL
+   */
+  getReportUrl() {
+    return `${this.getBaseUrl()}/stream/${this.getStreamId(this.src)}/report`
+  }
+
+  /**
+   *
+   * @param {Object<string, any>} event - The object which describes the event and the related data to the event
+   */
+  sendReport(event) {
+    const body = {
+      clientId: this.generateClientId(),
+      elapsedTime: this.getElapsedTime(),
+      clientTime: Date.now(),
+      streamId: this.getStreamId(this.src),
+      event: event,
+    }
+
+    // remove this return when the endpoint is ready
+    return
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    /*@ts-ignore */
+    /* eslint-disable-next-line no-unreachable */
+    fetchHttp({
+      url: this.getReportUrl(),
+      method: 'POST',
+      body: snakecaseKeys(body),
+    })
   }
 
   /**
@@ -117,7 +423,7 @@ export class InlivePlayer extends LitElement {
    * @returns {import('lit').TemplateResult} - html template
    */
   render() {
-    return html` <video controls autoplay></video> `
+    return html`<video controls></video>`
   }
 }
 
