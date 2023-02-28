@@ -140,44 +140,70 @@ export class InlivePlayer extends LitElement {
        */
       (type, response) => {
         if (type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
-          const stats = this.player.getStats()
+          const fileName = this.getFileName(response.uri)
 
-          const segmentBitrate = this.getSegmentBitrate(
-            response.data.byteLength,
-            stats.maxSegmentDuration
-          )
+          if (fileName.indexOf('chunk') === 0) {
+            const segmentPerformance = window.performance.getEntriesByName(
+              response.uri,
+              'resource'
+            )
 
-          const liveLatencyInSeconds = stats.liveLatency
-          const liveLatencyInMs = liveLatencyInSeconds * 1000
+            const loadTimeInMs = segmentPerformance[0]?.duration
 
-          const bufferedInfo = this.player.getBufferedInfo()
-          const bufferedTotal = bufferedInfo.total
+            const manifestExtension = this.getFileExtension(this.src)
 
-          let newestBuffer = 0
+            let manifestFormat
 
-          for (const buffer of bufferedTotal) {
-            newestBuffer = Math.max(newestBuffer, buffer.end)
-          }
+            if (manifestExtension === 'mpd') {
+              manifestFormat = 'DASH'
+            } else if (manifestExtension === 'm3u8') {
+              manifestFormat = 'HLS'
+            }
 
-          const eventData = {
-            event: {
-              name: 'segmentDownloaded',
-              data: {
-                segmentFile: this.getSegmentId(response.uri),
-                bufferLevel: newestBuffer - (this.video?.currentTime || 0),
-                liveLatency: liveLatencyInMs,
-                segmentBitrate: segmentBitrate,
+            const stats = this.player.getStats()
+
+            const segmentBitrate = this.getSegmentBitrate(
+              response.data.byteLength,
+              stats.maxSegmentDuration
+            )
+
+            const liveLatencyInSeconds = stats.liveLatency
+            const liveLatencyInMs = liveLatencyInSeconds * 1000
+
+            const bufferedInfo = this.player.getBufferedInfo()
+            const bufferedTotal = bufferedInfo.total
+
+            let newestBuffer = 0
+
+            for (const buffer of bufferedTotal) {
+              newestBuffer = Math.max(newestBuffer, buffer.end)
+            }
+
+            const eventData = {
+              event: {
+                name: 'segmentDownloaded',
+                data: {
+                  type: manifestFormat,
+                  segmentFile: this.getSegmentNumber(fileName).segmentNumber,
+                  representationID:
+                    this.getSegmentNumber(fileName).representationId,
+                  bufferLevel: newestBuffer - (this.video?.currentTime || 0),
+                  liveLatency: liveLatencyInMs,
+                  segmentBitrate: segmentBitrate,
+                  downloadTime: loadTimeInMs,
+                },
               },
-            },
-          }
+            }
 
-          this.sendReport(eventData)
+            this.sendReport(eventData)
+          }
         }
       }
     )
 
     this.player.addEventListener('loaded', () => {
       const stats = this.player.getStats()
+      this.getSegmentNumber('sss')
 
       const eventData = {
         event: {
@@ -333,25 +359,31 @@ export class InlivePlayer extends LitElement {
   }
 
   /**
-   * Get the ID of the segment from segment URI loaded
+   * Get the ID of the segment
    *
    * @param {string} segmentURI - The segment URI
-   * @returns {number} segmentId - The ID of the segment based on the segment URI
+   * @returns {{
+   *  segmentNumber: string,
+   *  representationId: number
+   * }} Returns an object contains the number inside of the segment
    */
-  getSegmentId(segmentURI) {
-    const fileSegment = this.getFileNameWithoutExtension(segmentURI)
+  getSegmentNumber(segmentURI) {
+    const fileNameWithoutExtension =
+      this.getFileNameWithoutExtension(segmentURI)
 
-    if (fileSegment.indexOf('init') === 0) {
-      console.log(`fileSegment.indexOf('init')`, fileSegment.indexOf('init'))
-    } else if (fileSegment.indexOf('chunk') === 0) {
-      console.log(`fileSegment.indexOf('chunk')`, fileSegment.indexOf('chunk'))
+    const splitFileName = fileNameWithoutExtension.split('-')
+    const segmentNumber = splitFileName[splitFileName.length - 1]
+    const representationId = Number.parseInt(
+      splitFileName[splitFileName.length - 2],
+      10
+    )
+
+    const result = {
+      segmentNumber: segmentNumber,
+      representationId: !Number.isNaN(representationId) ? representationId : 0,
     }
 
-    const sliceResult = fileSegment.slice(
-      Math.max(0, fileSegment.lastIndexOf('-') + 1)
-    )
-    const segmentId = Number.parseInt(sliceResult, 10)
-    return !Number.isNaN(segmentId) ? segmentId : 0
+    return result
   }
 
   /**
@@ -370,23 +402,54 @@ export class InlivePlayer extends LitElement {
   /**
    *
    * @param {string} fileURI - The URI of the file
-   * @returns {string} fileName - Returns the file name without extension based on the URI of the file
+   * @returns {string} fileName - Returns the file name with extension
+   */
+  getFileName(fileURI) {
+    if (typeof fileURI !== 'string' || fileURI.trim().length === 0) {
+      return ''
+    }
+
+    return fileURI.slice(Math.max(0, fileURI.lastIndexOf('/') + 1))
+  }
+
+  /**
+   *
+   * @param {string} fileURI - The URI of the file
+   * @returns {string} fileExtension - Returns the file extension string
+   */
+  getFileExtension(fileURI) {
+    if (typeof fileURI !== 'string' || fileURI.trim().length === 0) {
+      return ''
+    }
+
+    const indexStart = Math.max(0, fileURI.lastIndexOf('.') + 1)
+    const indexEnd = fileURI.lastIndexOf('.') !== -1 ? fileURI.length : 0
+
+    return fileURI.slice(indexStart, indexEnd)
+  }
+
+  /**
+   *
+   * @param {string} fileURI - The URI of the file
+   * @returns {string} fileName - Returns the file name without extension
    */
   getFileNameWithoutExtension(fileURI) {
     if (typeof fileURI !== 'string' || fileURI.trim().length === 0) {
       return ''
     }
 
-    return fileURI.slice(
-      Math.max(0, fileURI.lastIndexOf('/') + 1),
-      Math.min(fileURI.length, fileURI.lastIndexOf('.'))
-    )
+    const indexStart = Math.max(0, fileURI.lastIndexOf('/') + 1)
+    const indexEnd =
+      fileURI.lastIndexOf('.') !== -1
+        ? fileURI.lastIndexOf('.')
+        : fileURI.length
+    return fileURI.slice(indexStart, indexEnd)
   }
 
   /**
    * Get the report URL of API endpoint
    *
-   * @returns {string} reportUrl - return string of API report URL
+   * @returns {string} reportUrl - Returns string of API report URL
    */
   getReportUrl() {
     return `${this.getBaseUrl()}/stream/${this.getStreamId(this.src)}/report`
