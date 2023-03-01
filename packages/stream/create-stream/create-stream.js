@@ -29,12 +29,6 @@ function slugify(text) {
  */
 
 /**
- * @typedef FetchResponse
- * @property {object} status -- A status response
- * @property {object} data -- A return data as per endpoint
- */
-
-/**
  * A create stream module for creating a new stream
  *
  * @function

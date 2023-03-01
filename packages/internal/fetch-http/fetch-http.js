@@ -8,6 +8,13 @@
  */
 
 /**
+ * @typedef APIResponse
+ * @property {number} code -- A status response
+ * @property {string} message -- A message response
+ * @property {object} data -- A return data as per endpoint
+ */
+
+/**
  * @type {BaseConfig}
  */
 const baseConfig = {
