@@ -30,7 +30,6 @@ export class InlivePlayer extends LitElement {
     muted: { type: Boolean },
     autoplay: { type: Boolean },
     playsinline: { type: Boolean },
-    counter: { state: true },
   }
 
   /**
@@ -44,7 +43,8 @@ export class InlivePlayer extends LitElement {
     this.playsinline = false
     this.video = null
     this.player = null
-    this.counter = 0
+    /**@ts-ignore */
+    this.stall = null
     this.config = {
       player: {
         streaming: {
@@ -53,7 +53,6 @@ export class InlivePlayer extends LitElement {
           inaccurateManifestTolerance: 0,
           rebufferingGoal: 0.01,
           stallEnabled: true,
-          stallThreshold: 1000,
           stallSkip: 0,
         },
       },
@@ -107,9 +106,6 @@ export class InlivePlayer extends LitElement {
 
       this.player = new shaka.Player(this.video)
       this.player.configure(this.config.player)
-
-      console.log('player', this.player)
-
       this.attachListener()
     } else {
       throw new TypeError('Element is not a valid video element')
@@ -148,8 +144,7 @@ export class InlivePlayer extends LitElement {
               'resource'
             )
 
-            const loadTimeInMs = segmentPerformance[0]?.duration
-
+            const downloadTimeInMs = segmentPerformance[0]?.duration
             const manifestExtension = this.getFileExtension(this.src)
 
             let manifestFormat
@@ -179,7 +174,8 @@ export class InlivePlayer extends LitElement {
               newestBuffer = Math.max(newestBuffer, buffer.end)
             }
 
-            const eventData = {
+            const body = {
+              ...this.getBaseReport(),
               event: {
                 name: 'segmentDownloaded',
                 data: {
@@ -190,12 +186,12 @@ export class InlivePlayer extends LitElement {
                   bufferLevel: newestBuffer - (this.video?.currentTime || 0),
                   liveLatency: liveLatencyInMs,
                   segmentBitrate: segmentBitrate,
-                  downloadTime: loadTimeInMs,
+                  downloadTime: downloadTimeInMs,
                 },
               },
             }
 
-            this.sendReport(eventData)
+            this.sendReport(body)
           }
         }
       }
@@ -205,7 +201,8 @@ export class InlivePlayer extends LitElement {
       const stats = this.player.getStats()
       this.getSegmentNumber('sss')
 
-      const eventData = {
+      const body = {
+        ...this.getBaseReport(),
         event: {
           name: 'loadedEvent',
           data: {
@@ -215,46 +212,55 @@ export class InlivePlayer extends LitElement {
         },
       }
 
-      this.sendReport(eventData)
+      this.sendReport(body)
     })
 
-    this.player.addEventListener(
-      'stalldetected',
-      /** @param {Object<string, any>} event - stalldetected event object */
-      (event) => {
-        console.log('stalldetected', event)
-
-        const stats = this.player.getStats()
-
-        const eventData = {
-          event: {
-            name: 'stallEvent',
-            data: {
-              selectedBitrate: this.bitToKb(stats.streamBandwidth),
-              estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
-              // stallDuration: 23,
-            },
-          },
+    this.player.addEventListener('stalldetected', () => {
+      if (this.video instanceof HTMLVideoElement) {
+        this.stall = {
+          elapsedTime: this.stall
+            ? this.stall.elapsedTime
+            : this.getElapsedTime(),
+          clientTime: this.stall ? this.stall.clientTime : Date.now(),
         }
-
-        this.sendReport(eventData)
       }
-    )
+    })
 
     this.video &&
-      this.video.addEventListener('canplaythrough', (event) => {
-        console.log('canplaythrough video', event)
-      })
+      this.video.addEventListener('playing', () => {
+        if (this.stall) {
+          const {
+            elapsedTime = this.getElapsedTime(),
+            clientTime = Date.now(),
+          } = this.stall
+          const stats = this.player.getStats()
 
-    this.video &&
-      this.video.addEventListener('stalled', (event) => {
-        console.log('stalled video', event)
+          const stallDurationInSeconds = (Date.now() - clientTime) / 1000
+
+          const body = {
+            ...this.getBaseReport(),
+            elapsedTime,
+            clientTime,
+            event: {
+              name: 'stallEvent',
+              data: {
+                selectedBitrate: this.bitToKb(stats.streamBandwidth),
+                estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
+                stallDuration: stallDurationInSeconds,
+              },
+            },
+          }
+
+          this.stall = null
+          this.sendReport(body)
+        }
       })
 
     this.player.addEventListener('adaptation', () => {
       const stats = this.player.getStats()
 
-      const eventData = {
+      const body = {
+        ...this.getBaseReport(),
         event: {
           name: 'adaptationEvent',
           data: {
@@ -264,16 +270,8 @@ export class InlivePlayer extends LitElement {
         },
       }
 
-      this.sendReport(eventData)
+      this.sendReport(body)
     })
-
-    // this.player.addEventListener('buffering', (event) => {
-    //   console.log('buffering', event)
-    // })
-
-    // this.player.addEventListener('abrstatuschanged', (event) => {
-    //   console.log('abrstatuschanged', event)
-    // })
 
     this.player.addEventListener(
       'error',
@@ -281,7 +279,8 @@ export class InlivePlayer extends LitElement {
       (event) => {
         const { detail } = event
 
-        const eventData = {
+        const body = {
+          ...this.getBaseReport(),
           event: {
             name: 'errorEvent',
             data: {
@@ -290,7 +289,7 @@ export class InlivePlayer extends LitElement {
           },
         }
 
-        this.sendReport(eventData)
+        this.sendReport(body)
       }
     )
   }
@@ -456,18 +455,24 @@ export class InlivePlayer extends LitElement {
   }
 
   /**
+   * Get the base report data
    *
-   * @param {Object<string, any>} event - The object which describes the event and the related data to the event
+   * @returns {Object<string, any>} baseReportData - The object which contains the base data needed to be sent to the api
    */
-  sendReport(event) {
-    const body = {
+  getBaseReport() {
+    return {
       clientId: this.generateClientId(),
       elapsedTime: this.getElapsedTime(),
       clientTime: Date.now(),
       streamId: this.getStreamId(this.src),
-      event: event,
     }
+  }
 
+  /**
+   *
+   * @param {Object<string, any>} body - The body object which contains data needed be sent to the api
+   */
+  sendReport(body) {
     // remove this return when the endpoint is ready
     return
     /* eslint-disable @typescript-eslint/ban-ts-comment */
