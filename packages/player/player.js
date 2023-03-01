@@ -339,8 +339,13 @@ export class InlivePlayer extends LitElement {
    *
    * @returns {string} clientId - A client ID
    */
-  generateClientId() {
-    return uuidv4()
+  getClientId() {
+    const storedId = window.localStorage.getItem('inliveClientId')
+    if (storedId) return storedId
+
+    const clientId = uuidv4()
+    window.localStorage.setItem('inliveClientId', clientId)
+    return clientId
   }
 
   /**
@@ -449,7 +454,7 @@ export class InlivePlayer extends LitElement {
    * @returns {string} reportUrl - Returns string of API report URL
    */
   getReportUrl() {
-    return `${this.getBaseUrl()}/stream/${this.getStreamId(this.src)}/report`
+    return `${this.getBaseUrl()}/stream/${this.getStreamId(this.src)}/stats`
   }
 
   /**
@@ -459,7 +464,7 @@ export class InlivePlayer extends LitElement {
    */
   getBaseReport() {
     return {
-      clientId: this.generateClientId(),
+      clientId: this.getClientId(),
       elapsedTime: this.getElapsedTime(),
       clientTime: Date.now(),
       streamId: this.getStreamId(this.src),
