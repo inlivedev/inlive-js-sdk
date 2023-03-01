@@ -52,8 +52,6 @@ export class InlivePlayer extends LitElement {
           lowLatencyMode: true,
           inaccurateManifestTolerance: 0,
           rebufferingGoal: 0.01,
-          stallEnabled: true,
-          stallSkip: 0,
         },
       },
     }
