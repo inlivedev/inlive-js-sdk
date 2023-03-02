@@ -197,7 +197,6 @@ export class InlivePlayer extends LitElement {
 
     this.player.addEventListener('loaded', () => {
       const stats = this.player.getStats()
-      this.getSegmentNumber('sss')
 
       const body = {
         ...this.getBaseReport(),
