@@ -1,55 +1,93 @@
 import { Internal } from '../../internal/index.js'
-import { InitializationInstance } from '../../app/init/init.js'
+import { api } from '../../internal/config/index.js'
+import { merge, snakeCase } from 'lodash'
+import FingerprintJS from '@fingerprintjs/fingerprintjs'
+import snakecaseKeys from 'snakecase-keys'
 
 /**
- * @typedef eventData
- * @property {string} name - event name
- * @property {object} data - event data
- * /
- 
- 
-/**
  * @typedef trackEvent
- * @property {string} client_id - unique identifier of the client, should be store in cookie or local storage to make it persistence
- * @property {number} elapsed_time - elapsed time in second
- * @property {number} client_time - unix epoch time
- * @property {number} stream_id - stream id
- * @property {eventData} event - event object
- * @example 
- * {
- *   "client_id" : uuid,
- *   "elapsed_time" : elapsed time in second,
- *   "client_time" : unix epoch time,
- *   "stream_id" : int,
- *   "event" : {
- *      "name" : string,
- *      "data" : {
- *         "key" : "value",
- *          ...
- *      },
- *   }
- *  }
+ * @property {string} clientID - unique identifier of the client, should be store in cookie or local storage to make it persistence
+ * @property {number} elapsedTime - elapsed time in second
+ * @property {number} clientTime - unix epoch time
+ * @property {number} streamID - stream id
+ * @property {string} name - event name
+ * @property {object} data - event object
  */
+
+const fpPromise = FingerprintJS.load({ monitoring: false })
 
 /**
  * Track analytic event
  *
- * @param {InitializationInstance} initObject - The initialization instance received from the init() function
  * @param {trackEvent} data - track event data to report
+ * @param {import('../../internal/config/api.js').API} [apiOptions] - options for tracking request
  * @returns {Promise<import('../../internal/fetch-http/fetch-http.js').APIResponse>} returns the status of the request
  * @throws {Error}
  */
-export const track = async (initObject, data) => {
-  const baseUrl = `${initObject.config.api.baseUrl}/${initObject.config.api.version}`
+export const track = async (data, apiOptions) => {
+  const defaultConfig = api
+  if (typeof apiOptions !== 'undefined') {
+    merge(defaultConfig, apiOptions)
+  }
+  const baseUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
+
+  data.clientID = await getClientID()
+  const statsAuthKey = await getStatsAuthKey(
+    baseUrl,
+    data.streamID,
+    data.clientID
+  )
 
   const fetchResponse = await Internal.fetchHttp({
-    url: `${baseUrl}/streams/${data.stream_id}/stats`,
-    token: initObject.config.apiKey,
+    url: `${baseUrl}/streams/${data.streamID}/stats`,
+    token: statsAuthKey,
     method: 'POST',
-    body: data,
+    body: snakecaseKeys(data),
   }).catch((error) => {
     throw error
   })
 
   return fetchResponse
+}
+
+/**
+ * Get client ID with FingerPrintJS and stored in local storage
+ */
+const getClientID = async () => {
+  const clientID = localStorage.getItem('inliveClientID')
+  if (clientID) return clientID
+
+  const fp = await fpPromise
+  const result = await fp.get()
+  localStorage.setItem('inliveClientID', result.visitorId)
+
+  return result.visitorId
+}
+
+/**
+ * Get auth key for stat request
+ *
+ * @param {string} baseUrl - base url
+ * @param {number} streamID - stream ID
+ * @param {string} clientID - client ID
+ * @returns {Promise<string>} returns the auth key
+ * @throws {Error}
+ */
+const getStatsAuthKey = async (baseUrl, streamID, clientID) => {
+  const fetchResponse = await Internal.fetchHttp({
+    url: `${baseUrl}/streams/${streamID}/stats/auth`,
+    method: 'POST',
+    body: {
+      // eslint-disable-next-line camelcase
+      client_id: clientID,
+    },
+  }).catch((error) => {
+    throw error
+  })
+
+  if (fetchResponse.code !== 200) {
+    throw new Error(fetchResponse.message)
+  }
+
+  return fetchResponse.data
 }

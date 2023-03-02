@@ -30,7 +30,7 @@ const baseConfig = {
  *
  * @function
  * @param {BaseConfig} config A set of key/value parameter configuration
- * @returns {Promise<any>} Returns a promise with the actual response data
+ * @returns {Promise<APIResponse|any>} Returns a promise with the actual response data
  * @throws {Error}
  */
 export const fetchHttp = async (config = baseConfig) => {
@@ -63,7 +63,7 @@ export const fetchHttp = async (config = baseConfig) => {
      *
      * @param {string} url - The API endpoint URL
      * @param {object} options - Option fetch parameter
-     * @returns {Promise<any>} Returns a promise with the actual response data
+     * @returns {Promise<APIResponse|any>} Returns a promise with the actual response data
      */
     fetchHttpRequest = (url, options) => {
       return import('node-fetch').then(({ default: fetch }) => {
@@ -76,7 +76,7 @@ export const fetchHttp = async (config = baseConfig) => {
      *
      * @param {string} url - The API endpoint URL
      * @param {object} options - Option fetch parameter
-     * @returns {Promise<any>} Returns a promise with the actual response data
+     * @returns {Promise<APIResponse|any>} Returns a promise with the actual response data
      */
     fetchHttpRequest = (url, options) => {
       return window.fetch(url, options)

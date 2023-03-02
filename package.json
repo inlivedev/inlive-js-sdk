@@ -60,6 +60,7 @@
     "typescript": "^4.8.2"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^3.4.0",
     "camelcase-keys": "^8.0.2",
     "lit": "^2.6.1",
     "lodash-es": "^4.17.21",

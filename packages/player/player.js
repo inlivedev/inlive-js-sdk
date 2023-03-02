@@ -2,10 +2,8 @@
 /*@ts-ignore */
 import shaka from 'shaka-player'
 import { html, css, LitElement } from 'lit'
-import snakecaseKeys from 'snakecase-keys'
-import { Internal } from '../internal/index.js'
-
-const { fetchHttp, config, uuidv4 } = Internal
+import { track } from '../stream/analytics/analytics.js'
+import { api } from '../internal/config/api.js'
 
 /**
  * @class InlivePlayer
@@ -13,6 +11,7 @@ const { fetchHttp, config, uuidv4 } = Internal
  * @property {number} streamid - stream id
  * @property {string} src - video source
  * @property {object} config - shaka player config
+ * @property {import('../../internal/config/api.js').API} api - api config
  * @property {object} player - shaka player instance
  * @property {object} video -  video element
  */
@@ -45,6 +44,7 @@ export class InlivePlayer extends LitElement {
     this.player = null
     /**@ts-ignore */
     this.stall = null
+    this.api = api
     this.config = {
       player: {
         streaming: {
@@ -173,19 +173,20 @@ export class InlivePlayer extends LitElement {
             }
 
             const body = {
-              ...this.getBaseReport(),
-              event: {
-                name: 'segmentDownloaded',
-                data: {
-                  type: manifestFormat,
-                  segmentFile: this.getSegmentNumber(fileName).segmentNumber,
-                  representationID:
-                    this.getSegmentNumber(fileName).representationId,
-                  bufferLevel: newestBuffer - (this.video?.currentTime || 0),
-                  liveLatency: liveLatencyInMs,
-                  segmentBitrate: segmentBitrate,
-                  downloadTime: downloadTimeInMs,
-                },
+              elapsedTime: this.getElapsedTime(),
+              clientTime: Date.now(),
+              streamID: this.getStreamId(this.src),
+              clientID: '',
+              name: 'segmentDownloaded',
+              data: {
+                type: manifestFormat,
+                segmentFile: this.getSegmentNumber(fileName).segmentNumber,
+                representationID:
+                  this.getSegmentNumber(fileName).representationId,
+                bufferLevel: newestBuffer - (this.video?.currentTime || 0),
+                liveLatency: liveLatencyInMs,
+                segmentBitrate: segmentBitrate,
+                downloadTime: downloadTimeInMs,
               },
             }
 
@@ -199,13 +200,14 @@ export class InlivePlayer extends LitElement {
       const stats = this.player.getStats()
 
       const body = {
-        ...this.getBaseReport(),
-        event: {
-          name: 'loadedEvent',
-          data: {
-            selectedBitrate: this.bitToKb(stats.streamBandwidth),
-            manifestTime: stats.manifestTimeSeconds,
-          },
+        elapsedTime: this.getElapsedTime(),
+        clientTime: Date.now(),
+        streamID: this.getStreamId(this.src),
+        clientID: '',
+        name: 'loadedEvent',
+        data: {
+          selectedBitrate: this.bitToKb(stats.streamBandwidth),
+          manifestTime: stats.manifestTimeSeconds,
         },
       }
 
@@ -235,16 +237,15 @@ export class InlivePlayer extends LitElement {
           const stallDurationInSeconds = (Date.now() - clientTime) / 1000
 
           const body = {
-            ...this.getBaseReport(),
+            streamID: this.getStreamId(this.src),
+            clientID: '',
             elapsedTime,
             clientTime,
-            event: {
-              name: 'stallEvent',
-              data: {
-                selectedBitrate: this.bitToKb(stats.streamBandwidth),
-                estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
-                stallDuration: stallDurationInSeconds,
-              },
+            name: 'stallEvent',
+            data: {
+              selectedBitrate: this.bitToKb(stats.streamBandwidth),
+              estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
+              stallDuration: stallDurationInSeconds,
             },
           }
 
@@ -257,13 +258,14 @@ export class InlivePlayer extends LitElement {
       const stats = this.player.getStats()
 
       const body = {
-        ...this.getBaseReport(),
-        event: {
-          name: 'adaptationEvent',
-          data: {
-            selectedBitrate: this.bitToKb(stats.streamBandwidth),
-            estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
-          },
+        elapsedTime: this.getElapsedTime(),
+        clientTime: Date.now(),
+        streamID: this.getStreamId(this.src),
+        clientID: '',
+        name: 'adaptationEvent',
+        data: {
+          selectedBitrate: this.bitToKb(stats.streamBandwidth),
+          estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
         },
       }
 
@@ -277,12 +279,13 @@ export class InlivePlayer extends LitElement {
         const { detail } = event
 
         const body = {
-          ...this.getBaseReport(),
-          event: {
-            name: 'errorEvent',
-            data: {
-              code: detail.code,
-            },
+          elapsedTime: this.getElapsedTime(),
+          clientTime: Date.now(),
+          streamID: this.getStreamId(this.src),
+          clientID: '',
+          name: 'errorEvent',
+          data: {
+            code: detail.code,
           },
         }
 
@@ -310,15 +313,6 @@ export class InlivePlayer extends LitElement {
   }
 
   /**
-   * Get the base URL of API endpoint
-   *
-   * @returns {string} baseURL - return string of API base URL
-   */
-  getBaseUrl() {
-    return `${config.api.baseUrl}/${config.api.version}`
-  }
-
-  /**
    * Get the ID of the stream from manifest URL
    *
    * @param {string} source - Manifest URL source
@@ -331,20 +325,6 @@ export class InlivePlayer extends LitElement {
     const streamId = Number.parseInt(splitUrl[splitUrl.length - 2], 10)
 
     return !Number.isNaN(streamId) ? streamId : 0
-  }
-
-  /**
-   * Generate a client ID
-   *
-   * @returns {string} clientId - A client ID
-   */
-  getClientId() {
-    const storedId = window.localStorage.getItem('inliveClientId')
-    if (storedId) return storedId
-
-    const clientId = uuidv4()
-    window.localStorage.setItem('inliveClientId', clientId)
-    return clientId
   }
 
   /**
@@ -448,43 +428,25 @@ export class InlivePlayer extends LitElement {
   }
 
   /**
-   * Get the report URL of API endpoint
-   *
-   * @returns {string} reportUrl - Returns string of API report URL
-   */
-  getReportUrl() {
-    return `${this.getBaseUrl()}/stream/${this.getStreamId(this.src)}/stats`
-  }
-
-  /**
    * Get the base report data
    *
    * @returns {Object<string, any>} baseReportData - The object which contains the base data needed to be sent to the api
    */
   getBaseReport() {
     return {
-      clientId: this.getClientId(),
       elapsedTime: this.getElapsedTime(),
       clientTime: Date.now(),
       streamId: this.getStreamId(this.src),
+      clientID: '',
     }
   }
 
   /**
    *
-   * @param {Object<string, any>} body - The body object which contains data needed be sent to the api
+   * @param {import('../stream/analytics/analytics.js').trackEvent} body - The body object which contains data needed be sent to the api
    */
-  sendReport(body) {
-    // remove this return when the endpoint is ready
-    return
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
-    /*@ts-ignore */
-    /* eslint-disable-next-line no-unreachable */
-    fetchHttp({
-      url: this.getReportUrl(),
-      method: 'POST',
-      body: snakecaseKeys(body),
-    })
+  async sendReport(body) {
+    await track(body, this.api)
   }
 
   /**
