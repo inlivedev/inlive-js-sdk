@@ -179,7 +179,7 @@ export class InlivePlayer extends LitElement {
 
             const body = {
               elapsedTimeInSeconds: this.getElapsedTime(),
-              clientTime: Date.now(),
+              clientTimeInUnixMillis: Date.now(),
               streamID: this.getStreamId(this.src),
               clientID: '',
               name: 'segment_downloaded_event',
@@ -207,7 +207,7 @@ export class InlivePlayer extends LitElement {
 
       const body = {
         elapsedTimeInSeconds: this.getElapsedTime(),
-        clientTime: Date.now(),
+        clientTimeInUnixMillis: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
         name: 'loaded_event',
@@ -226,7 +226,9 @@ export class InlivePlayer extends LitElement {
           elapsedTimeInSeconds: this.stall
             ? this.stall.elapsedTimeInSeconds
             : this.getElapsedTime(),
-          clientTime: this.stall ? this.stall.clientTime : Date.now(),
+          clientTimeInUnixMillis: this.stall
+            ? this.stall.clientTimeInUnixMillis
+            : Date.now(),
         }
       }
     })
@@ -236,22 +238,26 @@ export class InlivePlayer extends LitElement {
         if (this.stall) {
           const {
             elapsedTimeInSeconds = this.getElapsedTime(),
-            clientTime = Date.now(),
+            clientTimeInUnixMillis = Date.now(),
           } = this.stall
-          const stats = this.player.getStats()
 
-          const stallDurationInSeconds = (Date.now() - clientTime) / 1000
+          const stats = this.player.getStats()
+          const stallDurationInMiliseconds = Date.now() - clientTimeInUnixMillis
 
           const body = {
             streamID: this.getStreamId(this.src),
             clientID: '',
             elapsedTimeInSeconds,
-            clientTime,
-            name: 'stallEvent',
+            clientTimeInUnixMillis,
+            name: 'stall_event',
             data: {
-              selectedBitrate: this.bitToKb(stats.streamBandwidth),
-              estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
-              stallDuration: stallDurationInSeconds,
+              selectedBitrateInKilobits: this.bitToKilobit(
+                stats.streamBandwidth
+              ),
+              estimatedBandwidthInKilobits: this.bitToKilobit(
+                stats.estimatedBandwidth
+              ),
+              stallDurationInMiliseconds,
             },
           }
 
@@ -265,7 +271,7 @@ export class InlivePlayer extends LitElement {
 
       const body = {
         elapsedTimeInSeconds: this.getElapsedTime(),
-        clientTime: Date.now(),
+        clientTimeInUnixMillis: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
         name: 'adaptation_event',
@@ -293,7 +299,7 @@ export class InlivePlayer extends LitElement {
 
         const body = {
           elapsedTimeInSeconds: this.getElapsedTime(),
-          clientTime: Date.now(),
+          clientTimeInUnixMillis: Date.now(),
           streamID: this.getStreamId(this.src),
           clientID: '',
           name: 'error_event',
@@ -305,15 +311,6 @@ export class InlivePlayer extends LitElement {
         this.sendReport(body)
       }
     )
-  }
-
-  /**
-   *
-   * @param {number} bits - Number of bits provided
-   * @returns {number} kb - Returns the number of kilobytes from the provided bits
-   */
-  bitToKb(bits) {
-    return bits / 8 / 1000
   }
 
   /**
