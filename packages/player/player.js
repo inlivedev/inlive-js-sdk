@@ -451,10 +451,15 @@ export class InlivePlayer extends LitElement {
 
   /**
    *
-   * @param {import('../stream/analytics/analytics.js').trackEvent} body - The body object which contains data needed be sent to the api
+   * @param {import('../stream/analytics/analytics.js').trackEvent} eventData - The body object which contains data needed be sent to the api
    */
-  async sendReport(body) {
-    await track(body, this.api)
+  async sendReport(eventData) {
+    const event_ = new CustomEvent(eventData.name, {
+      detail: eventData,
+    })
+    this.dispatchEvent(event_)
+
+    await track(eventData, this.api)
   }
 
   /**
