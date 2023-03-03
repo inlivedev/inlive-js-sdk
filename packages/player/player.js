@@ -198,16 +198,19 @@ export class InlivePlayer extends LitElement {
 
     this.player.addEventListener('loaded', () => {
       const stats = this.player.getStats()
+      const manifestTimeInMiliseconds = stats.manifestTimeSeconds * 1000
 
       const body = {
         elapsedTime: this.getElapsedTime(),
         clientTime: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
-        name: 'loadedEvent',
-        data: {
-          selectedBitrate: this.bitToKb(stats.streamBandwidth),
-          manifestTime: stats.manifestTimeSeconds,
+        event: {
+          name: 'loaded_event',
+          data: {
+            selectedBitrateInKilobits: this.bitToKilobit(stats.streamBandwidth),
+            manifestTimeInMiliseconds,
+          },
         },
       }
 
@@ -301,6 +304,15 @@ export class InlivePlayer extends LitElement {
    */
   bitToKb(bits) {
     return bits / 8 / 1000
+  }
+
+  /**
+   *
+   * @param {number} bit - Number of bit provided
+   * @returns {number} kilobit - Returns the number of kilobit from the provided bit
+   */
+  bitToKilobit(bit) {
+    return bit / 1000
   }
 
   /**
@@ -425,20 +437,6 @@ export class InlivePlayer extends LitElement {
         ? fileURI.lastIndexOf('.')
         : fileURI.length
     return fileURI.slice(indexStart, indexEnd)
-  }
-
-  /**
-   * Get the base report data
-   *
-   * @returns {Object<string, any>} baseReportData - The object which contains the base data needed to be sent to the api
-   */
-  getBaseReport() {
-    return {
-      elapsedTime: this.getElapsedTime(),
-      clientTime: Date.now(),
-      streamId: this.getStreamId(this.src),
-      clientID: '',
-    }
   }
 
   /**
