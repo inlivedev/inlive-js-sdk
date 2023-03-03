@@ -201,7 +201,7 @@ export class InlivePlayer extends LitElement {
       const manifestTimeInMiliseconds = stats.manifestTimeSeconds * 1000
 
       const body = {
-        elapsedTime: this.getElapsedTime(),
+        elapsedTimeInSeconds: this.getElapsedTime(),
         clientTime: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
@@ -261,7 +261,7 @@ export class InlivePlayer extends LitElement {
       const stats = this.player.getStats()
 
       const body = {
-        elapsedTime: this.getElapsedTime(),
+        elapsedTimeInSeconds: this.getElapsedTime(),
         clientTime: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
@@ -279,16 +279,23 @@ export class InlivePlayer extends LitElement {
       'error',
       /** @param {Object<string, any>} event - Error event object */
       (event) => {
-        const { detail } = event
+        const { detail = {} } = event
+        const { code } = detail
+
+        const errorCode = Object.keys(shaka.util.Error.Code).find((key) => {
+          return shaka.util.Error.Code[key] === code
+        })
 
         const body = {
-          elapsedTime: this.getElapsedTime(),
+          elapsedTimeInSeconds: this.getElapsedTime(),
           clientTime: Date.now(),
           streamID: this.getStreamId(this.src),
           clientID: '',
-          name: 'errorEvent',
-          data: {
-            code: detail.code,
+          event: {
+            name: 'error_event',
+            data: {
+              code: errorCode,
+            },
           },
         }
 
