@@ -172,21 +172,26 @@ export class InlivePlayer extends LitElement {
               newestBuffer = Math.max(newestBuffer, buffer.end)
             }
 
+            const bufferLevelInSeconds =
+              newestBuffer - (this.video?.currentTime || 0)
+
+            const bufferLevelInMs = bufferLevelInSeconds * 1000
+
             const body = {
               elapsedTimeInSeconds: this.getElapsedTime(),
               clientTime: Date.now(),
               streamID: this.getStreamId(this.src),
               clientID: '',
-              name: 'segmentDownloaded',
+              name: 'segment_downloaded_event',
               data: {
                 type: manifestFormat,
                 segmentFile: this.getSegmentNumber(fileName).segmentNumber,
                 representationID:
                   this.getSegmentNumber(fileName).representationId,
-                bufferLevel: newestBuffer - (this.video?.currentTime || 0),
-                liveLatency: liveLatencyInMs,
-                segmentBitrate: segmentBitrate,
-                downloadTime: downloadTimeInMs,
+                bufferLevelInMiliseconds: bufferLevelInMs,
+                liveLatencyInMiliseconds: liveLatencyInMs,
+                segmentBitrateInKilobits: segmentBitrate,
+                downloadTimeInMiliseconds: downloadTimeInMs,
               },
             }
 
@@ -205,12 +210,10 @@ export class InlivePlayer extends LitElement {
         clientTime: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
-        event: {
-          name: 'loaded_event',
-          data: {
-            selectedBitrateInKilobits: this.bitToKilobit(stats.streamBandwidth),
-            manifestTimeInMiliseconds,
-          },
+        name: 'loaded_event',
+        data: {
+          selectedBitrateInKilobits: this.bitToKilobit(stats.streamBandwidth),
+          manifestTimeInMiliseconds,
         },
       }
 
@@ -265,10 +268,12 @@ export class InlivePlayer extends LitElement {
         clientTime: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
-        name: 'adaptationEvent',
+        name: 'adaptation_event',
         data: {
-          selectedBitrate: this.bitToKb(stats.streamBandwidth),
-          estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
+          selectedBitrateInKilobits: this.bitToKilobit(stats.streamBandwidth),
+          estimatedBandwidthInKilobits: this.bitToKilobit(
+            stats.estimatedBandwidth
+          ),
         },
       }
 
@@ -291,11 +296,9 @@ export class InlivePlayer extends LitElement {
           clientTime: Date.now(),
           streamID: this.getStreamId(this.src),
           clientID: '',
-          event: {
-            name: 'error_event',
-            data: {
-              code: errorCode,
-            },
+          name: 'error_event',
+          data: {
+            code: errorCode,
           },
         }
 
