@@ -348,14 +348,20 @@ export class InlivePlayer extends LitElement {
 
   /**
    *
-   * @returns {number} elapsedTimeInSeconds - Live stream elapsed time in seconds
+   * @returns {number} elapsedTimeInSeconds - Live edge elapsed time in miliseconds
    */
   getElapsedTime() {
-    if (this.video instanceof HTMLVideoElement) {
-      return this.video.currentTime
-    }
+    const stats = this.player.getStats()
+    const availabilityStartTimeInMs = this.player
+      .getPresentationStartTimeAsDate()
+      .getTime()
 
-    return 0
+    const nowInMs = Date.now()
+    const maxSegmentSizeInMs = stats.maxSegmentDuration * 1000
+    const liveEdgeElapsedTimeInMs =
+      nowInMs - availabilityStartTimeInMs - maxSegmentSizeInMs
+
+    return liveEdgeElapsedTimeInMs
   }
 
   /**
