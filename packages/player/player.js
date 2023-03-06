@@ -178,7 +178,7 @@ export class InlivePlayer extends LitElement {
             const bufferLevelInMs = bufferLevelInSeconds * 1000
 
             const body = {
-              elapsedTimeInSeconds: this.getElapsedTime(),
+              elapsedTimeInMiliseconds: this.getElapsedTime(),
               clientTimeInUnixMillis: Date.now(),
               streamID: this.getStreamId(this.src),
               clientID: '',
@@ -206,7 +206,7 @@ export class InlivePlayer extends LitElement {
       const manifestTimeInMiliseconds = stats.manifestTimeSeconds * 1000
 
       const body = {
-        elapsedTimeInSeconds: this.getElapsedTime(),
+        elapsedTimeInMiliseconds: this.getElapsedTime(),
         clientTimeInUnixMillis: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
@@ -223,8 +223,8 @@ export class InlivePlayer extends LitElement {
     this.player.addEventListener('stalldetected', () => {
       if (this.video instanceof HTMLVideoElement) {
         this.stall = {
-          elapsedTimeInSeconds: this.stall
-            ? this.stall.elapsedTimeInSeconds
+          elapsedTimeInMiliseconds: this.stall
+            ? this.stall.elapsedTimeInMiliseconds
             : this.getElapsedTime(),
           clientTimeInUnixMillis: this.stall
             ? this.stall.clientTimeInUnixMillis
@@ -237,7 +237,7 @@ export class InlivePlayer extends LitElement {
       this.video.addEventListener('playing', () => {
         if (this.stall) {
           const {
-            elapsedTimeInSeconds = this.getElapsedTime(),
+            elapsedTimeInMiliseconds = this.getElapsedTime(),
             clientTimeInUnixMillis = Date.now(),
           } = this.stall
 
@@ -247,7 +247,7 @@ export class InlivePlayer extends LitElement {
           const body = {
             streamID: this.getStreamId(this.src),
             clientID: '',
-            elapsedTimeInSeconds,
+            elapsedTimeInMiliseconds,
             clientTimeInUnixMillis,
             name: 'stall_event',
             data: {
@@ -270,7 +270,7 @@ export class InlivePlayer extends LitElement {
       const stats = this.player.getStats()
 
       const body = {
-        elapsedTimeInSeconds: this.getElapsedTime(),
+        elapsedTimeInMiliseconds: this.getElapsedTime(),
         clientTimeInUnixMillis: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
@@ -298,7 +298,7 @@ export class InlivePlayer extends LitElement {
         })
 
         const body = {
-          elapsedTimeInSeconds: this.getElapsedTime(),
+          elapsedTimeInMiliseconds: this.getElapsedTime(),
           clientTimeInUnixMillis: Date.now(),
           streamID: this.getStreamId(this.src),
           clientID: '',
@@ -348,7 +348,7 @@ export class InlivePlayer extends LitElement {
 
   /**
    *
-   * @returns {number} elapsedTimeInSeconds - Live edge elapsed time in miliseconds
+   * @returns {number} elapsedTimeInMiliseconds - Live edge elapsed time in miliseconds
    */
   getElapsedTime() {
     const stats = this.player.getStats()
