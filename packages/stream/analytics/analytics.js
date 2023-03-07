@@ -7,7 +7,7 @@ import snakecaseKeys from 'snakecase-keys'
 /**
  * @typedef trackEvent
  * @property {string} clientID - unique identifier of the client, should be store in cookie or local storage to make it persistence
- * @property {number} elapsedTimeInMiliseconds - elapsed time in miliseconds
+ * @property {number} elapsedTimeInSeconds - elapsed time in seconds
  * @property {number} clientTimeInUnixMillis - unix epoch time
  * @property {number} streamID - stream id
  * @property {string} name - event name
