@@ -1,6 +1,6 @@
 import { Internal } from '../../internal/index.js'
 import { api } from '../../internal/config/index.js'
-import { merge, snakeCase } from 'lodash'
+import { merge } from 'lodash'
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 import snakecaseKeys from 'snakecase-keys'
 
@@ -90,4 +90,35 @@ const getStatsAuthKey = async (baseUrl, streamID, clientID) => {
   }
 
   return fetchResponse.data
+}
+
+/**
+ * Subscribe to stats event
+ *
+ * @param {import('../../app/init/init.js').Config} app - app instance
+ * @param {number} streamID - stream ID
+ * @returns {Promise<EventSource>} returns the event source
+ * @example
+ * const Stat = {
+ *  PLAYER: 'player',
+ *  WEBRTC: 'webrtc',
+ *  CLIENTSTAT: 'client_stat',
+ *  CLIENTLOG: 'client_log',
+ * }
+ *
+ * const events = await getStats(app,streamID)
+ * events.addEventListener(Stat.PLAYER,(ev)=>{console.log(ev.data)})
+ */
+export const getStats = async (app, streamID) => {
+  const apiUrl = app.api.baseUrl + '/' + app.api.version
+  const eventKey = await Internal.getEventKey(app.apiKey, apiUrl)
+
+  const events = new EventSource(
+    `${apiUrl}/streams/${streamID}/stats/${eventKey}`,
+    {
+      withCredentials: true,
+    }
+  )
+
+  return events
 }
