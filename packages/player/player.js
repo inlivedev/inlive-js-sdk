@@ -160,33 +160,21 @@ export class InlivePlayer extends LitElement {
               stats.maxSegmentDuration
             )
 
-            const liveLatencyInSeconds = stats.liveLatency
-            const liveLatencyInMs = liveLatencyInSeconds * 1000
-
-            const bufferedInfo = this.player.getBufferedInfo()
-            const bufferedTotal = bufferedInfo.total
-
-            let newestBuffer = 0
-
-            for (const buffer of bufferedTotal) {
-              newestBuffer = Math.max(newestBuffer, buffer.end)
-            }
-
             const body = {
-              elapsedTime: this.getElapsedTime(),
-              clientTime: Date.now(),
+              elapsedTimeInSeconds: this.getLiveEdge(),
+              clientTimeInUnixMillis: Date.now(),
               streamID: this.getStreamId(this.src),
               clientID: '',
-              name: 'segmentDownloaded',
+              name: 'segment_downloaded_event',
               data: {
                 type: manifestFormat,
                 segmentFile: this.getSegmentNumber(fileName).segmentNumber,
                 representationID:
                   this.getSegmentNumber(fileName).representationId,
-                bufferLevel: newestBuffer - (this.video?.currentTime || 0),
-                liveLatency: liveLatencyInMs,
-                segmentBitrate: segmentBitrate,
-                downloadTime: downloadTimeInMs,
+                bufferLevelInMiliseconds: this.getBufferLevel(),
+                liveLatencyInMiliseconds: this.getLiveLatency(),
+                segmentBitrateInKilobits: segmentBitrate,
+                downloadTimeInMiliseconds: downloadTimeInMs,
               },
             }
 
@@ -198,16 +186,17 @@ export class InlivePlayer extends LitElement {
 
     this.player.addEventListener('loaded', () => {
       const stats = this.player.getStats()
+      const manifestTimeInMiliseconds = stats.manifestTimeSeconds * 1000
 
       const body = {
-        elapsedTime: this.getElapsedTime(),
-        clientTime: Date.now(),
+        elapsedTimeInSeconds: this.getLiveEdge(),
+        clientTimeInUnixMillis: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
-        name: 'loadedEvent',
+        name: 'loaded_event',
         data: {
-          selectedBitrate: this.bitToKb(stats.streamBandwidth),
-          manifestTime: stats.manifestTimeSeconds,
+          selectedBitrateInKilobits: this.bitToKilobit(stats.streamBandwidth),
+          manifestTimeInMiliseconds,
         },
       }
 
@@ -215,13 +204,13 @@ export class InlivePlayer extends LitElement {
     })
 
     this.player.addEventListener('stalldetected', () => {
-      if (this.video instanceof HTMLVideoElement) {
-        this.stall = {
-          elapsedTime: this.stall
-            ? this.stall.elapsedTime
-            : this.getElapsedTime(),
-          clientTime: this.stall ? this.stall.clientTime : Date.now(),
-        }
+      this.stall = {
+        elapsedTimeInSeconds: this.stall
+          ? this.stall.elapsedTimeInSeconds
+          : this.getLiveEdge(),
+        clientTimeInUnixMillis: this.stall
+          ? this.stall.clientTimeInUnixMillis
+          : Date.now(),
       }
     })
 
@@ -229,23 +218,27 @@ export class InlivePlayer extends LitElement {
       this.video.addEventListener('playing', () => {
         if (this.stall) {
           const {
-            elapsedTime = this.getElapsedTime(),
-            clientTime = Date.now(),
+            elapsedTimeInSeconds = this.getLiveEdge(),
+            clientTimeInUnixMillis = Date.now(),
           } = this.stall
-          const stats = this.player.getStats()
 
-          const stallDurationInSeconds = (Date.now() - clientTime) / 1000
+          const stats = this.player.getStats()
+          const stallDurationInMiliseconds = Date.now() - clientTimeInUnixMillis
 
           const body = {
             streamID: this.getStreamId(this.src),
             clientID: '',
-            elapsedTime,
-            clientTime,
-            name: 'stallEvent',
+            elapsedTimeInSeconds,
+            clientTimeInUnixMillis,
+            name: 'stall_event',
             data: {
-              selectedBitrate: this.bitToKb(stats.streamBandwidth),
-              estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
-              stallDuration: stallDurationInSeconds,
+              selectedBitrateInKilobits: this.bitToKilobit(
+                stats.streamBandwidth
+              ),
+              estimatedBandwidthInKilobits: this.bitToKilobit(
+                stats.estimatedBandwidth
+              ),
+              stallDurationInMiliseconds,
             },
           }
 
@@ -258,14 +251,16 @@ export class InlivePlayer extends LitElement {
       const stats = this.player.getStats()
 
       const body = {
-        elapsedTime: this.getElapsedTime(),
-        clientTime: Date.now(),
+        elapsedTimeInSeconds: this.getLiveEdge(),
+        clientTimeInUnixMillis: Date.now(),
         streamID: this.getStreamId(this.src),
         clientID: '',
-        name: 'adaptationEvent',
+        name: 'adaptation_event',
         data: {
-          selectedBitrate: this.bitToKb(stats.streamBandwidth),
-          estimatedBandwidth: this.bitToKb(stats.estimatedBandwidth),
+          selectedBitrateInKilobits: this.bitToKilobit(stats.streamBandwidth),
+          estimatedBandwidthInKilobits: this.bitToKilobit(
+            stats.estimatedBandwidth
+          ),
         },
       }
 
@@ -276,16 +271,21 @@ export class InlivePlayer extends LitElement {
       'error',
       /** @param {Object<string, any>} event - Error event object */
       (event) => {
-        const { detail } = event
+        const { detail = {} } = event
+        const { code } = detail
+
+        const errorCode = Object.keys(shaka.util.Error.Code).find((key) => {
+          return shaka.util.Error.Code[key] === code
+        })
 
         const body = {
-          elapsedTime: this.getElapsedTime(),
-          clientTime: Date.now(),
+          elapsedTimeInSeconds: this.getLiveEdge(),
+          clientTimeInUnixMillis: Date.now(),
           streamID: this.getStreamId(this.src),
           clientID: '',
-          name: 'errorEvent',
+          name: 'error_event',
           data: {
-            code: detail.code,
+            code: errorCode,
           },
         }
 
@@ -296,11 +296,11 @@ export class InlivePlayer extends LitElement {
 
   /**
    *
-   * @param {number} bits - Number of bits provided
-   * @returns {number} kb - Returns the number of kilobytes from the provided bits
+   * @param {number} bit - Number of bit provided
+   * @returns {number} kilobit - Returns the number of kilobit from the provided bit
    */
-  bitToKb(bits) {
-    return bits / 8 / 1000
+  bitToKilobit(bit) {
+    return bit / 1000
   }
 
   /**
@@ -328,12 +328,84 @@ export class InlivePlayer extends LitElement {
   }
 
   /**
+   * Get the live edge time. A.K.A the live stream elapsed time.
    *
-   * @returns {number} elapsedTime - Live stream elapsed time in seconds
+   * @returns {number} liveEdge - Returns the live edge time in seconds
    */
-  getElapsedTime() {
+  getLiveEdge() {
+    const stats = this.player.getStats()
+    const maxSegmentSizeInMs = stats.maxSegmentDuration * 1000
+
+    const availabilityStartTimeInMs = this.player
+      .getPresentationStartTimeAsDate()
+      .getTime()
+
+    const now = Date.now()
+    const liveEdgeTimeInMs =
+      now - availabilityStartTimeInMs - maxSegmentSizeInMs
+
+    return liveEdgeTimeInMs / 1000
+  }
+
+  /**
+   * @returns {number} latencyInMs - Returns number of live latency in ms
+   */
+  getLiveLatency() {
+    const availabilityStartTimeInMs = this.player
+      .getPresentationStartTimeAsDate()
+      .getTime()
+
+    const seekRangeEndInMs = Math.floor(this.player.seekRange().end * 1000)
+    const now = availabilityStartTimeInMs + seekRangeEndInMs
+    const latencyInMs = Date.now() - now
+    return latencyInMs
+  }
+
+  /**
+   * @typedef BufferedRange
+   * @property {number} start - start buffer time
+   * @property {number} end - end buffer time
+   */
+
+  /**
+   *
+   * @param {TimeRanges} bufferedMedia - The media buffered time ranges object
+   * @returns {BufferedRange[]} bufferedRange - Returns an array contains buffered range
+   */
+  getBufferedRange(bufferedMedia) {
+    /** @type {BufferedRange[]} */
+    const data = []
+
+    if (!(bufferedMedia instanceof TimeRanges)) return data
+
+    for (let index = 0; index < bufferedMedia.length; index++) {
+      data.push({
+        start: bufferedMedia.start(index),
+        end: bufferedMedia.end(index),
+      })
+    }
+
+    return data
+  }
+
+  /**
+   * @returns {number} bufferLevelInMs - Returns the number of buffer level in miliseconds
+   */
+  getBufferLevel() {
     if (this.video instanceof HTMLVideoElement) {
-      return this.video.currentTime
+      const bufferedRange = this.getBufferedRange(this.video.buffered)
+
+      let newestBuffer = 0
+
+      for (const buffer of bufferedRange) {
+        const bufferEndInMs = Math.floor(buffer.end * 1000)
+        newestBuffer = Math.max(newestBuffer, bufferEndInMs)
+      }
+
+      const videoCurrentTime = Math.floor(this.video.currentTime * 1000)
+      const bufferLevelInMs = newestBuffer - videoCurrentTime
+
+      return bufferLevelInMs
     }
 
     return 0
@@ -425,20 +497,6 @@ export class InlivePlayer extends LitElement {
         ? fileURI.lastIndexOf('.')
         : fileURI.length
     return fileURI.slice(indexStart, indexEnd)
-  }
-
-  /**
-   * Get the base report data
-   *
-   * @returns {Object<string, any>} baseReportData - The object which contains the base data needed to be sent to the api
-   */
-  getBaseReport() {
-    return {
-      elapsedTime: this.getElapsedTime(),
-      clientTime: Date.now(),
-      streamId: this.getStreamId(this.src),
-      clientID: '',
-    }
   }
 
   /**

@@ -7,8 +7,8 @@ import snakecaseKeys from 'snakecase-keys'
 /**
  * @typedef trackEvent
  * @property {string} clientID - unique identifier of the client, should be store in cookie or local storage to make it persistence
- * @property {number} elapsedTime - elapsed time in second
- * @property {number} clientTime - unix epoch time
+ * @property {number} elapsedTimeInSeconds - elapsed time in seconds
+ * @property {number} clientTimeInUnixMillis - unix epoch time
  * @property {number} streamID - stream id
  * @property {string} name - event name
  * @property {object} data - event object
@@ -54,12 +54,12 @@ export const track = async (data, apiOptions) => {
  * Get client ID with FingerPrintJS and stored in local storage
  */
 const getClientID = async () => {
-  const clientID = localStorage.getItem('inliveClientID')
+  const clientID = localStorage.getItem('inlive_client_id')
   if (clientID) return clientID
 
   const fp = await fpPromise
   const result = await fp.get()
-  localStorage.setItem('inliveClientID', result.visitorId)
+  localStorage.setItem('inlive_client_id', result.visitorId)
 
   return result.visitorId
 }
@@ -74,13 +74,14 @@ const getClientID = async () => {
  * @throws {Error}
  */
 const getStatsAuthKey = async (baseUrl, streamID, clientID) => {
+  const body = {
+    clientId: clientID,
+  }
+
   const fetchResponse = await Internal.fetchHttp({
     url: `${baseUrl}/streams/${streamID}/stats/auth`,
     method: 'POST',
-    body: {
-      // eslint-disable-next-line camelcase
-      client_id: clientID,
-    },
+    body: snakecaseKeys(body),
   }).catch((error) => {
     throw error
   })
