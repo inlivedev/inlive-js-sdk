@@ -2,6 +2,8 @@
 /*@ts-ignore */
 import shaka from 'shaka-player'
 import { html, css, LitElement } from 'lit'
+import { Internal } from '../internal/index.js'
+import { merge } from 'lodash'
 import { track } from '../stream/analytics/analytics.js'
 import { api } from '../internal/config/api.js'
 
@@ -42,6 +44,7 @@ export class InlivePlayer extends LitElement {
     this.playsinline = false
     this.video = null
     this.player = null
+    this.eventSource = null
     /**@ts-ignore */
     this.stall = null
     this.api = api
@@ -74,6 +77,14 @@ export class InlivePlayer extends LitElement {
       const oldValue = changedProperties.get('src')
       if (this.src !== oldValue && this.src.length > 0) {
         this.loadManifest()
+        this.subscribeToEventSource(this.src)
+      } else if (
+        this.src !== oldValue &&
+        this.src.length === 0 &&
+        this.player.getAssetUri()
+      ) {
+        this.unloadManifest()
+        this.unsubscribeFromEventSource()
       }
     }
   }
@@ -115,7 +126,18 @@ export class InlivePlayer extends LitElement {
    */
   async loadManifest() {
     try {
-      this.player.load(this.src)
+      await this.player.load(this.src)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  /**
+   *
+   */
+  async unloadManifest() {
+    try {
+      await this.player.unload()
     } catch (error) {
       console.log(error)
     }
@@ -285,6 +307,62 @@ export class InlivePlayer extends LitElement {
         this.sendReport(body)
       }
     )
+  }
+
+  /**
+   * Subscribe to sse using event source
+   *
+   * @param {string} source - Manifest URL source
+   */
+  subscribeToEventSource(source) {
+    if (this.eventSource instanceof EventSource) {
+      this.unsubscribeFromEventSource()
+    }
+
+    const apiUrl = this.getApiUrl()
+    const streamID = this.getStreamId(source)
+
+    this.eventSource = new EventSource(`${apiUrl}/streams/${streamID}/events`, {
+      withCredentials: true,
+    })
+
+    this.eventSource.addEventListener('streamEnded', this.handleStreamEnded)
+
+    this.eventSource.addEventListener('error', (event) => {
+      console.log(event)
+    })
+  }
+
+  /**
+   * Unsubscribe from sse
+   */
+  unsubscribeFromEventSource() {
+    if (this.eventSource instanceof EventSource) {
+      this.eventSource.close()
+      this.eventSource = null
+    }
+  }
+
+  /**
+   * Handle the stream ended event
+   */
+  handleStreamEnded() {
+    this.src = ''
+  }
+
+  /**
+   * Get the base URL of API endpoint
+   *
+   * @returns {string} baseURL - return string of API base URL
+   */
+  getApiUrl() {
+    const apiConfig = Internal.config.api
+
+    if (this.api) {
+      merge(apiConfig, this.api)
+    }
+
+    return `${apiConfig.baseUrl}/${apiConfig.version}`
   }
 
   /**
