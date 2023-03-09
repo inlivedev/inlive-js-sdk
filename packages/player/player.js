@@ -186,10 +186,10 @@ export class InlivePlayer extends LitElement {
                 segmentFile: this.getSegmentNumber(fileName).segmentNumber,
                 representationID:
                   this.getSegmentNumber(fileName).representationId,
-                bufferLevelInMiliseconds: this.getBufferLevel(),
-                liveLatencyInMiliseconds: this.getLiveLatency(),
+                bufferLevelInMilliseconds: this.getBufferLevel(),
+                liveLatencyInMilliseconds: this.getLiveLatency(),
                 segmentBitrateInKilobits: segmentBitrate,
-                downloadTimeInMiliseconds: this.getTimeSegmentDownloaded(
+                downloadTimeInMilliseconds: this.getTimeSegmentDownloaded(
                   response.uri
                 ),
               },
@@ -203,7 +203,7 @@ export class InlivePlayer extends LitElement {
 
     this.player.addEventListener('loaded', () => {
       const stats = this.player.getStats()
-      const manifestTimeInMiliseconds = Math.round(
+      const manifestTimeInMilliseconds = Math.round(
         stats.manifestTimeSeconds * 1000
       )
 
@@ -214,7 +214,7 @@ export class InlivePlayer extends LitElement {
         name: 'loaded_event',
         data: {
           selectedBitrateInKilobits: this.bitToKilobit(stats.streamBandwidth),
-          manifestTimeInMiliseconds,
+          manifestTimeInMilliseconds,
         },
       }
 
@@ -241,7 +241,8 @@ export class InlivePlayer extends LitElement {
           } = this.stall
 
           const stats = this.player.getStats()
-          const stallDurationInMiliseconds = Date.now() - clientTimeInUnixMillis
+          const stallDurationInMilliseconds =
+            Date.now() - clientTimeInUnixMillis
 
           const body = {
             clientID: '',
@@ -255,7 +256,7 @@ export class InlivePlayer extends LitElement {
               estimatedBandwidthInKilobits: this.bitToKilobit(
                 stats.estimatedBandwidth
               ),
-              stallDurationInMiliseconds,
+              stallDurationInMilliseconds,
             },
           }
 
@@ -436,7 +437,7 @@ export class InlivePlayer extends LitElement {
   /**
    *
    * @param {string} segmentURI - The segment URI
-   * @returns {number} segmentDownloadedTimeInMs - The segment downloaded time in miliseconds
+   * @returns {number} segmentDownloadedTimeInMs - The segment downloaded time in milliseconds
    */
   getTimeSegmentDownloaded(segmentURI) {
     const segmentPerformance = window.performance.getEntriesByName(
@@ -482,7 +483,7 @@ export class InlivePlayer extends LitElement {
   }
 
   /**
-   * @returns {number} bufferLevelInMs - Returns the number of buffer level in miliseconds
+   * @returns {number} bufferLevelInMs - Returns the number of buffer level in milliseconds
    */
   getBufferLevel() {
     if (this.video instanceof HTMLVideoElement) {
