@@ -127,13 +127,26 @@ const getStatsAuthKey = async (baseUrl, streamID, clientID) => {
   return fetchResponse.data
 }
 
+const statsLogsOptions = {
+  page: 1,
+  pageSize: 10,
+}
+
 /**
  *
  * @param {InitializationInstance} initInstance - The initialization instance received from the init() function
  * @param {number} streamID - stream ID
+ * @param {{
+ *  page: number,
+ *  pageSize: number
+ * }} options - The stats logs options
  * @returns {Promise<FetchResponse>} Returns a list of stats event
  */
-export const getStatsEventList = async (initInstance, streamID) => {
+export const getStatsLogs = async (
+  initInstance,
+  streamID,
+  options = statsLogsOptions
+) => {
   const defaultConfig = api
 
   if (initInstance.constructor.name !== InitializationInstance.name) {
@@ -153,7 +166,7 @@ export const getStatsEventList = async (initInstance, streamID) => {
   const apiUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
 
   let fetchResponse = await Internal.fetchHttp({
-    url: `${apiUrl}/streams/${streamID}/logs`,
+    url: `${apiUrl}/streams/${streamID}/logs?page=${options.page}&page_size=${options.pageSize}`,
     token: initInstance.config.apiKey,
     method: 'GET',
   }).catch((error) => {
@@ -200,10 +213,10 @@ export const getStatsEventList = async (initInstance, streamID) => {
  *  CLIENTLOG: 'client_log',
  * }
  *
- * const events = await getStats(initInstance,streamID)
+ * const events = await getStatsRealtime(initInstance,streamID)
  * events.addEventListener(Stat.PLAYER,(ev)=>{console.log(ev.data)})
  */
-export const getStats = async (initInstance, streamID) => {
+export const getStatsRealtime = async (initInstance, streamID) => {
   const defaultConfig = api
 
   if (initInstance.constructor.name !== InitializationInstance.name) {
