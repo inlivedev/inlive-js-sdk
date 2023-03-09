@@ -1,15 +1,29 @@
+import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
 import { api } from '../../internal/config/index.js'
 import { merge } from 'lodash'
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 import snakecaseKeys from 'snakecase-keys'
+import camelcaseKeys from 'camelcase-keys'
+
+/**
+ * @typedef FetchStatus
+ * @property {number} code - status code
+ * @property {string} message - status message
+ * @property {string} type - status type
+ */
+
+/**
+ * @typedef FetchResponse
+ * @property {FetchStatus} status -- A status response
+ * @property {Array<any>} data -- A return data as per endpoint
+ */
 
 /**
  * @typedef trackEvent
  * @property {string} clientID - unique identifier of the client, should be store in cookie or local storage to make it persistence
  * @property {number} elapsedTimeInSeconds - elapsed time in seconds
  * @property {number} clientTimeInUnixMillis - unix epoch time
- * @property {number} streamID - stream id
  * @property {string} name - event name
  * @property {object} data - event object
  */
@@ -19,12 +33,13 @@ const fpPromise = FingerprintJS.load({ monitoring: false })
 /**
  * Track analytic event
  *
+ * @param {number} streamID - The ID of the stream
  * @param {trackEvent} data - track event data to report
  * @param {import('../../internal/config/api.js').API} [apiOptions] - options for tracking request
- * @returns {Promise<import('../../internal/fetch-http/fetch-http.js').APIResponse>} returns the status of the request
+ * @returns {Promise<FetchResponse>} returns the response data
  * @throws {Error}
  */
-export const track = async (data, apiOptions) => {
+export const track = async (streamID, data, apiOptions) => {
   const defaultConfig = api
   if (typeof apiOptions !== 'undefined') {
     merge(defaultConfig, apiOptions)
@@ -32,20 +47,39 @@ export const track = async (data, apiOptions) => {
   const baseUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
 
   data.clientID = await getClientID()
-  const statsAuthKey = await getStatsAuthKey(
-    baseUrl,
-    data.streamID,
-    data.clientID
-  )
+  const statsAuthKey = await getStatsAuthKey(baseUrl, streamID, data.clientID)
 
-  const fetchResponse = await Internal.fetchHttp({
-    url: `${baseUrl}/streams/${data.streamID}/stats`,
+  let fetchResponse = await Internal.fetchHttp({
+    url: `${baseUrl}/streams/${streamID}/stats`,
     token: statsAuthKey,
     method: 'POST',
     body: snakecaseKeys(data),
   }).catch((error) => {
     throw error
   })
+
+  if (fetchResponse) {
+    switch (fetchResponse.code) {
+      case 200:
+        fetchResponse = {
+          status: {
+            code: fetchResponse.code,
+            message: 'Successfully send the data',
+            type: 'success',
+          },
+          data: camelcaseKeys(fetchResponse.data),
+        }
+
+        break
+      case 403: {
+        throw new Error(
+          'Failed to send the data because the API Key is not valid. Please provide a valid and active API Key.'
+        )
+      }
+      default:
+        break
+    }
+  }
 
   return fetchResponse
 }
@@ -94,9 +128,68 @@ const getStatsAuthKey = async (baseUrl, streamID, clientID) => {
 }
 
 /**
+ *
+ * @param {InitializationInstance} initInstance - The initialization instance received from the init() function
+ * @param {number} streamID - stream ID
+ * @returns {Promise<FetchResponse>} Returns a list of stats event
+ */
+export const getStatsEventList = async (initInstance, streamID) => {
+  const defaultConfig = api
+
+  if (initInstance.constructor.name !== InitializationInstance.name) {
+    throw new TypeError(
+      `Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function`
+    )
+  } else if (typeof streamID !== 'number') {
+    throw new TypeError(
+      'Failed to process because the stream ID is not in a number format. The stream ID must be in a number format'
+    )
+  }
+
+  if (typeof initInstance.config.api === 'object') {
+    merge(defaultConfig, initInstance.config.api)
+  }
+
+  const apiUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
+
+  let fetchResponse = await Internal.fetchHttp({
+    url: `${apiUrl}/streams/${streamID}/logs`,
+    token: initInstance.config.apiKey,
+    method: 'GET',
+  }).catch((error) => {
+    return error
+  })
+
+  if (fetchResponse) {
+    switch (fetchResponse.code) {
+      case 200:
+        fetchResponse = {
+          status: {
+            code: fetchResponse.code,
+            message: 'Successfully got a list of stats event',
+            type: 'success',
+          },
+          data: camelcaseKeys(fetchResponse.data),
+        }
+
+        break
+      case 403: {
+        throw new Error(
+          'Failed to get a list of stats event because the API Key is not valid. Please provide a valid and active API Key.'
+        )
+      }
+      default:
+        break
+    }
+  }
+
+  return fetchResponse
+}
+
+/**
  * Subscribe to stats event
  *
- * @param {import('../../app/init/init.js').Config} app - app instance
+ * @param {InitializationInstance} initInstance - The initialization instance received from the init() function
  * @param {number} streamID - stream ID
  * @returns {Promise<EventSource>} returns the event source
  * @example
@@ -107,12 +200,31 @@ const getStatsAuthKey = async (baseUrl, streamID, clientID) => {
  *  CLIENTLOG: 'client_log',
  * }
  *
- * const events = await getStats(app,streamID)
+ * const events = await getStats(initInstance,streamID)
  * events.addEventListener(Stat.PLAYER,(ev)=>{console.log(ev.data)})
  */
-export const getStats = async (app, streamID) => {
-  const apiUrl = app.api.baseUrl + '/' + app.api.version
-  const eventKey = await Internal.getEventKey(app.apiKey, apiUrl)
+export const getStats = async (initInstance, streamID) => {
+  const defaultConfig = api
+
+  if (initInstance.constructor.name !== InitializationInstance.name) {
+    throw new TypeError(
+      `Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function`
+    )
+  } else if (typeof streamID !== 'number') {
+    throw new TypeError(
+      'Failed to process because the stream ID is not in a number format. The stream ID must be in a number format'
+    )
+  }
+
+  if (typeof initInstance.config.api === 'object') {
+    merge(defaultConfig, initInstance.config.api)
+  }
+
+  const apiUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
+  const eventKey = await Internal.getEventKey(
+    initInstance.config.apiKey,
+    apiUrl
+  )
 
   const events = new EventSource(
     `${apiUrl}/streams/${streamID}/stats/${eventKey}`,
