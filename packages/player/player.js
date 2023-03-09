@@ -137,12 +137,6 @@ export class InlivePlayer extends LitElement {
           const fileName = this.getFileName(response.uri)
 
           if (fileName.indexOf('chunk') === 0) {
-            const segmentPerformance = window.performance.getEntriesByName(
-              response.uri,
-              'resource'
-            )
-
-            const downloadTimeInMs = segmentPerformance[0]?.duration
             const manifestExtension = this.getFileExtension(this.src)
 
             let manifestFormat
@@ -163,7 +157,6 @@ export class InlivePlayer extends LitElement {
             const body = {
               elapsedTimeInSeconds: this.getLiveEdge(),
               clientTimeInUnixMillis: Date.now(),
-              streamID: this.getStreamId(this.src),
               clientID: '',
               name: 'segment_downloaded_event',
               data: {
@@ -174,7 +167,9 @@ export class InlivePlayer extends LitElement {
                 bufferLevelInMiliseconds: this.getBufferLevel(),
                 liveLatencyInMiliseconds: this.getLiveLatency(),
                 segmentBitrateInKilobits: segmentBitrate,
-                downloadTimeInMiliseconds: downloadTimeInMs,
+                downloadTimeInMiliseconds: this.getTimeSegmentDownloaded(
+                  response.uri
+                ),
               },
             }
 
@@ -186,12 +181,13 @@ export class InlivePlayer extends LitElement {
 
     this.player.addEventListener('loaded', () => {
       const stats = this.player.getStats()
-      const manifestTimeInMiliseconds = stats.manifestTimeSeconds * 1000
+      const manifestTimeInMiliseconds = Math.round(
+        stats.manifestTimeSeconds * 1000
+      )
 
       const body = {
         elapsedTimeInSeconds: this.getLiveEdge(),
         clientTimeInUnixMillis: Date.now(),
-        streamID: this.getStreamId(this.src),
         clientID: '',
         name: 'loaded_event',
         data: {
@@ -226,7 +222,6 @@ export class InlivePlayer extends LitElement {
           const stallDurationInMiliseconds = Date.now() - clientTimeInUnixMillis
 
           const body = {
-            streamID: this.getStreamId(this.src),
             clientID: '',
             elapsedTimeInSeconds,
             clientTimeInUnixMillis,
@@ -253,7 +248,6 @@ export class InlivePlayer extends LitElement {
       const body = {
         elapsedTimeInSeconds: this.getLiveEdge(),
         clientTimeInUnixMillis: Date.now(),
-        streamID: this.getStreamId(this.src),
         clientID: '',
         name: 'adaptation_event',
         data: {
@@ -281,7 +275,6 @@ export class InlivePlayer extends LitElement {
         const body = {
           elapsedTimeInSeconds: this.getLiveEdge(),
           clientTimeInUnixMillis: Date.now(),
-          streamID: this.getStreamId(this.src),
           clientID: '',
           name: 'error_event',
           data: {
@@ -300,7 +293,7 @@ export class InlivePlayer extends LitElement {
    * @returns {number} kilobit - Returns the number of kilobit from the provided bit
    */
   bitToKilobit(bit) {
-    return bit / 1000
+    return Math.round(bit / 1000)
   }
 
   /**
@@ -309,7 +302,8 @@ export class InlivePlayer extends LitElement {
    * @returns {number} bit - Returns the number of bits from the provided bytes
    */
   byteToBit(bytes) {
-    return bytes * 8
+    const roundedBytes = Math.round(bytes)
+    return roundedBytes * 8
   }
 
   /**
@@ -359,6 +353,27 @@ export class InlivePlayer extends LitElement {
     const now = availabilityStartTimeInMs + seekRangeEndInMs
     const latencyInMs = Date.now() - now
     return latencyInMs
+  }
+
+  /**
+   *
+   * @param {string} segmentURI - The segment URI
+   * @returns {number} segmentDownloadedTimeInMs - The segment downloaded time in miliseconds
+   */
+  getTimeSegmentDownloaded(segmentURI) {
+    const segmentPerformance = window.performance.getEntriesByName(
+      segmentURI,
+      'resource'
+    )
+
+    let segmentDownloadedTimeInMs = 0
+
+    for (const data of segmentPerformance) {
+      const duration = Math.round(data.duration)
+      segmentDownloadedTimeInMs = segmentDownloadedTimeInMs + duration
+    }
+
+    return segmentDownloadedTimeInMs
   }
 
   /**
@@ -449,7 +464,7 @@ export class InlivePlayer extends LitElement {
     const segmentSizeInBit = this.byteToBit(segmentSizeInByte)
     const bitPerSec = segmentSizeInBit / segmentDurationInSeconds
     const kilobitPerSec = bitPerSec / 1000
-    return Math.floor(kilobitPerSec)
+    return Math.round(kilobitPerSec)
   }
 
   /**
@@ -509,7 +524,9 @@ export class InlivePlayer extends LitElement {
     })
     this.dispatchEvent(event_)
 
-    await track(eventData, this.api)
+    const streamID = this.getStreamId(this.src)
+
+    await track(streamID, eventData, this.api)
   }
 
   /**
