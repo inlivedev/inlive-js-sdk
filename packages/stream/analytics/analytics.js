@@ -120,7 +120,7 @@ const getStatsAuthKey = async (baseUrl, streamID, clientID) => {
     throw error
   })
 
-  if (fetchResponse.code !== 200) {
+  if (fetchResponse.code >= 300) {
     throw new Error(fetchResponse.message)
   }
 

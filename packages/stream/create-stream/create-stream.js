@@ -90,9 +90,9 @@ export const createStream = async (initObject, parameters) => {
       throw new Error(
         'Failed to create a new stream because the API Key is not valid. Please provide a valid and active API Key.'
       )
-    } else if (fetchResponse && fetchResponse.code !== 200) {
+    } else if (fetchResponse && fetchResponse.code >= 300) {
       throw new Error(
-        'Failed to create a new stream because unexpected error from the server'
+        'Failed to create a new stream because of unexpected error'
       )
     }
 
