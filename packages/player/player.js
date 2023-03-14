@@ -6,6 +6,7 @@ import { Internal } from '../internal/index.js'
 import { merge } from 'lodash'
 import { track } from '../stream/analytics/analytics.js'
 import { api } from '../internal/config/api.js'
+import { Stream } from '../stream/stream.js'
 
 /**
  * @class InlivePlayer
@@ -51,10 +52,15 @@ export class InlivePlayer extends LitElement {
     this.config = {
       player: {
         streaming: {
-          bufferingGoal: 0.7,
           lowLatencyMode: true,
           inaccurateManifestTolerance: 0,
-          rebufferingGoal: 0.01,
+          rebufferingGoal: 1,
+          bufferingGoal: 2,
+        },
+        manifest: {
+          dash: {
+            ignoreMinBufferTime: true,
+          },
         },
       },
     }
@@ -76,15 +82,16 @@ export class InlivePlayer extends LitElement {
     if (changedProperties.has('src')) {
       const oldValue = changedProperties.get('src')
       if (this.src !== oldValue && this.src.length > 0) {
-        this.loadManifest()
+        this.attachListener()
         this.subscribeToEventSource(this.src)
+        this.loadManifest(this.src)
       } else if (
         this.src !== oldValue &&
         this.src.length === 0 &&
         this.player.getAssetUri()
       ) {
-        this.unloadManifest()
         this.unsubscribeFromEventSource()
+        this.unloadManifest()
       }
     }
   }
@@ -122,11 +129,13 @@ export class InlivePlayer extends LitElement {
   }
 
   /**
-   *    Load a manifest into the player
+   * Load a manifest into the player
+   *
+   * @param {string} source - Manifest URL source
    */
-  async loadManifest() {
+  async loadManifest(source) {
     try {
-      await this.player.load(this.src)
+      await this.player.load(source)
     } catch (error) {
       console.log(error)
     }
@@ -327,7 +336,13 @@ export class InlivePlayer extends LitElement {
       withCredentials: true,
     })
 
-    this.eventSource.addEventListener('streamEnded', this.handleStreamEnded)
+    this.eventSource.addEventListener(Stream.ENDED, () => {
+      this.src = ''
+    })
+
+    this.eventSource.addEventListener(Stream.ERROR, (event) => {
+      console.log(Stream.ERROR, JSON.parse(event.data))
+    })
 
     this.eventSource.addEventListener('error', (event) => {
       console.log(event)
@@ -342,13 +357,6 @@ export class InlivePlayer extends LitElement {
       this.eventSource.close()
       this.eventSource = null
     }
-  }
-
-  /**
-   * Handle the stream ended event
-   */
-  handleStreamEnded() {
-    this.src = ''
   }
 
   /**
@@ -492,12 +500,14 @@ export class InlivePlayer extends LitElement {
       let newestBuffer = 0
 
       for (const buffer of bufferedRange) {
-        const bufferEndInMs = Math.floor(buffer.end * 1000)
-        newestBuffer = Math.max(newestBuffer, bufferEndInMs)
+        const bufferEndInSeconds = buffer.end
+        newestBuffer = Math.max(newestBuffer, bufferEndInSeconds)
       }
 
-      const videoCurrentTime = Math.floor(this.video.currentTime * 1000)
-      const bufferLevelInMs = newestBuffer - videoCurrentTime
+      const videoCurrentTime = this.video.currentTime
+      const bufferLevelInMs = Math.floor(
+        (newestBuffer - videoCurrentTime) * 1000
+      )
 
       return bufferLevelInMs
     }
