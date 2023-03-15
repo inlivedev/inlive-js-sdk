@@ -3,6 +3,7 @@
 import shaka from 'shaka-player'
 import { html, css, LitElement } from 'lit'
 import { Internal } from '../internal/index.js'
+import { fetchStream } from '../stream/fetch-stream/fetch-stream.js'
 import { merge } from 'lodash'
 import { track } from '../stream/analytics/analytics.js'
 import { api } from '../internal/config/api.js'
@@ -32,6 +33,7 @@ export class InlivePlayer extends LitElement {
     muted: { type: Boolean },
     autoplay: { type: Boolean },
     playsinline: { type: Boolean },
+    stream: { state: true },
   }
 
   /**
@@ -46,6 +48,7 @@ export class InlivePlayer extends LitElement {
     this.video = null
     this.player = null
     this.eventSource = null
+    this.stream = null
     /**@ts-ignore */
     this.stall = null
     this.api = api
@@ -78,13 +81,20 @@ export class InlivePlayer extends LitElement {
    *
    * @param {import('lit').PropertyValues} changedProperties - the property that changes
    */
-  updated(changedProperties) {
+  async updated(changedProperties) {
     if (changedProperties.has('src')) {
       const oldValue = changedProperties.get('src')
       if (this.src !== oldValue && this.src.length > 0) {
-        this.attachListener()
-        this.subscribeToEventSource(this.src)
-        this.loadManifest(this.src)
+        this.stream = await fetchStream(
+          this.getApiUrl(),
+          this.getStreamId(this.src)
+        )
+
+        if (!this.stream.endedAt) {
+          this.attachListener()
+          this.subscribeToEventSource(this.src)
+          this.loadManifest(this.src)
+        }
       } else if (
         this.src !== oldValue &&
         this.src.length === 0 &&
