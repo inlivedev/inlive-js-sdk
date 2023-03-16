@@ -5,7 +5,6 @@ import merge from 'lodash-es/merge'
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 import snakecaseKeys from 'snakecase-keys'
 import camelcaseKeys from 'camelcase-keys'
-import { uuidv4 } from '../../internal/uuid/v4.js'
 
 /**
  * @typedef FetchStatus
@@ -102,7 +101,7 @@ const getClientID = async () => {
     localStorage.setItem('inlive_client_id', result.visitorId)
     return result.visitorId
   } else {
-    const uuid = uuidv4()
+    const uuid = Internal.uuidv4()
     localStorage.setItem('inlive_client_id', uuid)
     return uuid
   }
