@@ -33,7 +33,7 @@ export function InitializationInstance(config) {
  * @returns {InitializationInstance} InitializationInstance that contains config object of apiKey
  * @throws {Error}
  */
-const init = (config = defaultConfig) => {
+const init = (config) => {
   if (config !== undefined && config.apiKey !== undefined) {
     if (typeof config.apiKey !== 'string') {
       throw new TypeError(
