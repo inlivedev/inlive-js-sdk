@@ -12,12 +12,6 @@ import { Stream } from '../stream/stream.js'
 /**
  * @class InlivePlayer
  * @augments LitElement
- * @property {number} streamid - stream id
- * @property {string} src - video source
- * @property {object} config - shaka player config
- * @property {import('../../internal/config/api.js').API} api - api config
- * @property {object} player - shaka player instance
- * @property {object} video -  video element
  */
 export class InlivePlayer extends LitElement {
   static styles = css`
@@ -41,16 +35,26 @@ export class InlivePlayer extends LitElement {
    */
   constructor() {
     super()
+    /**@type {string} */
     this.src = ''
+    /**@type {boolean} */
     this.muted = false
+    /**@type {boolean} */
     this.autoplay = false
+    /**@type {boolean} */
     this.playsinline = false
+    /**@type {HTMLVideoElement | null} */
     this.video = null
+    /**@type {any} */
     this.player = null
+    /**@type {EventSource | null} */
     this.eventSource = null
+    /**@type {import('../stream/fetch-stream/fetch-stream.js').StreamResponse | null} */
     this.stream = null
     /**@ts-ignore */
+    /** @type {{elapsedTimeInSeconds: number, clientTimeInUnixMillis: number } | null} */
     this.stall = null
+    /** @type {import('../internal/config/api.js').API} */
     this.api = api
     this.config = {
       player: {
