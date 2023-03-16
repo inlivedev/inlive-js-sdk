@@ -1,7 +1,7 @@
 /**
  * @typedef API
- * @property {string} baseUrl - The inLive API base URL
- * @property {string} version - The version of the API
+ * @property {string} [baseUrl] - The inLive API base URL
+ * @property {string} [version] - The version of the API
  */
 
 /**

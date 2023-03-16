@@ -5,8 +5,8 @@ import merge from 'lodash.merge'
 /**
  * @typedef Config
  * @property {string} apiKey - A string key for API authentication
- * @property {api} api - config for API
- * @property {webrtc} webrtc - config for WebRTC
+ * @property {import('../../internal/config/api.js').API} api - config for API
+ * @property {import('../../internal/config/webrtc.js').WebRTC} webrtc - config for WebRTC
  */
 
 /**
@@ -22,7 +22,7 @@ export function InitializationInstance(config) {
  * Initialize an initialization instance
  *
  * @function
- * @param {Config=} config - A set of key/value parameter configuration
+ * @param {Config} config - A set of key/value parameter configuration
  * @returns {InitializationInstance} InitializationInstance that contains config object of apiKey
  * @throws {Error}
  */

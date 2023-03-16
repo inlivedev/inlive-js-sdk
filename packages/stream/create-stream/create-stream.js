@@ -24,8 +24,8 @@ function slugify(text) {
 /**
  * @typedef Parameters
  * @property {string} name -- name of stream
- * @property {string} slug -- slug of stream
- * @property {string} description -- description of stream
+ * @property {string} [slug] -- slug of stream
+ * @property {string} [description] -- description of stream
  */
 
 /**
