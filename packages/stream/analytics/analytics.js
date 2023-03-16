@@ -5,6 +5,7 @@ import merge from 'lodash-es/merge'
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 import snakecaseKeys from 'snakecase-keys'
 import camelcaseKeys from 'camelcase-keys'
+import { uuidv4 } from '../../internal/uuid/v4.js'
 
 /**
  * @typedef FetchStatus
@@ -28,7 +29,10 @@ import camelcaseKeys from 'camelcase-keys'
  * @property {object} data - event object
  */
 
-const fpPromise = FingerprintJS.load({ monitoring: false })
+const fpPromise =
+  typeof window !== 'undefined' && window instanceof Window
+    ? FingerprintJS.load({ monitoring: false })
+    : null
 
 /**
  * Track analytic event
@@ -92,10 +96,16 @@ const getClientID = async () => {
   if (clientID) return clientID
 
   const fp = await fpPromise
-  const result = await fp.get()
-  localStorage.setItem('inlive_client_id', result.visitorId)
 
-  return result.visitorId
+  if (fp) {
+    const result = await fp.get()
+    localStorage.setItem('inlive_client_id', result.visitorId)
+    return result.visitorId
+  } else {
+    const uuid = uuidv4()
+    localStorage.setItem('inlive_client_id', uuid)
+    return uuid
+  }
 }
 
 /**
