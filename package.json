@@ -8,6 +8,7 @@
   "files": [
     "dist/**/*"
   ],
+  "main": "dist/inlive-js-sdk.js",
   "module": "dist/inlive-js-sdk.js",
   "types": "dist/inlive-js-sdk.d.ts",
   "repository": {
