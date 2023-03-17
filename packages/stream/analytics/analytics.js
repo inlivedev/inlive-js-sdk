@@ -28,6 +28,13 @@ import camelcaseKeys from 'camelcase-keys'
  * @property {object} data - event object
  */
 
+export const Stat = {
+  CLIENT_STAT: 'client_stat',
+  CLIENT_LOG: 'client_log',
+  FFMPEG_STAT: 'ffmpeg_stat',
+  WEBRTC_STAT: 'webrtc_stat',
+}
+
 const fpPromise =
   typeof window !== 'undefined' && window instanceof Window
     ? FingerprintJS.load({ monitoring: false })
@@ -216,14 +223,16 @@ export const getStatsLogs = async (
  * @returns {Promise<EventSource>} returns the event source
  * @example
  * const Stat = {
- *  PLAYER: 'player',
- *  WEBRTC: 'webrtc',
- *  CLIENTSTAT: 'client_stat',
- *  CLIENTLOG: 'client_log',
+ *  CLIENT_STAT: 'client_stat',
+ *  CLIENT_LOG: 'client_log',
+ *  FFMPEG_STAT: 'ffmpeg_stat',
+ *  WEBRTC_STAT: 'webrtc_stat',
  * }
  *
- * const events = await getStatsRealtime(initInstance,streamID)
- * events.addEventListener(Stat.PLAYER,(ev)=>{console.log(ev.data)})
+ * const events = await getStatsRealtime(initInstance, streamID)
+ * events.addEventListener(Stat.CLIENT_STAT, (event) => {
+ *   console.log(JSON.parse(event.data))
+ * })
  */
 export const getStatsRealtime = async (initInstance, streamID) => {
   const defaultConfig = api
