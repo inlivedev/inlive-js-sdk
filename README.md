@@ -225,13 +225,13 @@ Alternatively using the script tag.
 The player will be imported to the browser as a [web component](https://developer.mozilla.org/en-US/docs/Web/Web_Components). After you have imported the player. You can use it in your HTML view or client-side component of your choice like this.
 
 ```html
-<inlive-player src="/manifest.mpd"></inlive-player>
+<inlive-player src="/manifest.mpd" autoplay muted playsinline></inlive-player>
 ```
 
 **Example**
 
 ```html
-<inlive-player src="/manifest.mpd"></inlive-player>
+<inlive-player src="/manifest.mpd" autoplay muted playsinline></inlive-player>
 
 <script type="module" src="https://cdn.jsdelivr.net/npm/@inlivedev/inlive-js-sdk/dist/player.js"></script>
 ```
