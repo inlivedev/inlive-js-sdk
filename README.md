@@ -162,10 +162,13 @@ await stream.end()
 
 #### Get a list of streams
 
-You can get to see the list of the streams that you've created by using the `getStreams` module.
+You can get to see the list of the streams that you have created by using the `getStreams` module. The result wil be paginated and return the latest 10 streams data already created by you. You can change the pagination options by setting the `page` and `pageSize` fields.
 
 ```js
-const streamList = await InliveStream.getStreams(inliveApp)
+const streamList = await InliveStream.getStreams(inliveApp, {
+  page: 1, // set which page number will be displayed (optional)
+  pageSize: 10 // set the total number of streams displayed on one page (optional)
+})
 ```
 
 ### Events
