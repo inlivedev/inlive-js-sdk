@@ -35,7 +35,7 @@ import merge from 'lodash-es/merge'
 
 /**
  * @typedef PaginationParameters
- * @property {number} [page] - the number of displayed page (default: 1)
+ * @property {number} [page] - the page number will be displayed (default: 1)
  * @property {number} [pageSize] - the total number of streams displayed on one page (default: 10)
  */
 
