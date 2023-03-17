@@ -1,4 +1,3 @@
-import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
 
 /**
@@ -17,16 +16,14 @@ import { Internal } from '../../internal/index.js'
 /**
  * A get specific stream data module based on the stream ID passing parameter
  *
- * @param {InitializationInstance} initObject -- initialization object
+ * @param {string} baseUrl -- The base URL of API endpoint with its version
  * @param {number} streamId -- stream ID
  * @returns {Promise<StreamResponse>} returns the restructured data which content status & specific stream data
  * @throws {Error}
  */
-export const fetchStream = async (initObject, streamId) => {
-  if (initObject.constructor.name !== 'InitializationInstance') {
-    throw new TypeError(
-      'Failed to process because initialization is not valid. Please provide required initialization argument which is the initialization instance returned by the init() function'
-    )
+export const fetchStream = async (baseUrl, streamId) => {
+  if (typeof baseUrl !== 'string' || baseUrl.trim().length === 0) {
+    throw new Error('Error because invalid API base url')
   }
 
   if (streamId === null || streamId === undefined) {
@@ -38,11 +35,8 @@ export const fetchStream = async (initObject, streamId) => {
       'Failed to get the stream data because the stream ID is not in number format. A stream ID must be number format'
     )
   } else {
-    const baseUrl = `${initObject.config.api.baseUrl}/${initObject.config.api.version}`
-
     let fetchResponse = await Internal.fetchHttp({
       url: `${baseUrl}/streams/${streamId}`,
-      token: initObject.config.apiKey,
       method: 'GET',
     }).catch((error) => {
       return error

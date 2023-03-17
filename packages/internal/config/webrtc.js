@@ -7,7 +7,7 @@
 
 /**
  * @typedef WebRTC
- * @property {Array<ICEServers>} iceServers - ICE servers used to allow connection with the peers
+ * @property {Array<ICEServers>} [iceServers] - ICE servers used to allow connection with the peers
  */
 
 /**
