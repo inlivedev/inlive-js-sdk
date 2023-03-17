@@ -105,8 +105,10 @@ export const createStream = async (initObject, parameters) => {
       hlsUrl: stream.hls_url,
       dashUrl: stream.dash_url,
       createdAt: stream.created_at,
+      preparedAt: stream.prepared_at,
       startedAt: stream.start_time,
       endedAt: stream.end_time,
+      quality: stream.quality,
     }
     return new Stream(initObject, streamResponse)
   }

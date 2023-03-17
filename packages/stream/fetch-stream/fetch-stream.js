@@ -9,8 +9,10 @@ import { Internal } from '../../internal/index.js'
  * @property {string} hlsUrl - HLS manifest URL
  * @property {string} dashUrl - a Dash format URL
  * @property {string} createdAt - a time string when the stream is created
+ * @property {string} preparedAt - a time string when the stream is prepared
  * @property {string} startedAt - a time string when the stream is started
  * @property {string} endedAt - a time string when the stream is ended
+ * @property {string} quality - the quality of the stream
  */
 
 /**
@@ -58,8 +60,10 @@ export const fetchStream = async (baseUrl, streamId) => {
       hlsUrl: stream.hls_url,
       dashUrl: stream.dash_url,
       createdAt: stream.created_at,
+      preparedAt: stream.prepared_at,
       startedAt: stream.start_time,
       endedAt: stream.end_time,
+      quality: stream.quality,
     }
 
     return streamResponse
