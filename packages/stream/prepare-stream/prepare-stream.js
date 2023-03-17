@@ -45,7 +45,7 @@ const prepareStream = async (initInstance, streamID) => {
       body: {},
     })
 
-    if (response.code !== 200) {
+    if (response.code >= 300) {
       throw new Error('failed to request prepare endpoint:' + response.message)
     }
 

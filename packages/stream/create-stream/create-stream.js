@@ -24,14 +24,8 @@ function slugify(text) {
 /**
  * @typedef Parameters
  * @property {string} name -- name of stream
- * @property {string} slug -- slug of stream
- * @property {string} description -- description of stream
- */
-
-/**
- * @typedef FetchResponse
- * @property {object} status -- A status response
- * @property {object} data -- A return data as per endpoint
+ * @property {string} [slug] -- slug of stream
+ * @property {string} [description] -- description of stream
  */
 
 /**
@@ -96,9 +90,9 @@ export const createStream = async (initObject, parameters) => {
       throw new Error(
         'Failed to create a new stream because the API Key is not valid. Please provide a valid and active API Key.'
       )
-    } else if (fetchResponse && fetchResponse.code !== 200) {
+    } else if (fetchResponse && fetchResponse.code >= 300) {
       throw new Error(
-        'Failed to create a new stream because unexpected error from the server'
+        'Failed to create a new stream because of unexpected error'
       )
     }
 

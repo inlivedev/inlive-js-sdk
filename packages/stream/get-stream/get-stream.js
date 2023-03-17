@@ -26,7 +26,8 @@ export const getStream = async (initObject, streamId) => {
       'Failed to get the stream data because the stream ID is not in number format. A stream ID must be number format'
     )
   } else {
-    const streamResponse = await fetchStream(initObject, streamId)
+    const apiUrl = `${initObject.config.api.baseUrl}/${initObject.config.api.version}`
+    const streamResponse = await fetchStream(apiUrl, streamId)
 
     return new Stream(initObject, streamResponse)
   }

@@ -153,9 +153,9 @@ export class Stream {
   /**
    * Get the base URL of API endpoint
    *
-   * @returns {string} baseURL - return string of API base URL
+   * @returns {string} baseURL - return string of API base URL with its version
    */
-  getBaseUrl() {
+  getAPIUrl() {
     return `${this.app.config.api.baseUrl}/${this.app.config.api.version}`
   }
 
@@ -164,20 +164,21 @@ export class Stream {
    */
   async subscribe() {
     let events = null
+    const baseUrl = this.getAPIUrl()
     if (
       typeof this.app.config.apiKey === 'undefined' ||
       this.app.config.apiKey === ''
     ) {
-      events = new EventSource(
-        `${this.getBaseUrl()}/streams/${this.id}/events`,
-        {
-          withCredentials: true,
-        }
-      )
+      events = new EventSource(`${baseUrl}/streams/${this.id}/events`, {
+        withCredentials: true,
+      })
     } else {
-      const eventKey = await this.getEventKey()
+      const eventKey = await Internal.getEventKey(
+        this.app.config.apiKey,
+        baseUrl
+      )
       events = new EventSource(
-        `${this.getBaseUrl()}/streams/${this.id}/events/${eventKey}`,
+        `${baseUrl}/streams/${this.id}/events/${eventKey}`,
         {
           withCredentials: true,
         }
@@ -254,7 +255,7 @@ export class Stream {
 
   /**
    * @callback eventHandler
-   * @param {object=} data - Data to pass into event handler
+   * @param {any} data - Data to pass into event handler
    */
 
   /**
@@ -278,47 +279,6 @@ export class Stream {
   changeState(newState) {
     this.state = newState
     this.dispatchEvent(Stream.STATECHANGED, { state: newState })
-  }
-
-  /**
-   * Get the event key for events endpoint authentication
-   *
-   * @returns {Promise<string>} eventKey - JWT token for event endpoint authentication
-   */
-  async getEventKey() {
-    const baseUrl = this.getBaseUrl()
-    let token = ''
-
-    let fetchResponse = await Internal.fetchHttp({
-      url: `${baseUrl}/streams/${this.id}/eventkey`,
-      token: this.app.config.apiKey,
-      method: 'POST',
-    }).catch((error) => {
-      return error
-    })
-
-    if (fetchResponse) {
-      switch (fetchResponse.code) {
-        case 200:
-          token = fetchResponse.data
-
-          break
-        case 404: {
-          throw new Error(
-            'Failed to get the event key because the stream ID is not found. Please provide a valid stream ID.'
-          )
-        }
-        case 403: {
-          throw new Error(
-            'Failed to get event key because the authentication is failed. Check the API key'
-          )
-        }
-        default:
-          break
-      }
-    }
-
-    return token
   }
 
   /**
@@ -407,20 +367,25 @@ export class Stream {
     await this.peerConnection.setLocalDescription(offer)
 
     const waitConnected = new Promise((resolve, reject) => {
-      this.on(Stream.STATECHANGED, (event_) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        if (
-          event_.state === Stream.STATE_CONNECTED ||
-          event_.state === Stream.STATE_COMPLETED
-        ) {
-          resolve(true)
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-        } else if (event_.state === Stream.STATE_FAILED) {
-          reject(false)
+      this.on(
+        Stream.STATECHANGED,
+        /**
+         * Listen for state change event
+         *
+         * @param {object} event_ - event object
+         * @param {string} event_.state - state of the stream
+         */
+        (event_) => {
+          if (
+            event_.state === Stream.STATE_CONNECTED ||
+            event_.state === Stream.STATE_COMPLETED
+          ) {
+            resolve(true)
+          } else if (event_.state === Stream.STATE_FAILED) {
+            reject(false)
+          }
         }
-      })
+      )
 
       this.on(Stream.ERROR, () => reject(false))
     })
@@ -444,9 +409,9 @@ export class Stream {
    * @param {RTCIceCandidate} iceCandidate - ice candidate to send to remote RTCPeerConnection
    */
   async sendIceCandidate(iceCandidate) {
-    const baseUrl = this.getBaseUrl()
+    const apiUrl = this.getAPIUrl()
     let fetchResponse = await Internal.fetchHttp({
-      url: `${baseUrl}/streams/${this.id}/ice`,
+      url: `${apiUrl}/streams/${this.id}/ice`,
       body: iceCandidate.toJSON(),
       token: this.app.config.apiKey,
       method: 'POST',
@@ -491,7 +456,7 @@ export class Stream {
     }
 
     this.manifests = await startStream(this.app, this.id)
-    this.data = await fetchStream(this.app, this.id)
+    this.data = await fetchStream(this.getAPIUrl(), this.id)
     this.changeState(Stream.STATE_LIVE)
   }
 
@@ -501,7 +466,7 @@ export class Stream {
   async end() {
     await endStream(this.app, this.id)
     if (this.peerConnection) this.peerConnection.close()
-    this.data = await fetchStream(this.app, this.id)
+    this.data = await fetchStream(this.getAPIUrl(), this.id)
     this.changeState(Stream.STATE_ENDED)
   }
 }
