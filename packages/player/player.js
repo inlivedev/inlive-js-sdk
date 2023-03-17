@@ -376,7 +376,7 @@ export class InlivePlayer extends LitElement {
   /**
    * Get the base URL of API endpoint
    *
-   * @returns {string} baseURL - return string of API base URL
+   * @returns {string} baseURL - return string of API base URL with its version
    */
   getApiUrl() {
     const apiConfig = Internal.config.api

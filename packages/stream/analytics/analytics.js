@@ -110,7 +110,7 @@ const getClientID = async () => {
 /**
  * Get auth key for stat request
  *
- * @param {string} baseUrl - base url
+ * @param {string} baseUrl - API base url with its version
  * @param {number} streamID - stream ID
  * @param {string} clientID - client ID
  * @returns {Promise<string>} returns the auth key

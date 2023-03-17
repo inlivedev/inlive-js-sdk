@@ -16,7 +16,7 @@ import { Internal } from '../../internal/index.js'
 /**
  * A get specific stream data module based on the stream ID passing parameter
  *
- * @param {string} baseUrl -- The base URL of API endpoint
+ * @param {string} baseUrl -- The base URL of API endpoint with its version
  * @param {number} streamId -- stream ID
  * @returns {Promise<StreamResponse>} returns the restructured data which content status & specific stream data
  * @throws {Error}
