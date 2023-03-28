@@ -523,7 +523,7 @@ export class InlivePlayer extends LitElement {
         (newestBuffer - videoCurrentTime) * 1000
       )
 
-      return bufferLevelInMs
+      return bufferLevelInMs < 0 ? 0 : bufferLevelInMs
     }
 
     return 0
