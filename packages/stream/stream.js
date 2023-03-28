@@ -2,6 +2,7 @@ import { initStream } from '../stream/init-stream/init-stream.js'
 import { prepareStream } from '../stream/prepare-stream/prepare-stream.js'
 import { startStream } from '../stream/start-stream/start-stream.js'
 import { fetchStream } from '../stream/fetch-stream/fetch-stream.js'
+import { track } from './analytics/analytics.js'
 import { Internal } from '../internal/index.js'
 import { endStream } from './end-stream/end-stream.js'
 
@@ -458,6 +459,7 @@ export class Stream {
     this.manifests = await startStream(this.app, this.id)
     this.data = await fetchStream(this.getAPIUrl(), this.id)
     this.changeState(Stream.STATE_LIVE)
+    this.reportStats()
   }
 
   /**
@@ -468,5 +470,78 @@ export class Stream {
     if (this.peerConnection) this.peerConnection.close()
     this.data = await fetchStream(this.getAPIUrl(), this.id)
     this.changeState(Stream.STATE_ENDED)
+  }
+
+  /**
+   *  Report the client webrtc video stats for every seconds
+   */
+  reportStats() {
+    if (this.state === Stream.STATE_LIVE) {
+      /** @type {RTCStatsReport | null} */
+      let previousStatsReport = null
+
+      const statsInterval = setInterval(async () => {
+        if (this.state === Stream.STATE_ENDED || !this.peerConnection) {
+          window.clearInterval(statsInterval)
+          return
+        }
+
+        const senderList = this.peerConnection.getSenders()
+        const sender = senderList.find(
+          (sender) => !!(sender.track?.kind === 'video')
+        )
+
+        if (sender instanceof RTCRtpSender) {
+          const statsReport = await sender.getStats()
+
+          //eslint-disable-next-line unicorn/no-array-for-each
+          statsReport.forEach((report) => {
+            if (report.type === 'outbound-rtp') {
+              /** @type {RTCOutboundRtpStreamStats} */
+              const outboundRTP = report
+              const now = outboundRTP.timestamp
+              const bytes = outboundRTP.bytesSent || 0
+
+              if (
+                previousStatsReport instanceof RTCStatsReport &&
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                //@ts-ignore
+                previousStatsReport.has(outboundRTP.id)
+              ) {
+                /** @type {RTCOutboundRtpStreamStats} */
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                //@ts-ignore
+                const previousReport = previousStatsReport.get(outboundRTP.id)
+                const previousTimestamp = previousReport.timestamp
+                const previousBytes = previousReport.bytesSent || 0
+
+                const kilobitPerSeconds =
+                  (8 * (bytes - previousBytes)) / (now - previousTimestamp)
+                const bitPerSeconds = kilobitPerSeconds * 1000
+                const bitrate = Math.floor(bitPerSeconds)
+
+                const elapsedTime =
+                  Date.now() - new Date(this.data.startedAt).getTime()
+                const elapsedTimeInSeconds = elapsedTime / 1000
+
+                const data = {
+                  elapsedTimeInSeconds: elapsedTimeInSeconds,
+                  clientTimeInUnixMillis: Date.now(),
+                  clientID: this.data.createdBy,
+                  name: 'streamer_event',
+                  data: {
+                    bitrate,
+                  },
+                }
+
+                track(this.id, data, this.app.config.api)
+              }
+            }
+          })
+
+          previousStatsReport = statsReport
+        }
+      }, 1000)
+    }
   }
 }
