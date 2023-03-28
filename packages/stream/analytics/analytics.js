@@ -56,7 +56,7 @@ export const track = async (streamID, data, apiOptions) => {
   }
   const baseUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
 
-  data.clientID = await getClientID()
+  data.clientID = data.clientID || (await getClientID())
   const statsAuthKey = await getStatsAuthKey(baseUrl, streamID, data.clientID)
 
   let fetchResponse = await Internal.fetchHttp({
