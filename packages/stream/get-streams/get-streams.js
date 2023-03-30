@@ -1,6 +1,6 @@
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
-import merge from 'lodash-es/merge'
+import merge from 'lodash-es/merge.js'
 
 /**
  * @typedef StreamData
@@ -11,9 +11,12 @@ import merge from 'lodash-es/merge'
  * @property {string} hlsUrl - HLS manifest URL
  * @property {string} dashUrl - a Dash format URL
  * @property {string} createdAt - a time string when the stream is created
+ * @property {string} updatedAt - a time string when the stream is updated
  * @property {string} preparedAt - a time string when the stream is prepared
  * @property {string} startedAt - a time string when the stream is started
  * @property {string} endedAt - a time string when the stream is ended
+ * @property {string} createdBy - the ID of the user who creates the stream
+ * @property {string | null} updatedBy - the ID of the user who updates the stream
  * @property {string} quality - the quality of the stream
  */
 
@@ -107,9 +110,12 @@ export const getStreams = async (initInstance, parameters) => {
             hlsUrl: stream.hls_url,
             dashUrl: stream.dash_url,
             createdAt: stream.created_at,
+            updatedAt: stream.updated_at,
             preparedAt: stream.prepared_at,
             startedAt: stream.start_time,
             endedAt: stream.end_time,
+            createdBy: stream.created_by,
+            updatedBy: stream.updated_by,
             quality: stream.quality,
           })
         )
