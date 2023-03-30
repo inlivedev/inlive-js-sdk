@@ -1,6 +1,6 @@
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
-import merge from 'lodash-es/merge'
+import merge from 'lodash-es/merge.js'
 
 /**
  * @typedef StreamData

@@ -1,7 +1,7 @@
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
 import { api } from '../../internal/config/index.js'
-import merge from 'lodash-es/merge'
+import merge from 'lodash-es/merge.js'
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 import snakecaseKeys from 'snakecase-keys'
 import camelcaseKeys from 'camelcase-keys'
