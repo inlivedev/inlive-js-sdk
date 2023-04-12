@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
 import { api } from '../../internal/config/index.js'
@@ -46,24 +48,84 @@ const fpPromise =
  * @param {number} streamID - The ID of the stream
  * @param {trackEvent} data - track event data to report
  * @param {import('../../internal/config/api.js').API} [apiOptions] - options for tracking request
- * @returns {Promise<FetchResponse>} returns the response data
- * @throws {Error}
  */
 export const track = async (streamID, data, apiOptions) => {
-  const defaultConfig = api
-  if (typeof apiOptions !== 'undefined') {
-    merge(defaultConfig, apiOptions)
-  }
-  const baseUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
+  // @ts-ignore
+  if (typeof window.inliveStats === 'undefined') {
+    const defaultConfig = api
 
-  data.clientID = await getClientID()
-  const statsAuthKey = await getStatsAuthKey(baseUrl, streamID, data.clientID)
+    if (typeof apiOptions !== 'undefined') {
+      merge(defaultConfig, apiOptions)
+    }
+
+    const baseUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
+    const clientID = await getClientID()
+    const statsAuthKey = await getStatsAuthKey(baseUrl, streamID, clientID)
+
+    // @ts-ignore
+    window.inliveStats = {
+      streamID: streamID,
+      clientID: clientID,
+      data: [],
+      authKey: statsAuthKey,
+      baseUrl: baseUrl,
+    }
+
+    const interval = setInterval(() => flushStats(), 1000)
+
+    document.addEventListener('visibilitychange', () => flushStats())
+
+    // @ts-ignore
+    window.inliveStats.interval = interval
+  }
+
+  // @ts-ignore
+  window.inliveStats.data.push(snakecaseKeys(data))
+}
+
+/**
+ *
+ *
+ */
+const flushStats = () => {
+  // @ts-ignore
+  if (window.inliveStats.data.length > 0) {
+    // @ts-ignore
+    const statsOptions = window.inliveStats
+    // @ts-ignore
+    reportStats(
+      statsOptions.clientID,
+      statsOptions.streamID,
+      statsOptions.data,
+      statsOptions.authKey,
+      statsOptions.baseUrl
+    )
+    // @ts-ignore
+    window.inliveStats.data = []
+  }
+}
+
+/**
+ *
+ * @param {string} clientID - unique identifier of the client
+ * @param {number} streamID - The ID of stream
+ * @param {Array<trackEvent>} data - track event data to report
+ * @param {string} authKey - auth key for stats endpoint
+ * @param {string} baseUrl - API base url with its version
+ * @throws {Error}
+ */
+const reportStats = async (clientID, streamID, data, authKey, baseUrl) => {
+  const batchData = {
+    // eslint-disable-next-line camelcase
+    client_id: clientID,
+    data: data,
+  }
 
   let fetchResponse = await Internal.fetchHttp({
     url: `${baseUrl}/streams/${streamID}/stats`,
-    token: statsAuthKey,
+    token: authKey,
     method: 'POST',
-    body: snakecaseKeys(data),
+    body: batchData,
   }).catch((error) => {
     throw error
   })
@@ -78,6 +140,14 @@ export const track = async (streamID, data, apiOptions) => {
             type: 'success',
           },
           data: camelcaseKeys(fetchResponse.data),
+        }
+
+        if (
+          Array.isArray(fetchResponse.data) &&
+          fetchResponse.data.length > 0
+        ) {
+          // there is an error or more in event data
+          console.error('error on processing event data', fetchResponse.data)
         }
 
         break
