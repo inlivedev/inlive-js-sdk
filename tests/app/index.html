@@ -1,0 +1,102 @@
+<html>
+    <head>
+        <title>Test</title>
+        <script src="/dist/player.js" type="module" defer></script>
+        <script type="module" defer>
+            import { InliveApp,Stream,InliveStream } from '/dist/inlive-js-sdk.js';
+            // custom api config if needed
+            // const apiConfig={
+            //         baseUrl: 'https://api.inlive.app', // input your API URL here (required)
+            //         version: 'v1' // input your API version here (required)
+            // }
+
+            const inliveApp = InliveApp.init({
+                apiKey: '<api-key>', // input your API Key here (required)
+                // api:apiConfig
+            });
+
+            const videoElement = document.getElementById('camera');
+
+            // Add your camera & audio constraints
+            const mediaConstraints = {
+            video: true,
+            audio: true
+            };
+
+            const media = await InliveStream.media.getUserMedia(
+            mediaConstraints
+            );
+
+            media.attachTo(videoElement);
+
+           
+            let stream
+
+            document.querySelector('button#live').addEventListener('click', async () => {
+                stream = await InliveStream.createStream(inliveApp, {
+                    name: 'a new stream', //required
+                });
+
+                // sample how to use stream event listener
+                stream.on(Stream.STARTED,async ()=>{
+                    const currentStream = await InliveStream.getStream(inliveApp, stream.id);
+                    document.querySelector('inlive-player').src = currentStream.manifests.dash;
+                });
+
+                await stream.prepare();
+                await stream.init(media.stream)
+                await stream.live();
+                console.log(stream.manifests);
+            
+            });
+
+            document.querySelector('button#end').addEventListener('click', async () => {
+                await stream.end();
+            });
+
+            document.querySelector('inlive-player').api = apiConfig;
+        </script>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: sans-serif;
+                text-align: center;
+            }
+            main {
+                display: flex;
+                flex-direction: row;
+                align-items: start;
+                justify-content: center;
+            }
+            section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                margin: 1rem;
+                width: 50%;
+            }
+            video,inlive-player {
+                display: block;
+                width: 100%;
+                max-width: 500px;
+                height: auto;
+                background-color: black;
+                aspect-ratio: 4/3;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Test</h1>
+        <main>
+            <section>
+                <video id="camera"></video>
+                <p><button id="live">Live</button> <button id="end">End</button></button></p>
+            </section>
+            <section>
+                <inlive-player></inlive-player>
+            </section>
+        </main>
+    </body>
+</html>
