@@ -161,7 +161,6 @@ export class InlivePlayer extends LitElement {
 
       this.player = new shaka.Player(this.video)
       this.player.configure(this.config.player)
-      this.attachListener()
     } else {
       throw new TypeError('Element is not a valid video element')
     }
