@@ -32,7 +32,6 @@ import camelcaseKeys from 'camelcase-keys'
 
 export const Stat = {
   CLIENT_STAT: 'client_stat',
-  CLIENT_LOG: 'client_log',
   FFMPEG_STAT: 'ffmpeg_stat',
   WEBRTC_STAT: 'webrtc_stat',
 }
@@ -42,6 +41,17 @@ const fpPromise =
     ? FingerprintJS.load({ monitoring: false })
     : null
 
+const client = {
+  stats: {
+    streamID: Number.NaN,
+    clientID: '',
+    data: [],
+    authKey: '',
+    baseUrl: '',
+    interval: undefined,
+  },
+}
+
 /**
  * Track analytic event
  *
@@ -50,8 +60,10 @@ const fpPromise =
  * @param {import('../../internal/config/api.js').API} [apiOptions] - options for tracking request
  */
 export const track = async (streamID, data, apiOptions) => {
-  // @ts-ignore
-  if (typeof window.inliveStats === 'undefined') {
+  if (
+    Number.isNaN(client.stats.streamID) ||
+    client.stats.clientID.trim().length === 0
+  ) {
     const defaultConfig = api
 
     if (typeof apiOptions !== 'undefined') {
@@ -62,46 +74,37 @@ export const track = async (streamID, data, apiOptions) => {
     const clientID = await getClientID()
     const statsAuthKey = await getStatsAuthKey(baseUrl, streamID, clientID)
 
-    // @ts-ignore
-    window.inliveStats = {
-      streamID: streamID,
-      clientID: clientID,
-      data: [],
-      authKey: statsAuthKey,
-      baseUrl: baseUrl,
-    }
+    client.stats.streamID = streamID
+    client.stats.clientID = clientID
+    client.stats.authKey = statsAuthKey
+    client.stats.baseUrl = baseUrl
 
     const interval = setInterval(() => flushStats(), 1000)
 
     document.addEventListener('visibilitychange', () => flushStats())
 
     // @ts-ignore
-    window.inliveStats.interval = interval
+    client.stats.interval = interval
   }
 
   // @ts-ignore
-  window.inliveStats.data.push(snakecaseKeys(data))
+  client.stats.data = [...client.stats.data, snakecaseKeys(data)]
 }
 
 /**
  *
- *
  */
-const flushStats = () => {
-  // @ts-ignore
-  if (window.inliveStats.data.length > 0) {
-    // @ts-ignore
-    const statsOptions = window.inliveStats
-    // @ts-ignore
-    reportStats(
-      statsOptions.clientID,
-      statsOptions.streamID,
-      statsOptions.data,
-      statsOptions.authKey,
-      statsOptions.baseUrl
+const flushStats = async () => {
+  if (client.stats.data.length > 0) {
+    await reportStats(
+      client.stats.clientID,
+      client.stats.streamID,
+      client.stats.data,
+      client.stats.authKey,
+      client.stats.baseUrl
     )
-    // @ts-ignore
-    window.inliveStats.data = []
+
+    client.stats.data = []
   }
 }
 
@@ -116,7 +119,6 @@ const flushStats = () => {
  */
 const reportStats = async (clientID, streamID, data, authKey, baseUrl) => {
   const batchData = {
-    // eslint-disable-next-line camelcase
     client_id: clientID,
     data: data,
   }
@@ -294,7 +296,6 @@ export const getStatsLogs = async (
  * @example
  * const Stat = {
  *  CLIENT_STAT: 'client_stat',
- *  CLIENT_LOG: 'client_log',
  *  FFMPEG_STAT: 'ffmpeg_stat',
  *  WEBRTC_STAT: 'webrtc_stat',
  * }
