@@ -4,32 +4,34 @@
         <script src="/dist/player.js" type="module" defer></script>
         <script type="module" defer>
             import { InliveApp,Stream,InliveStream } from '/dist/inlive-js-sdk.js';
+
             // custom api config if needed
-            // const apiConfig={
-            //         baseUrl: 'https://api.inlive.app', // input your API URL here (required)
-            //         version: 'v1' // input your API version here (required)
-            // }
+            const apiConfig = {
+              // baseUrl: 'https://api.inlive.app', // input the API URL here
+              // version: 'v1' // input the API version here
+            }
 
             const inliveApp = InliveApp.init({
-                apiKey: '<api-key>', // input your API Key here (required)
-                // api:apiConfig
+              // input your API Key here (required)
+              apiKey: '<api-key>',
+              api: apiConfig
             });
 
             const videoElement = document.getElementById('camera');
 
             // Add your camera & audio constraints
             const mediaConstraints = {
-            video: true,
-            audio: true
+              video: true,
+              audio: true
             };
 
             const media = await InliveStream.media.getUserMedia(
-            mediaConstraints
+              mediaConstraints
             );
 
             media.attachTo(videoElement);
 
-           
+
             let stream
 
             document.querySelector('button#live').addEventListener('click', async () => {
@@ -47,7 +49,6 @@
                 await stream.init(media.stream)
                 await stream.live();
                 console.log(stream.manifests);
-            
             });
 
             document.querySelector('button#end').addEventListener('click', async () => {
@@ -95,7 +96,7 @@
                 <p><button id="live">Live</button> <button id="end">End</button></button></p>
             </section>
             <section>
-                <inlive-player></inlive-player>
+                <inlive-player autoplay muted playsinline></inlive-player>
             </section>
         </main>
     </body>
