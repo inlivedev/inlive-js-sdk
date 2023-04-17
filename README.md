@@ -47,6 +47,7 @@ Because the InLive JavaScript SDK relies on [ES modules](https://developer.mozil
 ```
 
 ## Usage
+The complete example is available at this [Codepen](https://codepen.io/inlive/pen/BaPExzJ). Below is the breakdown of how to use this SDK.
 
 ### Initialize the SDK
 
@@ -141,15 +142,15 @@ The init method will be resolved once the WebRTC connection is connected. Once c
 
 #### Start a live-stream session
 
-You can start a live stream by using `stream.start()` method to start a live streaming session. This method will start the video encoding process and start uploading the Dash and HLS video segments to our CDN origin server.
+You can start a live stream by using `stream.live()` method to start a live streaming session. This method will start the video encoding process and start uploading the Dash and HLS video segments to our CDN origin server.
 
 ```js
-const manifests = await stream.start()
+await stream.live()
 
-console.log(manifests) // ['dash' => 'https://.../manifest.mpd', 'hls' => 'https://.../master.m3u8']
+console.log(stream.manifests) // manifests.dash => 'https://.../manifest.mpd', manifests.hls => 'https://.../master.m3u8'
 ```
 
-The start method will return a Dash manifest and HLS master playlist that you can use for any video player that supports those formats.
+Once the request is resolved, the `stream.manifests` property will contain the Dash and HLS manifest URLs. You can use these URLs to play the live stream.
 
 #### End a live-stream session
 
@@ -245,7 +246,7 @@ When you play the stream using the Inlive Player, the user streaming experience 
 
 #### Can I use another player?
 
-Yes, in order to play and watch the DASH and HLS manifests from InLive API, you need a player that supports playing the DASH and HLS media formats. If you have another player in mind you can use it to play and watch the live streaming. However, unlike Inlive Player, other players don't monitor the user streaming experience. So, you will have missing analytics data at your live stream page in the Inlive Studio.
+Yes, in order to play and watch the DASH and HLS manifests from InLive API, you need a player that supports playing the DASH and HLS media formats. If you have another player in mind you can use it to play and watch the live streaming. However, unlike Inlive Player, other players don't monitor the user streaming experience. So, you will have missing analytics data on your live stream page in the Inlive Studio.
 
 ## Contributing
 

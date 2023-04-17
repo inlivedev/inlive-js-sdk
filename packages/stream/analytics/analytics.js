@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { InitializationInstance } from '../../app/init/init.js'
 import { Internal } from '../../internal/index.js'
 import { api } from '../../internal/config/index.js'
@@ -30,7 +32,6 @@ import camelcaseKeys from 'camelcase-keys'
 
 export const Stat = {
   CLIENT_STAT: 'client_stat',
-  CLIENT_LOG: 'client_log',
   FFMPEG_STAT: 'ffmpeg_stat',
   WEBRTC_STAT: 'webrtc_stat',
 }
@@ -40,30 +41,93 @@ const fpPromise =
     ? FingerprintJS.load({ monitoring: false })
     : null
 
+const client = {
+  stats: {
+    streamID: Number.NaN,
+    clientID: '',
+    data: [],
+    authKey: '',
+    baseUrl: '',
+    interval: undefined,
+  },
+}
+
 /**
  * Track analytic event
  *
  * @param {number} streamID - The ID of the stream
  * @param {trackEvent} data - track event data to report
  * @param {import('../../internal/config/api.js').API} [apiOptions] - options for tracking request
- * @returns {Promise<FetchResponse>} returns the response data
- * @throws {Error}
  */
 export const track = async (streamID, data, apiOptions) => {
-  const defaultConfig = api
-  if (typeof apiOptions !== 'undefined') {
-    merge(defaultConfig, apiOptions)
-  }
-  const baseUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
+  if (
+    Number.isNaN(client.stats.streamID) ||
+    client.stats.clientID.trim().length === 0
+  ) {
+    const defaultConfig = api
 
-  data.clientID = await getClientID()
-  const statsAuthKey = await getStatsAuthKey(baseUrl, streamID, data.clientID)
+    if (typeof apiOptions !== 'undefined') {
+      merge(defaultConfig, apiOptions)
+    }
+
+    const baseUrl = `${defaultConfig.baseUrl}/${defaultConfig.version}`
+    const clientID = await getClientID()
+    const statsAuthKey = await getStatsAuthKey(baseUrl, streamID, clientID)
+
+    client.stats.streamID = streamID
+    client.stats.clientID = clientID
+    client.stats.authKey = statsAuthKey
+    client.stats.baseUrl = baseUrl
+
+    const interval = setInterval(() => flushStats(), 1000)
+
+    document.addEventListener('visibilitychange', () => flushStats())
+
+    // @ts-ignore
+    client.stats.interval = interval
+  }
+
+  // @ts-ignore
+  client.stats.data = [...client.stats.data, snakecaseKeys(data)]
+}
+
+/**
+ *
+ */
+const flushStats = async () => {
+  if (client.stats.data.length > 0) {
+    await reportStats(
+      client.stats.clientID,
+      client.stats.streamID,
+      client.stats.data,
+      client.stats.authKey,
+      client.stats.baseUrl
+    )
+
+    client.stats.data = []
+  }
+}
+
+/**
+ *
+ * @param {string} clientID - unique identifier of the client
+ * @param {number} streamID - The ID of stream
+ * @param {Array<trackEvent>} data - track event data to report
+ * @param {string} authKey - auth key for stats endpoint
+ * @param {string} baseUrl - API base url with its version
+ * @throws {Error}
+ */
+const reportStats = async (clientID, streamID, data, authKey, baseUrl) => {
+  const batchData = {
+    client_id: clientID,
+    data: data,
+  }
 
   let fetchResponse = await Internal.fetchHttp({
     url: `${baseUrl}/streams/${streamID}/stats`,
-    token: statsAuthKey,
+    token: authKey,
     method: 'POST',
-    body: snakecaseKeys(data),
+    body: batchData,
   }).catch((error) => {
     throw error
   })
@@ -78,6 +142,14 @@ export const track = async (streamID, data, apiOptions) => {
             type: 'success',
           },
           data: camelcaseKeys(fetchResponse.data),
+        }
+
+        if (
+          Array.isArray(fetchResponse.data) &&
+          fetchResponse.data.length > 0
+        ) {
+          // there is an error or more in event data
+          console.error('error on processing event data', fetchResponse.data)
         }
 
         break
@@ -224,7 +296,6 @@ export const getStatsLogs = async (
  * @example
  * const Stat = {
  *  CLIENT_STAT: 'client_stat',
- *  CLIENT_LOG: 'client_log',
  *  FFMPEG_STAT: 'ffmpeg_stat',
  *  WEBRTC_STAT: 'webrtc_stat',
  * }
