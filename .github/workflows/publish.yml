@@ -1,6 +1,7 @@
 on: 
   push:
     branches:
+      - main
       - dev
 jobs:
   publish:
@@ -12,8 +13,8 @@ jobs:
           node-version: 16
       - run: npm install
       # - run: npm test  # disable temporary
-      - uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.INLIVE_JS_SDK_NPM_TOKEN }}
-          tag: next
-          access: public
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.INLIVE_JS_SDK_NPM_TOKEN }}
+        run: npx semantic-release
