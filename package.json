@@ -13,7 +13,7 @@
   "types": "dist/inlive-js-sdk.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/inlivedev/inlive-js-sdk/"
+    "url": "https://github.com/inlivedev/inlive-js-sdk"
   },
   "scripts": {
     "clean": "rimraf dist",
@@ -76,6 +76,6 @@
     "node": " >=14.16 || >=16.0.0"
   },
   "release": {
-    "branches": ["main", {"name": "dev", "prerelease": "true"}]
+    "branches": ["main", {"name": "dev", "prerelease": "next"}]
   }
 }
