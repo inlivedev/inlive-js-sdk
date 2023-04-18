@@ -76,6 +76,6 @@
     "node": " >=14.16 || >=16.0.0"
   },
   "release": {
-    "branches": ["main", {"name": "dev", "prerelease": "next"}]
+    "branches": ["main", {"name": "dev", "prerelease": true}]
   }
 }
