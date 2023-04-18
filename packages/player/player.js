@@ -4,7 +4,7 @@ import shaka from 'shaka-player'
 import { html, css, LitElement } from 'lit'
 import { Internal } from '../internal/index.js'
 import { fetchStream } from '../stream/fetch-stream/fetch-stream.js'
-import merge from 'lodash-es/merge'
+import merge from 'lodash-es/merge.js'
 import { track } from '../stream/analytics/analytics.js'
 import { api } from '../internal/config/api.js'
 import { Stream } from '../stream/stream.js'
@@ -15,10 +15,35 @@ import { Stream } from '../stream/stream.js'
  */
 export class InlivePlayer extends LitElement {
   static styles = css`
+    *,
+    ::after,
+    ::before {
+      all: unset;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :host {
+      --player-width: 100%;
+      --player-height: auto;
+      --player-max-width: 100%;
+      --player-max-height: none;
+
+      display: block;
+      width: var(--player-width);
+      height: var(--player-height);
+      max-width: var(--player-max-width);
+      max-height: var(--player-max-height);
+    }
+
     video {
       max-width: 100%;
+      max-height: 100%;
       width: 100%;
       height: 100%;
+      object-fit: cover;
+      vertical-align: middle;
     }
   `
 
@@ -88,7 +113,7 @@ export class InlivePlayer extends LitElement {
   async updated(changedProperties) {
     if (changedProperties.has('src')) {
       const oldValue = changedProperties.get('src')
-      if (this.src !== oldValue && this.src.length > 0) {
+      if (this.src !== oldValue && this.src.trim().length > 0) {
         this.stream = await fetchStream(
           this.getApiUrl(),
           this.getStreamId(this.src)
@@ -101,7 +126,7 @@ export class InlivePlayer extends LitElement {
         }
       } else if (
         this.src !== oldValue &&
-        this.src.length === 0 &&
+        this.src.trim().length === 0 &&
         this.player.getAssetUri()
       ) {
         this.unsubscribeFromEventSource()
@@ -136,7 +161,6 @@ export class InlivePlayer extends LitElement {
 
       this.player = new shaka.Player(this.video)
       this.player.configure(this.config.player)
-      this.attachListener()
     } else {
       throw new TypeError('Element is not a valid video element')
     }
@@ -337,6 +361,7 @@ export class InlivePlayer extends LitElement {
    * Subscribe to sse using event source
    *
    * @param {string} source - Manifest URL source
+   * @returns {EventSource} Returns the event source object
    */
   subscribeToEventSource(source) {
     if (this.eventSource instanceof EventSource) {
@@ -361,6 +386,8 @@ export class InlivePlayer extends LitElement {
     this.eventSource.addEventListener('error', (event) => {
       console.log(event)
     })
+
+    return this.eventSource
   }
 
   /**
@@ -523,7 +550,7 @@ export class InlivePlayer extends LitElement {
         (newestBuffer - videoCurrentTime) * 1000
       )
 
-      return bufferLevelInMs
+      return bufferLevelInMs < 0 ? 0 : bufferLevelInMs
     }
 
     return 0

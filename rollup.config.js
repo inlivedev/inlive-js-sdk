@@ -71,7 +71,7 @@ const config = [
     plugins: plugins,
     external: external,
     watch: {
-      include: 'packages/player/**',
+      include: ['packages/player/**', 'packages/stream/**'],
       exclude: 'packages/player/**/*.test.js',
     },
   },
