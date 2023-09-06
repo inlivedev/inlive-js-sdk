@@ -25,6 +25,7 @@ export type FacadeDependencies = {
   }
   roomEvents: {
     peer: RoomPeerType.PeerEvents
+    channel: RoomChannelType.ChannelEvents
   }
 }
 

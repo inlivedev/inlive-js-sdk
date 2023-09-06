@@ -5,7 +5,7 @@ import { createEvent } from '../event/event'
 import { createStreams } from '../stream/streams'
 import { createStream } from '../stream/stream'
 import { createPeer, PeerEvents } from '../peer/peer'
-import { createChannel } from '../channel/channel'
+import { createChannel, ChannelEvents } from '../channel/channel'
 import * as defaultConfig from '../config/config'
 
 const config = {
@@ -44,8 +44,9 @@ export const createFacade = ({
         event,
         streams,
       }).createInstance()
-      const channel = createChannel({
+      createChannel({
         api,
+        event,
         peer,
         streams,
       }).createInstance(baseUrl)
@@ -61,14 +62,16 @@ export const createFacade = ({
            */
           (roomId, clientId) => {
             peer.connect(roomId, clientId)
-            channel.connect(roomId, clientId)
-
             return peer
           },
         on: event.on,
         leaveRoom: api.leaveRoom,
         terminateRoom: api.terminateRoom,
         event: {
+          CHANNEL_CONNECTED: roomEvents.channel.CHANNEL_CONNECTED,
+          CHANNEL_DISCONNECTED: roomEvents.channel.CHANNEL_DISCONNECTED,
+          PEER_CONNECTED: roomEvents.peer.PEER_CONNECTED,
+          PEER_DISCONNECTED: roomEvents.peer.PEER_DISCONNECTED,
           STREAM_ADDED: roomEvents.peer.STREAM_ADDED,
           STREAM_REMOVED: roomEvents.peer.STREAM_REMOVED,
         },
@@ -86,5 +89,6 @@ export const facade = createFacade({
   channel: { createChannel },
   roomEvents: {
     peer: PeerEvents,
+    channel: ChannelEvents,
   },
 })
