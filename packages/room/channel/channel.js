@@ -54,6 +54,9 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._event.emit(ChannelEvents.CHANNEL_CONNECTED)
     }
 
+    /**
+     * Disconnect from the Signaling Channel
+     */
     disconnect = () => {
       if (!this._channel) return
 
