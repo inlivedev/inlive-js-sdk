@@ -1,5 +1,7 @@
 /** @type {RoomPeerType.PeerEvents} */
 export const PeerEvents = {
+  PEER_CONNECTED: 'peerConnected',
+  PEER_DISCONNECTED: 'peerDisconnected',
   STREAM_ADDED: 'streamAdded',
   STREAM_REMOVED: 'streamRemoved',
   _ADD_LOCAL_MEDIA_STREAM: 'addLocalMediaStream',
@@ -41,6 +43,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       })
 
       this._addEventListener()
+      this._event.emit(PeerEvents.PEER_CONNECTED, {
+        roomId: this._roomId,
+        clientId: this._clientId,
+      })
     }
 
     disconnect = () => {
@@ -55,6 +61,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._removeEventListener()
       this._peerConnection.close()
       this._peerConnection = null
+      this._event.emit(PeerEvents.PEER_DISCONNECTED)
     }
 
     getPeerConnection = () => {

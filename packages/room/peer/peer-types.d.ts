@@ -26,6 +26,8 @@ export type PeerDependencies = {
 }
 
 export type PeerEvents = {
+  PEER_CONNECTED: 'peerConnected'
+  PEER_DISCONNECTED: 'peerDisconnected'
   STREAM_ADDED: 'streamAdded'
   STREAM_REMOVED: 'streamRemoved'
   _ADD_LOCAL_MEDIA_STREAM: 'addLocalMediaStream'
