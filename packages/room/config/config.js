@@ -1,7 +1,7 @@
 export const api = {
   baseUrl: 'https://hub.inlive.app',
   version: 'v1',
-};
+}
 
 export const webrtc = {
   iceServers: [
@@ -14,4 +14,4 @@ export const webrtc = {
       urls: 'stun:turn.inlive.app:3478',
     },
   ],
-};
+}
