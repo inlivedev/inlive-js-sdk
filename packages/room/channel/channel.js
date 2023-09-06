@@ -1,12 +1,21 @@
+import { PeerEvents } from '../peer/peer'
+
+/** @type {RoomChannelType.ChannelEvents} */
+export const ChannelEvents = {
+  CHANNEL_CONNECTED: 'channelConnected',
+  CHANNEL_DISCONNECTED: 'channelDisconnected',
+}
+
 /**
  * @param {RoomChannelType.ChannelDependencies} channelDependencies Dependencies for channel module
  */
-export const createChannel = ({ api, peer, streams }) => {
+export const createChannel = ({ api, event, peer, streams }) => {
   const Channel = class {
     _roomId = ''
     _clientId = ''
     _baseUrl
     _api
+    _event
     _peer
     _streams
     /** @type {EventSource | null} */
@@ -18,8 +27,12 @@ export const createChannel = ({ api, peer, streams }) => {
     constructor(baseUrl) {
       this._baseUrl = baseUrl
       this._api = api
+      this._event = event
       this._peer = peer
       this._streams = streams
+
+      this._event.on(PeerEvents.PEER_CONNECTED, this._onPeerConnected)
+      this._event.on(PeerEvents.PEER_DISCONNECTED, this._onPeerDisconnected)
     }
 
     /**
@@ -37,6 +50,22 @@ export const createChannel = ({ api, peer, streams }) => {
         `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
       )
 
+      this._addEventListener()
+      this._event.emit(ChannelEvents.CHANNEL_CONNECTED)
+    }
+
+    disconnect = () => {
+      if (!this._channel) return
+
+      this._removeEventListener()
+      this._channel.close()
+      this._channel = null
+      this._event.emit(ChannelEvents.CHANNEL_DISCONNECTED)
+    }
+
+    _addEventListener = () => {
+      if (!this._channel) return
+
       this._channel.addEventListener('candidate', this._onCandidate)
       this._channel.addEventListener('offer', this._onOffer)
       this._channel.addEventListener('tracks_added', this._onTracksAdded)
@@ -48,6 +77,37 @@ export const createChannel = ({ api, peer, streams }) => {
         'allowed_renegotation',
         this._onAllowedRenegotiation
       )
+    }
+
+    _removeEventListener = () => {
+      if (!this._channel) return
+
+      this._channel.removeEventListener('candidate', this._onCandidate)
+      this._channel.removeEventListener('offer', this._onOffer)
+      this._channel.removeEventListener('tracks_added', this._onTracksAdded)
+      this._channel.removeEventListener(
+        'tracks_available',
+        this._onTracksAvailable
+      )
+      this._channel.removeEventListener(
+        'allowed_renegotation',
+        this._onAllowedRenegotiation
+      )
+    }
+
+    /**
+     * @param {{ roomId: string, clientId: string }} data
+     */
+    _onPeerConnected = (data) => {
+      if (!data) {
+        throw new Error('Channel failed to connect')
+      }
+
+      this.connect(data.roomId, data.clientId)
+    }
+
+    _onPeerDisconnected = () => {
+      this.disconnect()
     }
 
     /**
