@@ -1,8 +1,4 @@
-/**
- * @typedef {RoomAPIType.ApiDependencies} ApiDependencies
- */
-
-/** @param {ApiDependencies} apiDeps Dependencies for api module */
+/** @param {RoomAPIType.ApiDependencies} apiDeps Dependencies for api module */
 export const createApi = ({ fetcher }) => {
   const Api = class {
     _fetcher
