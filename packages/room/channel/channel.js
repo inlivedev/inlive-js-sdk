@@ -66,6 +66,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
     _addEventListener = () => {
       if (!this._channel) return
 
+      this._channel.addEventListener('error', this._onError)
       this._channel.addEventListener('candidate', this._onCandidate)
       this._channel.addEventListener('offer', this._onOffer)
       this._channel.addEventListener('tracks_added', this._onTracksAdded)
@@ -82,6 +83,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
     _removeEventListener = () => {
       if (!this._channel) return
 
+      this._channel.removeEventListener('error', this._onError)
       this._channel.removeEventListener('candidate', this._onCandidate)
       this._channel.removeEventListener('offer', this._onOffer)
       this._channel.removeEventListener('tracks_added', this._onTracksAdded)
@@ -108,6 +110,16 @@ export const createChannel = ({ api, event, peer, streams }) => {
 
     _onPeerDisconnected = () => {
       this.disconnect()
+    }
+
+    _onError = () => {
+      if (!this._channel) return
+
+      console.error('Channel connection is having an issue')
+
+      if (this._channel.readyState === EventSource.CLOSED) {
+        console.error('Channel connection closed unexpectedly')
+      }
     }
 
     /**
