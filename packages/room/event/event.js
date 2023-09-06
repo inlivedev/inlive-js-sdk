@@ -32,7 +32,7 @@ export const createEvent = () => {
 
     /**
      * @param {string} eventName - The name of the event
-     * @param {(event: SharedType.ObjectLiteral) => void} callback - A callback function
+     * @param {(data: any) => void} callback - A callback function
      */
     on = (eventName, callback) => {
       if (typeof eventName !== 'string' || eventName.trim().length === 0) {

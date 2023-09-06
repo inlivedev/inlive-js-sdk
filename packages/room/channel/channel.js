@@ -1,5 +1,5 @@
 /**
- * @param {RoomChannelType.ChannelDependencies} channelDependencies
+ * @param {RoomChannelType.ChannelDependencies} channelDependencies Dependencies for channel module
  */
 export const createChannel = ({ api, peer, streams }) => {
   const Channel = class {
