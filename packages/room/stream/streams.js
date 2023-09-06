@@ -25,11 +25,11 @@ export const createStreams = () => {
      * Add a new stream
      * @param {string} key
      * @param {RoomStreamType.InstanceStream} stream
-     * @returns {RoomStreamType.InstanceStream | null} Returns the added stream data
+     * @returns {RoomStreamType.InstanceStream} Returns the added stream data
      */
     addStream = (key, stream) => {
       this._streams.set(key, stream)
-      return this._streams.get(key) || null
+      return stream
     }
 
     /**
