@@ -71,12 +71,16 @@ export const createApi = ({ fetcher }) => {
         throw new TypeError('Client ID must be a valid string')
       }
 
-      const body = clientId.trim().length > 0 ? { uid: clientId } : {}
+      const options =
+        clientId.trim().length > 0
+          ? { body: JSON.stringify({ uid: clientId }) }
+          : undefined
 
       /** @type {RoomAPIType.RegisterClientResponseBody} */
-      const response = await this._fetcher.post(`/rooms/${roomId}/register`, {
-        body: JSON.stringify(body),
-      })
+      const response = await this._fetcher.post(
+        `/rooms/${roomId}/register`,
+        options
+      )
 
       const data = response.data || {}
 
