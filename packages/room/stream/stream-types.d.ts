@@ -1,5 +1,5 @@
-import type { createStream } from './stream'
-import type { createStreams } from './streams'
+import type { createStream } from './stream.js'
+import type { createStreams } from './streams.js'
 
 export declare namespace RoomStreamType {
   export type CreateStream = typeof createStream

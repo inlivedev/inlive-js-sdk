@@ -6,7 +6,7 @@ export const createStream = () => {
     mediaStream
 
     /**
-     * @param {import('./stream-types').RoomStreamType.StreamParameters} streamParameters
+     * @param {import('./stream-types.js').RoomStreamType.StreamParameters} streamParameters
      */
     constructor({ id, origin, source, mediaStream }) {
       this.id = id
@@ -18,7 +18,7 @@ export const createStream = () => {
 
   return {
     /**
-     * @param {import('./stream-types').RoomStreamType.StreamParameters} data
+     * @param {import('./stream-types.js').RoomStreamType.StreamParameters} data
      */
     createInstance: (data) => {
       const stream = new Stream(data)

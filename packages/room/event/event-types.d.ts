@@ -1,5 +1,5 @@
-import type { SharedType } from '../../internal/types/types'
-import type { createEvent } from './event'
+import type { SharedType } from '../../internal/types/types.js'
+import type { createEvent } from './event.js'
 
 export declare namespace RoomEventType {
   type CreateEvent = typeof createEvent

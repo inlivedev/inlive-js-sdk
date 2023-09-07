@@ -1,4 +1,4 @@
-/** @type {import('./peer-types').RoomPeerType.PeerEvents} */
+/** @type {import('./peer-types.js').RoomPeerType.PeerEvents} */
 export const PeerEvents = {
   PEER_CONNECTED: 'peerConnected',
   PEER_DISCONNECTED: 'peerDisconnected',
@@ -8,7 +8,7 @@ export const PeerEvents = {
   _ADD_LOCAL_SCREEN_STREAM: 'addLocalScreenStream',
 }
 
-/** @param {import('./peer-types').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
+/** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
 export const createPeer = ({ api, createStream, event, streams, config }) => {
   const Peer = class {
     _roomId = ''
@@ -71,8 +71,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /**
      * Add a new stream
      * @param {string} key
-     * @param {import('../stream/stream-types').RoomStreamType.AddStreamParameters} data
-     * @returns {import('../stream/stream-types').RoomStreamType.InstanceStream} Returns the added stream data
+     * @param {import('../stream/stream-types.js').RoomStreamType.AddStreamParameters} data
+     * @returns {import('../stream/stream-types.js').RoomStreamType.InstanceStream} Returns the added stream data
      */
     addStream = (key, data) => {
       this._streams.validateKey(key)
@@ -105,7 +105,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /**
      * Remove a stream
      * @param {string} key
-     * @returns {import('../stream/stream-types').RoomStreamType.InstanceStream | null} Returns the deleted stream data for the last time
+     * @returns {import('../stream/stream-types.js').RoomStreamType.InstanceStream | null} Returns the deleted stream data for the last time
      */
     removeStream = (key) => {
       this._streams.validateKey(key)
@@ -128,7 +128,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /**
      * Get a specific stream
      * @param {string} key
-     * @returns {import('../stream/stream-types').RoomStreamType.InstanceStream | null} Returns the stream data if the data exists
+     * @returns {import('../stream/stream-types.js').RoomStreamType.InstanceStream | null} Returns the stream data if the data exists
      */
     getStream = (key) => {
       this._streams.validateKey(key)
@@ -416,7 +416,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     }
 
     /**
-     * @param {{ stream: import('../stream/stream-types').RoomStreamType.InstanceStream }} data
+     * @param {{ stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} data
      */
     _onAddLocalMediaStream = ({ stream }) => {
       if (!this._peerConnection) return
@@ -427,7 +427,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     }
 
     /**
-     * @param {{ stream: import('../stream/stream-types').RoomStreamType.InstanceStream }} data
+     * @param {{ stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} data
      */
     _onAddLocalScreenStream = ({ stream }) => {
       if (!this._peerConnection) return

@@ -1,8 +1,8 @@
-import type { RoomAPIType } from '../api/api-types'
-import type { RoomEventType } from '../event/event-types'
-import type { RoomType } from '../room-types'
-import type { RoomStreamType } from '../stream/stream-types'
-import type { createPeer } from './peer'
+import type { RoomAPIType } from '../api/api-types.js'
+import type { RoomEventType } from '../event/event-types.js'
+import type { RoomType } from '../room-types.js'
+import type { RoomStreamType } from '../stream/stream-types.js'
+import type { createPeer } from './peer.js'
 
 export declare namespace RoomPeerType {
   type CreatePeer = typeof createPeer

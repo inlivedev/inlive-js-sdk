@@ -1,5 +1,5 @@
-import type { createFetcher } from './fetcher'
-import type { createApi } from './api'
+import type { createFetcher } from './fetcher.js'
+import type { createApi } from './api.js'
 
 export declare namespace RoomAPIType {
   type CreateFetcher = typeof createFetcher

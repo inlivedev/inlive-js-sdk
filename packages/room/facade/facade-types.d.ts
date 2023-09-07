@@ -1,10 +1,10 @@
-import type { RoomAPIType } from '../api/api-types'
-import type { RoomChannelType } from '../channel/channel-types'
-import type { RoomEventType } from '../event/event-types'
-import type { RoomPeerType } from '../peer/peer-types'
-import type { RoomType } from '../room-types'
-import type { RoomStreamType } from '../stream/stream-types'
-import type { createFacade } from './facade'
+import type { RoomAPIType } from '../api/api-types.js'
+import type { RoomChannelType } from '../channel/channel-types.js'
+import type { RoomEventType } from '../event/event-types.js'
+import type { RoomPeerType } from '../peer/peer-types.js'
+import type { RoomType } from '../room-types.js'
+import type { RoomStreamType } from '../stream/stream-types.js'
+import type { createFacade } from './facade.js'
 
 export declare namespace RoomFacadeType {
   type CreateFacade = typeof createFacade

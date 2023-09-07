@@ -1,8 +1,8 @@
-import type { RoomAPIType } from '../api/api-types'
-import type { RoomEventType } from '../event/event-types'
-import type { RoomPeerType } from '../peer/peer-types'
-import type { RoomStreamType } from '../stream/stream-types'
-import type { createChannel } from './channel'
+import type { RoomAPIType } from '../api/api-types.js'
+import type { RoomEventType } from '../event/event-types.js'
+import type { RoomPeerType } from '../peer/peer-types.js'
+import type { RoomStreamType } from '../stream/stream-types.js'
+import type { createChannel } from './channel.js'
 
 export declare namespace RoomChannelType {
   type CreateChannel = typeof createChannel

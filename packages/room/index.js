@@ -1,12 +1,12 @@
 import { facade } from './facade/facade.js'
 
 /**
- * @typedef {ReturnType<import('./facade/facade-types').RoomFacadeType.CreateInstanceFacade>} RoomInstance
+ * @typedef {ReturnType<import('./facade/facade-types.js').RoomFacadeType.CreateInstanceFacade>} RoomInstance
  */
 
 /**
- * @param {import('./facade/facade-types').RoomFacadeType.Facade} facade Object which creates an instance Facade module
- * @returns {(config?: import('./room-types').RoomType.UserConfig) => RoomInstance}
+ * @param {import('./facade/facade-types.js').RoomFacadeType.Facade} facade Object which creates an instance Facade module
+ * @returns {(config?: import('./room-types.js').RoomType.UserConfig) => RoomInstance}
  */
 const createRoom = (facade) => {
   return (config = {}) => {

@@ -1,13 +1,13 @@
-import { PeerEvents } from '../peer/peer'
+import { PeerEvents } from '../peer/peer.js'
 
-/** @type {import('./channel-types').RoomChannelType.ChannelEvents} */
+/** @type {import('./channel-types.js').RoomChannelType.ChannelEvents} */
 export const ChannelEvents = {
   CHANNEL_CONNECTED: 'channelConnected',
   CHANNEL_DISCONNECTED: 'channelDisconnected',
 }
 
 /**
- * @param {import('./channel-types').RoomChannelType.ChannelDependencies} channelDependencies Dependencies for channel module
+ * @param {import('./channel-types.js').RoomChannelType.ChannelDependencies} channelDependencies Dependencies for channel module
  */
 export const createChannel = ({ api, event, peer, streams }) => {
   const Channel = class {
@@ -168,7 +168,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
      */
     _onTracksAdded = async (event) => {
       const data = JSON.parse(event.data)
-      /** @type {import('./channel-types').RoomChannelType.TrackSource[]} */
+      /** @type {import('./channel-types.js').RoomChannelType.TrackSource[]} */
       const trackSources = []
 
       for (const id of Object.keys(data.tracks)) {
@@ -192,7 +192,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
      */
     _onTracksAvailable = async (event) => {
       const data = JSON.parse(event.data)
-      /** @type {import('./channel-types').RoomChannelType.SubscribingTrack[]} */
+      /** @type {import('./channel-types.js').RoomChannelType.SubscribingTrack[]} */
       const subscribingTracks = []
 
       for (const id of Object.keys(data.tracks)) {
