@@ -13,7 +13,7 @@ const config = {
   webrtc: defaultConfig.webrtc,
 }
 
-/** @param {RoomFacadeType.FacadeDependencies} facadeDependencies Dependencies for facade module */
+/** @param {import('./facade-types').RoomFacadeType.FacadeDependencies} facadeDependencies Dependencies for facade module */
 export const createFacade = ({
   config,
   api: { createFetcher, createApi },
@@ -25,7 +25,7 @@ export const createFacade = ({
 }) => {
   return {
     /**
-     * @param {RoomType.UserConfig} userConfig
+     * @param {import('../room-types').RoomType.UserConfig} userConfig
      */
     createInstance: (userConfig) => {
       merge(config, userConfig)

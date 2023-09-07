@@ -1,4 +1,4 @@
-/** @param {RoomAPIType.ApiDependencies} apiDeps Dependencies for api module */
+/** @param {import('./api-types').RoomAPIType.ApiDependencies} apiDeps Dependencies for api module */
 export const createApi = ({ fetcher }) => {
   const Api = class {
     _fetcher
@@ -11,7 +11,7 @@ export const createApi = ({ fetcher }) => {
      * @param {string} [name]
      */
     createRoom = async (name = '') => {
-      /** @type {RoomAPIType.CreateRoomResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.CreateRoomResponseBody} */
       const response = await this._fetcher.post(`/rooms/create`, {
         body: JSON.stringify({ name: name }),
       })
@@ -37,7 +37,7 @@ export const createApi = ({ fetcher }) => {
         throw new Error('Room ID must be a valid string')
       }
 
-      /** @type {RoomAPIType.GetRoomResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.GetRoomResponseBody} */
       const response = await this._fetcher.get(`/rooms/${roomId}`)
 
       const data = response.data || {}
@@ -72,7 +72,7 @@ export const createApi = ({ fetcher }) => {
           ? { body: JSON.stringify({ uid: clientId }) }
           : undefined
 
-      /** @type {RoomAPIType.RegisterClientResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.RegisterClientResponseBody} */
       const response = await this._fetcher.post(
         `/rooms/${roomId}/register`,
         options
@@ -103,7 +103,7 @@ export const createApi = ({ fetcher }) => {
         )
       }
 
-      /** @type {RoomAPIType.BaseResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.BaseResponseBody} */
       const response = await this._fetcher.post(
         `/rooms/${roomId}/candidate/${clientId}`,
         { body: JSON.stringify(candidate.toJSON()) }
@@ -127,7 +127,7 @@ export const createApi = ({ fetcher }) => {
         throw new Error('Room ID, and client ID are required')
       }
 
-      /** @type {RoomAPIType.BaseResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.BaseResponseBody} */
       const response = await this._fetcher.post(
         `/rooms/${roomId}/isallownegotiate/${clientId}`
       )
@@ -153,7 +153,7 @@ export const createApi = ({ fetcher }) => {
         )
       }
 
-      /** @type {RoomAPIType.NegotiateConnectionResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.NegotiateConnectionResponseBody} */
       const response = await this._fetcher.put(
         `/rooms/${roomId}/negotiate/${clientId}`,
         {
@@ -177,7 +177,7 @@ export const createApi = ({ fetcher }) => {
     /**
      * @param {string} roomId
      * @param {string} clientId
-     * @param {RoomAPIType.TrackSourcesRequestBody[]} trackSources
+     * @param {import('./api-types').RoomAPIType.TrackSourcesRequestBody[]} trackSources
      */
     setTrackSources = async (roomId, clientId, trackSources) => {
       if (!roomId || !clientId) {
@@ -190,7 +190,7 @@ export const createApi = ({ fetcher }) => {
         )
       }
 
-      /** @type {RoomAPIType.BaseResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.BaseResponseBody} */
       const response = await this._fetcher.put(
         `/rooms/${roomId}/settracksources/${clientId}`,
         {
@@ -210,7 +210,7 @@ export const createApi = ({ fetcher }) => {
     /**
      * @param {string} roomId
      * @param {string} clientId
-     * @param {RoomAPIType.SubscribeTracksRequestBody[]} subscribeTracks
+     * @param {import('./api-types').RoomAPIType.SubscribeTracksRequestBody[]} subscribeTracks
      */
     subscribeTracks = async (roomId, clientId, subscribeTracks) => {
       if (!roomId || !clientId) {
@@ -223,7 +223,7 @@ export const createApi = ({ fetcher }) => {
         )
       }
 
-      /** @type {RoomAPIType.BaseResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.BaseResponseBody} */
       const response = await this._fetcher.post(
         `/rooms/${roomId}/subscribetracks/${clientId}`,
         {
@@ -249,7 +249,7 @@ export const createApi = ({ fetcher }) => {
         throw new Error('Room ID, and client ID are required')
       }
 
-      /** @type {RoomAPIType.BaseResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.BaseResponseBody} */
       const response = await this._fetcher.delete(
         `/rooms/${roomId}/leave/${clientId}`,
         {
@@ -274,7 +274,7 @@ export const createApi = ({ fetcher }) => {
         throw new Error('Room ID must be a valid string')
       }
 
-      /** @type {RoomAPIType.BaseResponseBody} */
+      /** @type {import('./api-types').RoomAPIType.BaseResponseBody} */
       const response = await this._fetcher.put(`/rooms/${roomId}/end`)
 
       const result = {

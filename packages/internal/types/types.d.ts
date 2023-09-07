@@ -1,5 +1,5 @@
-export type ObjectLiteral = {
-  [key: string]: any
+export declare namespace SharedType {
+  type ObjectLiteral = {
+    [key: string]: any
+  }
 }
-
-export as namespace SharedType

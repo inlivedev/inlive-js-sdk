@@ -6,7 +6,7 @@ export const createStreams = () => {
     constructor() {
       /**
        * To trigger the type safety
-       * @augments {Map<string, RoomStreamType.InstanceStream>}
+       * @augments {Map<string, import('./stream-types').RoomStreamType.InstanceStream>}
        */
       // eslint-disable-next-line prettier/prettier
       class StreamsMap extends Map { }
@@ -14,7 +14,7 @@ export const createStreams = () => {
 
       /**
        * To trigger the type safety
-       * @augments {Map<string, RoomStreamType.DraftStream>}
+       * @augments {Map<string, import('./stream-types').RoomStreamType.DraftStream>}
        */
       // eslint-disable-next-line prettier/prettier
       class DraftStreamsMap extends Map { }
@@ -24,8 +24,8 @@ export const createStreams = () => {
     /**
      * Add a new stream
      * @param {string} key
-     * @param {RoomStreamType.InstanceStream} stream
-     * @returns {RoomStreamType.InstanceStream} Returns the added stream data
+     * @param {import('./stream-types').RoomStreamType.InstanceStream} stream
+     * @returns {import('./stream-types').RoomStreamType.InstanceStream} Returns the added stream data
      */
     addStream = (key, stream) => {
       this._streams.set(key, stream)
@@ -35,7 +35,7 @@ export const createStreams = () => {
     /**
      * Remove a stream
      * @param {string} key
-     * @returns {RoomStreamType.InstanceStream | null} Returns the deleted stream data for the last time
+     * @returns {import('./stream-types').RoomStreamType.InstanceStream | null} Returns the deleted stream data for the last time
      */
     removeStream = (key) => {
       const stream = this._streams.get(key) || null
@@ -53,7 +53,7 @@ export const createStreams = () => {
     /**
      * Get a specific stream
      * @param {string} key
-     * @returns {RoomStreamType.InstanceStream | null} Returns the stream data if the data exists
+     * @returns {import('./stream-types').RoomStreamType.InstanceStream | null} Returns the stream data if the data exists
      */
     getStream = (key) => {
       return this._streams.get(key) || null
@@ -79,7 +79,7 @@ export const createStreams = () => {
     /**
      * Add a new draft stream data
      * @param {string} key
-     * @param {RoomStreamType.DraftStream} value
+     * @param {import('./stream-types').RoomStreamType.DraftStream} value
      */
     addDraft = (key, value = {}) => {
       this.validateKey(key)
@@ -96,7 +96,7 @@ export const createStreams = () => {
     /**
      * Get the draft stream data
      * @param {string} key
-     * @returns {RoomStreamType.DraftStream | null}
+     * @returns {import('./stream-types').RoomStreamType.DraftStream | null}
      */
     getDraft = (key) => {
       this.validateKey(key)
@@ -129,7 +129,7 @@ export const createStreams = () => {
 
     /**
      * Validate the streams data
-     * @param {RoomStreamType.AddStreamParameters} data
+     * @param {import('./stream-types').RoomStreamType.AddStreamParameters} data
      * @throws {Error}
      * @returns {boolean}
      */

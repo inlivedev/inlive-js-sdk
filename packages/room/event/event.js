@@ -1,6 +1,6 @@
 export const createEvent = () => {
   const Event = class {
-    /** @type {RoomEventType.EventItems} */
+    /** @type {import('./event-types').RoomEventType.EventItems} */
     _events
 
     constructor() {
@@ -9,7 +9,7 @@ export const createEvent = () => {
 
     /**
      * @param {string} eventName - The name of the event
-     * @param {SharedType.ObjectLiteral} [value] - The actual value sent
+     * @param {import('../../internal/types/types').SharedType.ObjectLiteral} [value] - The actual value sent
      */
     emit = (eventName, value = {}) => {
       if (typeof eventName !== 'string' || eventName.trim().length === 0) {
