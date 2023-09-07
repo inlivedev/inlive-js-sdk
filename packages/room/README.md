@@ -49,6 +49,42 @@ await room.leaveRoom(roomData.data.roomId, client.data.clientId);
 await room.endRoom(roomData.data.roomId);
 ```
 
+#### Properties
+
+- `event` : **object**
+
+  A collection of room events available to listen by accessing `room.event.<EVENT_NAME>`.
+
+#### Methods
+
+- `room.createRoom(name?: string | undefined)`
+
+  A method to create a new room. If the optional `name` parameter is passed, the room will be created under that name. This method will return a promise.
+
+- `room.getRoom(roomId: string)`
+
+  A method to get the room data. It expects a `roomId` as a parameter. This method will return a promise.
+
+- `room.createClient(roomId: string, clientId?: string | undefined)`
+
+  A method to create and register a new client to the room. It expects two parameters. The `roomId` is required. If the client prefers to set their own client ID, the second client ID parameter can be set. This method will return a promise.
+
+- `room.createPeer(roomId: string, clientId: string)`
+
+  A method to create a peer that manages the WebRTC peer to peer connection. It requires `roomId` and `clientId` parameters to be set.
+
+- `room.on(eventName: string, callback: Function)`
+
+  A method to listen a specific room event. It requires `eventName` and `callback` function parameters to be set.
+
+- `room.leaveRoom(roomId: string, clientId: string)`
+
+  A method to trigger a proper leave room functionality for client. It requires `roomId` and `clientId` parameters to be set. This method will return a promise.
+
+- `room.endRoom(roomId: string)`
+
+  A method to end the room for everyone. When this method is called, everyone will be disconnected from the room and the room session will be ended. It require a `roomId` parameter to be set. This method will return a promise.
+
 ### Peer object
 
 The peer object is created when the client call the `room.createPeer()` method. Using this method simplifies the WebRTC peer-to-peer connection with remote peer for video and audio calls. Peer is mainly running on WebRTC technology and should be run on the client side.
