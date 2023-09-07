@@ -26,7 +26,7 @@ export declare namespace RoomAPIType {
   type BaseResponseBody = {
     code: number
     ok: boolean
-    data: any
+    data: object
   }
 
   type CreateRoomResponseBody = BaseResponseBody & {

@@ -13,13 +13,6 @@ if (!('fetch' in globalThis)) {
   })
 }
 
-/**
- * @typedef BaseResponseBody
- * @property {number} code HTTP status code
- * @property {boolean} ok OK boolean status
- * @property {any} data any response data
- */
-
 export const createFetcher = () => {
   const Fetcher = class {
     _baseUrl
@@ -30,16 +23,7 @@ export const createFetcher = () => {
     }
 
     /**
-     * @typedef {Promise<{
-     * code: number,
-     * ok: boolean,
-     * data: any,
-     * }>} PromiseReturn
-     */
-
-    /**
      * @param {Response} response
-     * @returns {Promise<BaseResponseBody>}
      * @throws {Error}
      */
     _resolution = async (response) => {
@@ -47,7 +31,7 @@ export const createFetcher = () => {
         return {
           code: 500,
           ok: false,
-          data: null,
+          data: {},
         }
       }
 
@@ -60,7 +44,7 @@ export const createFetcher = () => {
             (json) => ({
               code: json.code || response.status,
               ok: response.ok,
-              data: json.data || null,
+              data: json.data || {},
               ...json,
             })
           )
@@ -72,7 +56,9 @@ export const createFetcher = () => {
       return {
         code: response.status || 500,
         ok: response.ok,
-        data: response.text(),
+        data: {
+          message: response.text(),
+        },
       }
     }
 
@@ -84,7 +70,6 @@ export const createFetcher = () => {
     /**
      * @param {string} endpoint
      * @param {RequestInit} [options]
-     * @returns {PromiseReturn}
      */
     _fetcher = (endpoint, options = {}) => {
       const fetchOptions = typeof options === 'object' ? options : {}
@@ -106,7 +91,6 @@ export const createFetcher = () => {
     /**
      * @param {string} endpoint
      * @param {RequestInit | undefined} [options]
-     * @returns {PromiseReturn}
      */
     get = (endpoint, options = {}) => {
       return this._fetcher(endpoint, {
@@ -118,7 +102,6 @@ export const createFetcher = () => {
     /**
      * @param {string} endpoint
      * @param {RequestInit | undefined} [options]
-     * @returns {PromiseReturn}
      */
     post = (endpoint, options = {}) => {
       return this._fetcher(endpoint, {
@@ -130,7 +113,6 @@ export const createFetcher = () => {
     /**
      * @param {string} endpoint
      * @param {RequestInit | undefined} [options]
-     * @returns {PromiseReturn}
      */
     put = (endpoint, options = {}) => {
       return this._fetcher(endpoint, {
@@ -142,7 +124,6 @@ export const createFetcher = () => {
     /**
      * @param {string} endpoint
      * @param {RequestInit | undefined} [options]
-     * @returns {PromiseReturn}
      */
     patch = (endpoint, options = {}) => {
       return this._fetcher(endpoint, {
@@ -154,7 +135,6 @@ export const createFetcher = () => {
     /**
      * @param {string} endpoint
      * @param {RequestInit | undefined} [options]
-     * @returns {PromiseReturn}
      */
     delete = (endpoint, options = {}) => {
       return this._fetcher(endpoint, {
