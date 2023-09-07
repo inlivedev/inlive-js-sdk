@@ -30,7 +30,7 @@ const roomData = await room.getRoom(newRoom.data.roomId);
 // create a new client
 const client = await room.createClient(roomData.data.roomId);
 
-// create a new peer and automatically connect to the peer
+// create a new peer and automatically open connection to the remote peer
 const peer = room.createPeer(roomData.data.roomId, client.data.clientId);
 
 // listen for a specific room event
@@ -83,7 +83,7 @@ await room.endRoom(roomData.data.roomId);
 
 - `room.endRoom(roomId: string)`
 
-  A method to end the room for everyone. When this method is called, everyone will be disconnected from the room and the room session will be ended. It require a `roomId` parameter to be set. This method will return a promise.
+  A method to end the room for everyone. When this method is called, everyone will be disconnected from the room and the room session will be ended. It requires a `roomId` parameter to be set. This method will return a promise.
 
 ### Peer object
 
@@ -134,7 +134,68 @@ const peerConnection = peer.getPeerConnection();
 peerConnection.addEventListener('iceconnectionstatechange', function () {
   console.log(peerConnection.iceConnectionState);
 });
+
+peer.disconnect();
 ```
+
+#### Methods
+
+- `peer.getPeerConnection()`
+
+  A method to get a [RTCPeerConnection](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection) object. This object is useful to get current client connection state and listen for events related to the WebRTC connection.
+
+- `peer.connect(roomId: string, clientId: string)`
+
+  A method to open connection to the remote peer. By default this method is automatically called when the client call `room.createPeer()`. Therefore, you don't need to call this method. If you still need to use this method, this should only be called after `peer.disconnect()` method to reopen the closed connection. It requires `roomId` and `clientId` parameters to be set. This method will trigger `PEER_CONNECTED` room event.
+
+- `peer.disconnect()`
+
+  A method to disconnect and close the peer connection from the remote peer. The peer will stop sending tracks to the remote peer and all peer connection will be closed and removed. This method will trigger `PEER_DISCONNECTED` room event.
+
+- `peer.addStream(key, data)`
+
+  - Required data:
+    - **origin**: 'local' | 'remote'
+    - **source**: 'media' | 'screen'
+    - **mediaStream**: MediaStream
+
+  A method to add and store a MediaStream object to the peer which returns a stream object. The benefit of storing and adding a MediaStream object to the peer is to keep track for every MediaStream available both from the local and remote peers. When the data `origin` value is `local`, it will try to reconfiguring the connection and trigger peer [negotiationneeded event](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/negotiationneeded_event). It requires key which is an id or any key to help retrieving the data.
+
+- `peer.removeStream(key)`
+
+  A method to remove a stream object from the peer. It requires a key to find the data.
+
+- `peer.getAllStreams()`
+
+  A method to get and retrieve all stored streams object in the peer.
+
+- `peer.getStream(key)`
+
+  A method to get and retrieve a specific stream object. It requires a key to find the data.
+
+- `peer.getTotalStreams()`
+
+  A method to get the total number of streams stored
+
+- `peer.hasStream(key)`
+
+  A method to check if a specified stream object available and stored in the peer. It requires a key to find the data.
+
+- `peer.turnOnCamera()`
+
+  A method to turn on the current local camera (video) track.
+
+- `peer.turnOffCamera()`
+
+  A method to turn off the current local camera (video) track.
+
+- `peer.turnOnMic()`
+
+  A method to turn on the current local microphone (audio) track.
+
+- `peer.turnOffMic()`
+
+  A method to turn off the current local microphone (audio) track.
 
 ### Stream object
 
