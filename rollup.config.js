@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import dts from 'rollup-plugin-dts'
+import { dts } from 'rollup-plugin-dts'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import terser from '@rollup/plugin-terser'
@@ -88,6 +88,35 @@ const config = [
     watch: {
       include: 'packages/**',
       exclude: 'packages/**/*.test.js',
+    },
+  },
+  {
+    input: 'packages/room/index.js',
+    output: {
+      file: 'dist/room.js',
+      format: 'es',
+      sourcemap: true,
+    },
+    plugins: plugins,
+    external: external,
+    watch: {
+      include: 'packages/room/**',
+      exclude: 'packages/room/**/*.test.js',
+    },
+  },
+  {
+    input: 'packages/room/index.js',
+    output: [
+      {
+        file: 'dist/room.d.ts',
+        format: 'es',
+        sourcemap: true,
+      },
+    ],
+    plugins: [dts()],
+    watch: {
+      include: 'packages/room/**',
+      exclude: 'packages/room/**/*.test.js',
     },
   },
 ]
