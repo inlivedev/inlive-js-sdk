@@ -4,7 +4,7 @@ This package is used to work with [inLive Hub and Room API services](https://hub
 
 ## Usage
 
-To use this package, you need to import a `Room` module and initialize it in a global scope where you can export and import the instance returned everywhere in your application.
+To use this package, you need to import a `Room` module and initialize it in a global scope where you can export and import the room object returned everywhere in your application.
 
 ```js
 import { Room } from '@inlivedev/inlive-js-sdk';
@@ -14,9 +14,9 @@ import { Room } from '@inlivedev/inlive-js-sdk/dist/room.js';
 const room = Room()
 ```
 
-### Room instance
+### Room object
 
-The room instance is the instance created when the `Room` module is initialized. It consists methods that relates to the room scope. Some methods that directly interact to the room API can run on both client and server sides.
+The room object is the object created when the `Room` module is initialized. It consists methods that relates to the room scope. Some methods that directly interact to the room API can run on both client and server sides.
 
 #### Sample Code
 
@@ -49,13 +49,13 @@ await room.leaveRoom(roomData.data.roomId, client.data.clientId);
 await room.endRoom(roomData.data.roomId);
 ```
 
-### Peer Instance
+### Peer object
 
-The peer instance is created when the client call the `room.createPeer()` method. Using this method simplifies the WebRTC peer-to-peer connection with remote peer for video and audio calls. Peer is mainly running on WebRTC technology and should be run on the client side.
+The peer object is created when the client call the `room.createPeer()` method. Using this method simplifies the WebRTC peer-to-peer connection with remote peer for video and audio calls. Peer is mainly running on WebRTC technology and should be run on the client side.
 
 #### Establish the peer connection
 
-When `room.createPeer()` method is called, it will create a basic peer connection. To establish the peer connection to the remote peer, the client should add a user [MediaStream](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) data such as camera or microphone to start connecting and establishing peer connection between local peer and remote peer. The process will be automatically run on the background and the way you know when the connection has been established is by listening the [iceconnectionstatechange event](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/iceconnectionstatechange_event) from peer connection instance and check for the value of [iceConnectionState](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/iceConnectionState).
+When `room.createPeer()` method is called, it will create a basic peer connection. To establish the peer connection to the remote peer, the client should add a user [MediaStream](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) data such as camera or microphone to start connecting and establishing peer connection between local peer and remote peer. The process will be automatically run on the background and the way you know when the connection has been established is by listening the [iceconnectionstatechange event](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/iceconnectionstatechange_event) from peer connection object and check for the value of [iceConnectionState](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/iceConnectionState).
 
 #### Sample Code
 
@@ -94,9 +94,20 @@ peer.turnOnMic();
 
 const peerConnection = peer.getPeerConnection();
 
+// when iceConnectionState is connected, it indicates the connection is established
 peerConnection.addEventListener('iceconnectionstatechange', function () {
   console.log(peerConnection.iceConnectionState);
 });
 ```
 
-### Stream Instance
+### Stream object
+
+The stream object is an object created and stored after the method `peer.addStream()` is called. This object is mainly used to store the data for a specific MediaStream added by `peer.addStream()` method. We can say that a single stream is the representative of a single participant. Because of that, it's important to call the addStream method in order to create a local participant and establish a peer connection with remote peer.
+
+#### Properties
+
+The stream object holds read-only properties based on the data client provided when creating a new stream.
+- **id**: The ID  of the stream
+- **origin**: The origin of the stream. The value is between a `local` or `remote`
+- **source**: The source of the stream. MediaStream from `getUserMedia()` should set a **media** source and the one from `getDisplayMedia()` should set a **screen** source.
+- **mediaStream**: The MediaStream object
