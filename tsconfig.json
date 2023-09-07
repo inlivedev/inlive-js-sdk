@@ -9,8 +9,7 @@
     "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
-    "noEmit": true,
-    "sourceMap": true
+    "noEmit": true
   },
   "include": ["./packages/**/*.js", "./packages/**/*.d.ts"],
   "exclude": ["./node_modules", "dist", "**/*.test.js", "./*.js"]
