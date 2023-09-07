@@ -39,6 +39,10 @@ export const createEvent = () => {
         throw new Error('Valid string for event name is required')
       }
 
+      if (typeof callback !== 'function') {
+        throw new TypeError('Valid callback function is required')
+      }
+
       const event = this._events[eventName]
 
       if (!(event instanceof Set)) {
