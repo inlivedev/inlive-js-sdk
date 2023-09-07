@@ -4,43 +4,46 @@ module.exports = {
     browser: true,
     node: true,
   },
-  plugins: ['@typescript-eslint', 'jsdoc', 'prettier', 'unicorn'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:jsdoc/recommended-typescript-flavor',
+    'plugin:jsdoc/recommended',
+    'plugin:mocha/recommended',
+    'plugin:prettier/recommended',
+    'plugin:promise/recommended',
     'plugin:unicorn/recommended',
-    'prettier',
   ],
-
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+  },
+  plugins: [
+    '@typescript-eslint',
+    'jsdoc',
+    'mocha',
+    'prettier',
+    'promise',
+    'unicorn',
+  ],
   rules: {
+    camelcase: ['error', { properties: 'always' }],
     eqeqeq: ['error', 'always'],
     'unicorn/no-null': 'off',
     'unicorn/prefer-ternary': ['error', 'only-single-line'],
-    'jsdoc/no-undefined-types': 'off',
-    'jsdoc/require-returns': 'off',
-    'jsdoc/require-param-description': 'off',
-    'jsdoc/require-returns-description': 'off',
-    'prettier/prettier': [
-      'warn',
+    'jsdoc/require-jsdoc': [
+      'error',
       {
-        semi: false,
-        singleQuote: true,
-        tabWidth: 2,
-        trailingComma: 'es5',
+        publicOnly: false,
+        require: {
+          FunctionExpression: true,
+          ArrowFunctionExpression: true,
+          FunctionDeclaration: true,
+          MethodDefinition: true,
+        },
       },
     ],
+    'jsdoc/no-undefined-types': 'off',
   },
-  overrides: [
-    {
-      files: '**/*.+(js|d.ts)',
-      parser: '@typescript-eslint/parser',
-      plugins: ['@typescript-eslint/eslint-plugin'],
-      extends: ['plugin:@typescript-eslint/recommended'],
-      rules: {
-        '@typescript-eslint/no-explicit-any': 'off',
-      },
-    },
-  ],
   ignorePatterns: ['node_modules', 'dist'],
 }
