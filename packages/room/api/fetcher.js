@@ -6,7 +6,7 @@ import nodeFetch, {
 
 if (!('fetch' in globalThis)) {
   Object.assign(globalThis, {
-    nodeFetch,
+    fetch: nodeFetch,
     Headers: NodeHeaders,
     Request: NodeRequest,
     Response: NodeResponse,
