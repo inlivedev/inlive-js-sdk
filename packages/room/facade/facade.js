@@ -66,7 +66,7 @@ export const createFacade = ({
           },
         on: event.on,
         leaveRoom: api.leaveRoom,
-        terminateRoom: api.terminateRoom,
+        endRoom: api.endRoom,
         event: {
           CHANNEL_CONNECTED: roomEvents.channel.CHANNEL_CONNECTED,
           CHANNEL_DISCONNECTED: roomEvents.channel.CHANNEL_DISCONNECTED,

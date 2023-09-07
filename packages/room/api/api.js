@@ -269,7 +269,7 @@ export const createApi = ({ fetcher }) => {
     /**
      * @param {string} roomId
      */
-    terminateRoom = async (roomId) => {
+    endRoom = async (roomId) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string')
       }
@@ -301,7 +301,7 @@ export const createApi = ({ fetcher }) => {
         setTrackSources: api.setTrackSources,
         subscribeTracks: api.subscribeTracks,
         leaveRoom: api.leaveRoom,
-        terminateRoom: api.terminateRoom,
+        endRoom: api.endRoom,
       }
     },
   }
