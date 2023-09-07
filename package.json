@@ -1,6 +1,6 @@
 {
   "name": "@inlivedev/inlive-js-sdk",
-  "version": "0.6.0-next.1",
+  "version": "0.7.0",
   "description": "InLive JavaScript SDK",
   "keywords": [],
   "license": "MIT",
@@ -43,7 +43,7 @@
     "dotenv": "^16.0.2",
     "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-jsdoc": "^39.3.6",
+    "eslint-plugin-jsdoc": "^46.5.1",
     "eslint-plugin-mocha": "^10.1.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": "^6.0.1",
