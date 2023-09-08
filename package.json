@@ -64,7 +64,7 @@
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^3.4.0",
     "camelcase-keys": "^8.0.2",
-    "lit": "^2.8.0",
+    "lit": "^2.6.1",
     "lodash-es": "^4.17.21",
     "mocha-explorer-launcher-scripts": "^0.4.0",
     "node-fetch": "3.2.10",
@@ -76,12 +76,6 @@
     "node": " >=14.16 || >=16.0.0"
   },
   "release": {
-    "branches": [
-      "main",
-      {
-        "name": "dev",
-        "prerelease": true
-      }
-    ]
+    "branches": ["main", {"name": "dev", "prerelease": true}]
   }
 }
