@@ -6,9 +6,9 @@ InLive JavaScript SDK provides functionalities to develop and interact with InLi
 
 <!-- Packages Begin -->
 
-| Package      | Description |
+| Package     | Description |
 | ----------- | ----------- |
-| [Live stream](./packages/stream) | Package to work with [inLive live stream API](https://api.inlive.app/apidocs/index.html)
+| [Live stream](./packages/stream) | Package to work with [inLive live stream API](https://api.inlive.app/apidocs/index.html) |
 | [Room](./packages/room) | Package to work with [inLive hub and room API](https://hub.inlive.app/apidocs/index.html). |
 | [Player](./packages/player) | Inlive player as a web component to play the media streaming formats such as DASH and HLS. |
 
