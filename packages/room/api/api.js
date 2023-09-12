@@ -9,11 +9,12 @@ export const createApi = ({ fetcher }) => {
 
     /**
      * @param {string} [name]
+     * @param {string} [id]
      */
-    createRoom = async (name = '') => {
+    createRoom = async (name = '', id = '') => {
       /** @type {import('./api-types.js').RoomAPIType.CreateRoomResponseBody} */
       const response = await this._fetcher.post(`/rooms/create`, {
-        body: JSON.stringify({ name: name }),
+        body: JSON.stringify({ name, id }),
       })
 
       const data = response.data || {}
