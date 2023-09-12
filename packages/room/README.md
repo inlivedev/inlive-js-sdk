@@ -22,7 +22,7 @@ The room object is the object created when the `Room` module is initialized. It 
 
 ```js
 // create a new room
-const newRoom = await room.createRoom('a new room');
+const newRoom = await room.createRoom('a new room', 'custom-id');
 
 // get a room data
 const roomData = await room.getRoom(newRoom.data.roomId);
@@ -57,9 +57,9 @@ await room.endRoom(roomData.data.roomId);
 
 #### Methods
 
-- `room.createRoom(name?: string | undefined)`
+- `room.createRoom(name?: string | undefined, id?: string | undefined)`
 
-  A method to create a new room. If the optional `name` parameter is passed, the room will be created under that name. This method will return a promise.
+  A method to create a new room. If the optional `name` and `id` parameters are passed, the room will be created under those name and id. This method will return a promise.
 
 - `room.getRoom(roomId: string)`
 
