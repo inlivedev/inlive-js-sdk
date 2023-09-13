@@ -35,7 +35,5 @@ export declare namespace RoomPeerType {
     PEER_DISCONNECTED: 'peerDisconnected'
     STREAM_ADDED: 'streamAdded'
     STREAM_REMOVED: 'streamRemoved'
-    _ADD_LOCAL_MEDIA_STREAM: 'addLocalMediaStream'
-    _ADD_LOCAL_SCREEN_STREAM: 'addLocalScreenStream'
   }
 }

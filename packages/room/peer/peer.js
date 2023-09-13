@@ -4,8 +4,6 @@ export const PeerEvents = {
   PEER_DISCONNECTED: 'peerDisconnected',
   STREAM_ADDED: 'streamAdded',
   STREAM_REMOVED: 'streamRemoved',
-  _ADD_LOCAL_MEDIA_STREAM: 'addLocalMediaStream',
-  _ADD_LOCAL_SCREEN_STREAM: 'addLocalScreenStream',
 }
 
 /** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
@@ -86,15 +84,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._streams.addStream(key, stream)
 
       if (stream.origin === 'local' && stream.source === 'media') {
-        this._event.emit(PeerEvents._ADD_LOCAL_MEDIA_STREAM, {
-          stream,
-        })
+        this._addLocalMediaStream(stream)
       }
 
       if (stream.origin === 'local' && stream.source === 'screen') {
-        this._event.emit(PeerEvents._ADD_LOCAL_SCREEN_STREAM, {
-          stream,
-        })
+        this._addLocalScreenStream(stream)
       }
 
       this._event.emit(PeerEvents.STREAM_ADDED, { stream })
@@ -205,16 +199,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       this._peerConnection.addEventListener('track', this._onTrack)
 
-      this._event.on(
-        PeerEvents._ADD_LOCAL_MEDIA_STREAM,
-        this._onAddLocalMediaStream
-      )
-
-      this._event.on(
-        PeerEvents._ADD_LOCAL_SCREEN_STREAM,
-        this._onAddLocalScreenStream
-      )
-
       window.addEventListener('beforeunload', this._onBeforeUnload)
     }
 
@@ -305,6 +289,34 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         )
       } catch (error) {
         console.error(error)
+      }
+    }
+
+    /**
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     */
+    _addLocalMediaStream = (stream) => {
+      if (!this._peerConnection) return
+
+      for (const track of stream.mediaStream.getTracks()) {
+        this._peerConnection.addTrack(track, stream.mediaStream)
+      }
+    }
+
+    /**
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     */
+    _addLocalScreenStream = (stream) => {
+      if (!this._peerConnection) return
+
+      for (const track of stream.mediaStream.getTracks()) {
+        const sender = this._peerConnection.addTrack(track, stream.mediaStream)
+
+        track.addEventListener('ended', () => {
+          if (!this._peerConnection || !sender) return
+          this._peerConnection.removeTrack(sender)
+          this.removeStream(stream.id)
+        })
       }
     }
 
@@ -407,34 +419,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       this.disconnect()
       await this._api.leaveRoom(this._roomId, this._clientId)
-    }
-
-    /**
-     * @param {{ stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} data
-     */
-    _onAddLocalMediaStream = ({ stream }) => {
-      if (!this._peerConnection) return
-
-      for (const track of stream.mediaStream.getTracks()) {
-        this._peerConnection.addTrack(track, stream.mediaStream)
-      }
-    }
-
-    /**
-     * @param {{ stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} data
-     */
-    _onAddLocalScreenStream = ({ stream }) => {
-      if (!this._peerConnection) return
-
-      for (const track of stream.mediaStream.getTracks()) {
-        const sender = this._peerConnection.addTrack(track, stream.mediaStream)
-
-        track.addEventListener('ended', () => {
-          if (!this._peerConnection || !sender) return
-          this._peerConnection.removeTrack(sender)
-          this.removeStream(stream.id)
-        })
-      }
     }
   }
 
