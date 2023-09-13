@@ -2,7 +2,7 @@
 export const PeerEvents = {
   PEER_CONNECTED: 'peerConnected',
   PEER_DISCONNECTED: 'peerDisconnected',
-  STREAM_ADDED: 'streamAdded',
+  STREAM_AVAILABLE: 'streamAvailable',
   STREAM_REMOVED: 'streamRemoved',
 }
 
@@ -91,7 +91,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         this._addLocalScreenStream(stream)
       }
 
-      this._event.emit(PeerEvents.STREAM_ADDED, { stream })
+      this._event.emit(PeerEvents.STREAM_AVAILABLE, { stream })
 
       return stream
     }

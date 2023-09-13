@@ -34,7 +34,7 @@ const client = await room.createClient(roomData.data.roomId);
 const peer = room.createPeer(roomData.data.roomId, client.data.clientId);
 
 // listen for a specific room event
-room.on(room.event.STREAM_ADDED, function () {
+room.on(room.event.STREAM_AVAILABLE, function () {
   // handle event
 });
 

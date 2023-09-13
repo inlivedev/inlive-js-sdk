@@ -33,7 +33,7 @@ export declare namespace RoomPeerType {
   type PeerEvents = {
     PEER_CONNECTED: 'peerConnected'
     PEER_DISCONNECTED: 'peerDisconnected'
-    STREAM_ADDED: 'streamAdded'
+    STREAM_AVAILABLE: 'streamAvailable'
     STREAM_REMOVED: 'streamRemoved'
   }
 }
