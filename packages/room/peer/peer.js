@@ -51,10 +51,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     disconnect = () => {
       if (!this._peerConnection) return
 
-      for (const sender of this._peerConnection.getSenders()) {
-        if (!sender.track) return
-        sender.track.enabled = false
-        sender.track.stop()
+      for (const transceiver of this._peerConnection.getTransceivers()) {
+        if (transceiver.sender.track) {
+          transceiver.sender.track.stop()
+          this._peerConnection.removeTrack(transceiver.sender)
+        }
+
+        transceiver.stop()
       }
 
       this._removeEventListener()
