@@ -72,7 +72,7 @@ export const createFacade = ({
           CHANNEL_DISCONNECTED: roomEvents.channel.CHANNEL_DISCONNECTED,
           PEER_CONNECTED: roomEvents.peer.PEER_CONNECTED,
           PEER_DISCONNECTED: roomEvents.peer.PEER_DISCONNECTED,
-          STREAM_ADDED: roomEvents.peer.STREAM_ADDED,
+          STREAM_AVAILABLE: roomEvents.peer.STREAM_AVAILABLE,
           STREAM_REMOVED: roomEvents.peer.STREAM_REMOVED,
         }),
       }

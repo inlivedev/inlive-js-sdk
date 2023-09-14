@@ -4,6 +4,7 @@ export const PeerEvents = {
   PEER_DISCONNECTED: 'peerDisconnected',
   STREAM_AVAILABLE: 'streamAvailable',
   STREAM_REMOVED: 'streamRemoved',
+  _STREAM_ADDED: 'streamAdded',
 }
 
 /** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
@@ -70,30 +71,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * Add a new stream
      * @param {string} key
      * @param {import('../stream/stream-types.js').RoomStreamType.AddStreamParameters} data
-     * @returns {import('../stream/stream-types.js').RoomStreamType.InstanceStream} Returns the added stream data
      */
     addStream = (key, data) => {
       this._streams.validateKey(key)
       this._streams.validateStream(data)
-
-      const stream = this._stream.createInstance({
-        id: key,
-        ...data,
-      })
-
-      this._streams.addStream(key, stream)
-
-      if (stream.origin === 'local' && stream.source === 'media') {
-        this._addLocalMediaStream(stream)
-      }
-
-      if (stream.origin === 'local' && stream.source === 'screen') {
-        this._addLocalScreenStream(stream)
-      }
-
-      this._event.emit(PeerEvents.STREAM_AVAILABLE, { stream })
-
-      return stream
+      this._event.emit(PeerEvents._STREAM_ADDED, { key, data })
     }
 
     /**
@@ -200,6 +182,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._peerConnection.addEventListener('track', this._onTrack)
 
       window.addEventListener('beforeunload', this._onBeforeUnload)
+
+      this._event.on(PeerEvents._STREAM_ADDED, this._onStreamAdded)
     }
 
     _removeEventListener = () => {
@@ -419,6 +403,26 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       this.disconnect()
       await this._api.leaveRoom(this._roomId, this._clientId)
+    }
+
+    /** @param {{ key: string, data: import('../stream/stream-types.js').RoomStreamType.AddStreamParameters }} data */
+    _onStreamAdded = ({ key, data }) => {
+      const stream = this._stream.createInstance({
+        id: key,
+        ...data,
+      })
+
+      this._streams.addStream(key, stream)
+
+      if (stream.origin === 'local' && stream.source === 'media') {
+        this._addLocalMediaStream(stream)
+      }
+
+      if (stream.origin === 'local' && stream.source === 'screen') {
+        this._addLocalScreenStream(stream)
+      }
+
+      this._event.emit(PeerEvents.STREAM_AVAILABLE, { stream })
     }
   }
 
