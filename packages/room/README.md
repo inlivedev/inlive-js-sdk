@@ -197,6 +197,10 @@ peer.disconnect();
 
   A method to turn off the current local microphone (audio) track.
 
+- `peer.replaceTrack(track: MediaStreamTrack)`
+
+  A method to replace the track currently being sent by sender with a new MediaStreamTrack
+
 ### Stream object
 
 The stream object is an object created and stored after the method `peer.addStream()` is called. This object is mainly used to store the data for a specific MediaStream added by `peer.addStream()` method. We can say that a single stream is the representative of a single participant. Because of that, it's important to call the addStream method in order to create a local participant and establish a peer connection with remote peer.
@@ -208,3 +212,9 @@ The stream object holds read-only properties based on the data client provided w
 - **origin**: The origin of the stream. The value is between a `local` or `remote`
 - **source**: The source of the stream. MediaStream from `getUserMedia()` should set a **media** source and the one from `getDisplayMedia()` should set a **screen** source.
 - **mediaStream**: The MediaStream object
+
+#### Methods
+
+- `stream.replaceTrack(track: MediaStreamTrack)`
+
+  A method to replace the track currently being used by MediaStream with a new MediaStreamTrack

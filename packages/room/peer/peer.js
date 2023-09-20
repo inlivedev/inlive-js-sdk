@@ -164,6 +164,22 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._setTrackEnabled(this._peerConnection, 'audio', false)
     }
 
+    /**
+     * @param {MediaStreamTrack} newTrack
+     */
+    replaceTrack = async (newTrack) => {
+      if (!this._peerConnection) return
+
+      for (const transceiver of this._peerConnection.getTransceivers()) {
+        if (
+          transceiver.sender.track &&
+          transceiver.sender.track.kind === newTrack.kind
+        ) {
+          await transceiver.sender.replaceTrack(newTrack)
+        }
+      }
+    }
+
     _addEventListener = () => {
       if (!this._peerConnection) return
 
@@ -447,6 +463,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         turnOnMic: peer.turnOnMic,
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
+        replaceTrack: peer.replaceTrack,
       }
     },
   }
