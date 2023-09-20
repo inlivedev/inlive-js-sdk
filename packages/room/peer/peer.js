@@ -31,7 +31,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {string} roomId
      * @param {string} clientId
      */
-    connect = (roomId, clientId) => {
+    connect = async (roomId, clientId) => {
       if (this._peerConnection) return
 
       this._roomId = roomId

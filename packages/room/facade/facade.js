@@ -60,9 +60,8 @@ export const createFacade = ({
            * @param {string} roomId
            * @param {string} clientId
            */
-          (roomId, clientId) => {
-            peer.connect(roomId, clientId)
-            return peer
+          async (roomId, clientId) => {
+            return peer.connect(roomId, clientId)
           },
         on: event.on,
         leaveRoom: api.leaveRoom,
