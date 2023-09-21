@@ -26,8 +26,7 @@
     "test:watch": "mocha \"packages/**/*.test.js\" --parallel --watch",
     "test:coverage": "nyc npm run test",
     "build": "npm run clean && rollup -c",
-    "dev": "npm run clean && rollup -c -w",
-    "release:dry-run": "semantic-release --dry-run"
+    "dev": "npm run clean && rollup -c -w"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.4",
