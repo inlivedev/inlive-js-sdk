@@ -31,10 +31,10 @@ const roomData = await room.getRoom(newRoom.data.roomId);
 const client = await room.createClient(roomData.data.roomId);
 
 // create a new peer and automatically open connection to the remote peer
-const peer = room.createPeer(roomData.data.roomId, client.data.clientId);
+const peer = await room.createPeer(roomData.data.roomId, client.data.clientId);
 
 // listen for a specific room event
-room.on(room.event.STREAM_ADDED, function () {
+room.on(room.event.STREAM_AVAILABLE, function () {
   // handle event
 });
 
@@ -71,7 +71,7 @@ await room.endRoom(roomData.data.roomId);
 
 - `room.createPeer(roomId: string, clientId: string)`
 
-  A method to create a peer that manages the WebRTC peer to peer connection. It requires `roomId` and `clientId` parameters to be set.
+  A method to create a peer that manages the WebRTC peer to peer connection. It requires `roomId` and `clientId` parameters to be set. This method will return a promise.
 
 - `room.on(eventName: string, callback: Function)`
 
@@ -96,7 +96,7 @@ When `room.createPeer()` method is called, it will create a basic peer connectio
 #### Sample Code
 
 ```js
-const peer = room.createPeer(roomData.data.roomId, client.data.clientId);
+const peer = await room.createPeer(roomData.data.roomId, client.data.clientId);
 
 const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
@@ -146,7 +146,7 @@ peer.disconnect();
 
 - `peer.connect(roomId: string, clientId: string)`
 
-  A method to open connection to the remote peer. By default this method is automatically called when the client call `room.createPeer()`. Therefore, you don't need to call this method. If you still need to use this method, this should only be called after `peer.disconnect()` method to reopen the closed connection. It requires `roomId` and `clientId` parameters to be set. This method will trigger `PEER_CONNECTED` room event.
+  A method to open connection to the remote peer. By default this method is automatically called when the client call `room.createPeer()`. Therefore, you don't need to call this method. If you still need to use this method, this should only be called after `peer.disconnect()` method to reopen the closed connection. It requires `roomId` and `clientId` parameters to be set. This method will trigger `PEER_CONNECTED` room event. This method will return a promise.
 
 - `peer.disconnect()`
 
@@ -197,6 +197,10 @@ peer.disconnect();
 
   A method to turn off the current local microphone (audio) track.
 
+- `peer.replaceTrack(track: MediaStreamTrack)`
+
+  A method to replace the track currently being sent by sender with a new MediaStreamTrack
+
 ### Stream object
 
 The stream object is an object created and stored after the method `peer.addStream()` is called. This object is mainly used to store the data for a specific MediaStream added by `peer.addStream()` method. We can say that a single stream is the representative of a single participant. Because of that, it's important to call the addStream method in order to create a local participant and establish a peer connection with remote peer.
@@ -208,3 +212,9 @@ The stream object holds read-only properties based on the data client provided w
 - **origin**: The origin of the stream. The value is between a `local` or `remote`
 - **source**: The source of the stream. MediaStream from `getUserMedia()` should set a **media** source and the one from `getDisplayMedia()` should set a **screen** source.
 - **mediaStream**: The MediaStream object
+
+#### Methods
+
+- `stream.replaceTrack(track: MediaStreamTrack)`
+
+  A method to replace the track currently being used by MediaStream with a new MediaStreamTrack
