@@ -1,6 +1,6 @@
 {
   "name": "@inlivedev/inlive-js-sdk",
-  "version": "0.7.2",
+  "version": "0.7.1",
   "description": "InLive JavaScript SDK",
   "keywords": [],
   "license": "MIT",
@@ -26,7 +26,8 @@
     "test:watch": "mocha \"packages/**/*.test.js\" --parallel --watch",
     "test:coverage": "nyc npm run test",
     "build": "npm run clean && rollup -c",
-    "dev": "npm run clean && rollup -c -w"
+    "dev": "npm run clean && rollup -c -w",
+    "release:dry-run": "semantic-release --dry-run"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.4",
