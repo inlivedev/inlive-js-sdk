@@ -9,7 +9,7 @@ export const createStreams = () => {
        * @augments {Map<string, import('./stream-types.js').RoomStreamType.InstanceStream>}
        */
       // eslint-disable-next-line prettier/prettier
-      class StreamsMap extends Map {}
+      class StreamsMap extends Map { }
       this._streams = new StreamsMap()
 
       /**
@@ -17,7 +17,7 @@ export const createStreams = () => {
        * @augments {Map<string, import('./stream-types.js').RoomStreamType.DraftStream>}
        */
       // eslint-disable-next-line prettier/prettier
-      class DraftStreamsMap extends Map {}
+      class DraftStreamsMap extends Map { }
       this._drafts = new DraftStreamsMap()
     }
 
