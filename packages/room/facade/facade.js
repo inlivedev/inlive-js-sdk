@@ -53,16 +53,18 @@ export const createFacade = ({
 
       return {
         createRoom: api.createRoom,
-        createClient: api.registerClient,
         getRoom: api.getRoom,
+        createClient: api.registerClient,
+        setClientName: api.setClientName,
         createPeer:
           /**
            * @param {string} roomId
            * @param {string} clientId
            */
           async (roomId, clientId) => {
-            return peer.connect(roomId, clientId)
+            return await peer.connect(roomId, clientId)
           },
+        createDataChannel: api.createDataChannel,
         on: event.on,
         leaveRoom: api.leaveRoom,
         endRoom: api.endRoom,
