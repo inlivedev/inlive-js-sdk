@@ -85,9 +85,9 @@ await room.endRoom(roomData.data.roomId);
 
   A method to listen a specific room event. It requires `eventName` and `callback` function parameters to be set.
 
-- `room.leaveRoom(roomId: string, clientId: string)`
+- `room.leaveRoom(roomId: string, clientId: string, useBeacon?: boolean)`
 
-  A method to trigger a proper leave room functionality for client. It requires `roomId` and `clientId` parameters to be set. This method will return a promise.
+  A method to trigger a proper leave room functionality for a client. It requires `roomId` and `clientId` parameters to be set. When `useBeacon` option is set to true, this method will use [sendBeacon()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method for leaving the room. When `useBeacon` option is set to false (default), this method will use the standard fetch API. This method will return a promise.
 
 - `room.endRoom(roomId: string)`
 
