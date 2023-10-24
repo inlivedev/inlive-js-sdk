@@ -20,6 +20,8 @@ export const createChannel = ({ api, event, peer, streams }) => {
     _streams
     /** @type {EventSource | null} */
     _channel = null
+    _startTime
+    _reconnecting
 
     /**
      * @param {string} baseUrl
@@ -30,6 +32,8 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._event = event
       this._peer = peer
       this._streams = streams
+      this._startTime = 0
+      this._reconnecting = false
 
       this._event.on(PeerEvents.PEER_CONNECTED, this._onPeerConnected)
       this._event.on(PeerEvents.PEER_DISCONNECTED, this._onPeerDisconnected)
@@ -46,10 +50,12 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._roomId = roomId
       this._clientId = clientId
 
-      this._channel = new EventSource(
+      const channel = new EventSource(
         `${this._baseUrl}/rooms/${this._roomId}/events/${this._clientId}`
       )
 
+      this._startTime = Date.now()
+      this._channel = channel
       this._addEventListener()
       this._event.emit(ChannelEvents.CHANNEL_CONNECTED)
     }
@@ -100,6 +106,33 @@ export const createChannel = ({ api, event, peer, streams }) => {
       )
     }
 
+    _reconnect = () => {
+      if (
+        this._channel?.readyState === EventSource.CLOSED &&
+        !this._reconnecting
+      ) {
+        this._reconnecting = true
+        this.disconnect()
+        this.connect(this._roomId, this._clientId)
+        this._reconnecting = false
+      }
+    }
+
+    _onError = () => {
+      const errorTime = Date.now()
+
+      if (this._roomId && this._clientId) {
+        // Reconnect
+        if (errorTime - this._startTime < 1000) {
+          setTimeout(() => {
+            this._reconnect()
+          }, 1000)
+        } else {
+          this._reconnect()
+        }
+      }
+    }
+
     /**
      * @param {{ roomId: string, clientId: string }} data
      */
@@ -115,16 +148,6 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this.disconnect()
     }
 
-    _onError = () => {
-      if (!this._channel) return
-
-      console.error('Channel connection is having an issue')
-
-      if (this._channel.readyState === EventSource.CLOSED) {
-        console.error('Channel connection closed unexpectedly')
-      }
-    }
-
     /**
      * @param {MessageEvent} event
      */
@@ -136,7 +159,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
       }
 
       const candidate = new RTCIceCandidate(JSON.parse(event.data))
-      peerConnection.addIceCandidate(candidate)
+      await peerConnection.addIceCandidate(candidate)
     }
 
     /**
@@ -155,7 +178,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
       await peerConnection.setLocalDescription(answer)
 
       if (peerConnection.localDescription) {
-        this._api.negotiateConnection(
+        await this._api.negotiateConnection(
           this._roomId,
           this._clientId,
           peerConnection.localDescription
@@ -184,7 +207,11 @@ export const createChannel = ({ api, event, peer, streams }) => {
         }
       }
 
-      this._api.setTrackSources(this._roomId, this._clientId, trackSources)
+      await this._api.setTrackSources(
+        this._roomId,
+        this._clientId,
+        trackSources
+      )
     }
 
     /**
@@ -199,6 +226,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
         const track = data.tracks[id]
         const streamId = track.stream_id
         const clientId = track.client_id
+        const clientName = track.client_name
         const trackId = track.track_id
         const source = track.source
 
@@ -208,17 +236,21 @@ export const createChannel = ({ api, event, peer, streams }) => {
           track_id: trackId,
         })
 
-        this._streams.addDraft(streamId, {
-          origin: 'remote',
-          source: source,
-        })
+        if (!this._streams.getDraft(streamId)) {
+          this._streams.addDraft(streamId, {
+            clientId: clientId,
+            name: clientName,
+            origin: 'remote',
+            source: source,
+          })
+        }
       }
 
-      this._api.subscribeTracks(this._roomId, this._clientId, subscribingTracks)
-    }
-
-    _onAllowedRenegotiation = () => {
-      // TODO: Handle allowed_renegotation event
+      await this._api.subscribeTracks(
+        this._roomId,
+        this._clientId,
+        subscribingTracks
+      )
     }
   }
 
