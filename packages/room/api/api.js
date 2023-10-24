@@ -417,7 +417,7 @@ export const createApi = ({ fetcher }) => {
       const response = await this._fetcher.post(
         `/room/${roomId}/channel/create`,
         {
-          body: JSON.stringify({ name: name, ordered: ordered }),
+          body: JSON.stringify({ name: name, mode: ordered }),
         }
       )
 
