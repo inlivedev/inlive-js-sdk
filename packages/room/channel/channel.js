@@ -83,10 +83,6 @@ export const createChannel = ({ api, event, peer, streams }) => {
         'tracks_available',
         this._onTracksAvailable
       )
-      this._channel.addEventListener(
-        'allowed_renegotation',
-        this._onAllowedRenegotiation
-      )
     }
 
     _removeEventListener = () => {
@@ -99,10 +95,6 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._channel.removeEventListener(
         'tracks_available',
         this._onTracksAvailable
-      )
-      this._channel.removeEventListener(
-        'allowed_renegotation',
-        this._onAllowedRenegotiation
       )
     }
 
