@@ -393,7 +393,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const mediaStream = event.streams.find((stream) => stream.active === true)
 
       if (!(mediaStream instanceof MediaStream)) return
-
       if (this.hasStream(mediaStream.id)) return
 
       mediaStream.addEventListener('removetrack', (event) => {
@@ -409,6 +408,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const draftStream = this._streams.getDraft(mediaStream.id) || {}
 
       this.addStream(mediaStream.id, {
+        clientId: draftStream.clientId || '',
+        name: draftStream.name || '',
         origin: draftStream.origin || 'remote',
         source: draftStream.source || 'media',
         mediaStream: mediaStream,
