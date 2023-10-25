@@ -23,21 +23,38 @@ export declare namespace RoomAPIType {
     track_id: string
   }
 
+  type RegisterClientRequestBody = {
+    uid?: string
+    name?: string
+  }
+
+  type Bitrates = {
+    audio: number
+    audio_red: number
+    video: number
+    video_high: number
+    video_mid: number
+    video_low: number
+    initial_bandwidth: number
+  }
+
   type BaseResponseBody = {
     code: number
     ok: boolean
-    data: object
+    message: string
   }
 
   type CreateRoomResponseBody = BaseResponseBody & {
     data: {
-      id: string
+      room_id: string
+      name: string
+      bitrates_config: Bitrates
     }
   }
 
   type GetRoomResponseBody = BaseResponseBody & {
     data: {
-      id: string
+      room_id: string
       name: string
     }
   }
@@ -45,6 +62,16 @@ export declare namespace RoomAPIType {
   type RegisterClientResponseBody = BaseResponseBody & {
     data: {
       client_id: string
+      name: string
+      bitrates: Bitrates
+    }
+  }
+
+  type SetClientNameResponse = BaseResponseBody & {
+    data: {
+      client_id: string
+      name: string
+      bitrates: Bitrates
     }
   }
 

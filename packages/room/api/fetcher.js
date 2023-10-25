@@ -28,37 +28,23 @@ export const createFetcher = () => {
      */
     _resolution = async (response) => {
       if (!response) {
-        return {
-          code: 500,
-          ok: false,
-          data: {},
-        }
+        throw new Error(`Cannot process response from the server`)
       }
 
       const contentType = response.headers.get('content-type')
       if (contentType && contentType.includes('application/json')) {
         return response
           .json()
-          .then(
-            /** @param {any} json */
-            (json) => ({
-              code: json.code || response.status,
-              ok: response.ok,
-              data: json.data || {},
-              ...json,
-            })
-          )
+          .then((json) => ({
+            ...json,
+            code: response.status,
+            ok: response.ok,
+          }))
           .catch((error) => {
             throw error
           })
-      }
-
-      return {
-        code: response.status || 500,
-        ok: response.ok,
-        data: {
-          message: response.text(),
-        },
+      } else {
+        throw new Error(`Cannot process response from the server`)
       }
     }
 
@@ -86,6 +72,10 @@ export const createFetcher = () => {
         })
         .then(this._resolution)
         .catch(this._rejection)
+    }
+
+    getBaseUrl = () => {
+      return this._baseUrl
     }
 
     /**
@@ -150,6 +140,7 @@ export const createFetcher = () => {
       const fetcher = new Fetcher(baseUrl)
 
       return {
+        getBaseUrl: fetcher.getBaseUrl,
         get: fetcher.get,
         post: fetcher.post,
         put: fetcher.put,

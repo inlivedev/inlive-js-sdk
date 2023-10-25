@@ -69,17 +69,25 @@ await room.endRoom(roomData.data.roomId);
 
   A method to create and register a new client to the room. It expects two parameters. The `roomId` is required. If the client prefers to set their own client ID, the second client ID parameter can be set. This method will return a promise.
 
+- `room.setClientName(roomId: string, clientId: string, clientName: string)`
+
+  A method to set a client name based on `clientId`. This is useful for setting a friendly name or label on a specific client. It requires `roomId`, `clientId` and `clientName` parameters to be set. This method  will return a promise.
+
 - `room.createPeer(roomId: string, clientId: string)`
 
   A method to create a peer that manages the WebRTC peer to peer connection. It requires `roomId` and `clientId` parameters to be set. This method will return a promise.
+
+- `room.createDataChannel(roomId: string, name: string, ordered?: boolean)`
+
+  A method to create a data channel server on a specific room. Data channel is useful for broadcasting data to all connected clients through WebRTC connection. It requires `roomId` and channel `name` parameters to be set. When not set, by default the `ordered` value will be true. This method will return a promise.
 
 - `room.on(eventName: string, callback: Function)`
 
   A method to listen a specific room event. It requires `eventName` and `callback` function parameters to be set.
 
-- `room.leaveRoom(roomId: string, clientId: string)`
+- `room.leaveRoom(roomId: string, clientId: string, useBeacon?: boolean)`
 
-  A method to trigger a proper leave room functionality for client. It requires `roomId` and `clientId` parameters to be set. This method will return a promise.
+  A method to trigger a proper leave room functionality for a client. It requires `roomId` and `clientId` parameters to be set. When `useBeacon` option is set to true, this method will use [sendBeacon()](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method for leaving the room. When `useBeacon` option is set to false (default), this method will use the standard fetch API. This method will return a promise.
 
 - `room.endRoom(roomId: string)`
 

@@ -18,12 +18,24 @@ export const createApi = ({ fetcher }) => {
       })
 
       const data = response.data || {}
+      const bitrates = data.bitrates_config || {}
 
       const room = {
         code: response.code || 500,
         ok: response.ok || false,
+        message: response.message || '',
         data: {
-          roomId: data.id || '',
+          roomId: data.room_id || '',
+          roomName: data.name || '',
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoLow: bitrates.video_low || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
         },
       }
 
@@ -46,8 +58,9 @@ export const createApi = ({ fetcher }) => {
       const room = {
         code: response.code || 500,
         ok: response.ok || false,
+        message: response.message || '',
         data: {
-          roomId: data.id || '',
+          roomId: data.room_id || '',
           roomName: data.name || '',
         },
       }
@@ -57,21 +70,26 @@ export const createApi = ({ fetcher }) => {
 
     /**
      * @param {string} roomId
-     * @param {string} [clientId]
+     * @param {{clientId?: string, clientName?: string}} [config]
      */
-    registerClient = async (roomId, clientId = '') => {
+    registerClient = async (roomId, config = {}) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string')
       }
 
-      if (typeof clientId !== 'string') {
-        throw new TypeError('Client ID must be a valid string')
+      /** @type {import('./api-types.js').RoomAPIType.RegisterClientRequestBody} */
+      const body = {}
+
+      if (config.clientId && config.clientId.trim().length > 0) {
+        body.uid = config.clientId
+      }
+
+      if (config.clientName && config.clientName.trim().length > 0) {
+        body.name = config.clientName
       }
 
       const options =
-        clientId.trim().length > 0
-          ? { body: JSON.stringify({ uid: clientId }) }
-          : undefined
+        body.uid || body.name ? { body: JSON.stringify(body) } : undefined
 
       /** @type {import('./api-types.js').RoomAPIType.RegisterClientResponseBody} */
       const response = await this._fetcher.post(
@@ -80,16 +98,80 @@ export const createApi = ({ fetcher }) => {
       )
 
       const data = response.data || {}
+      const bitrates = data.bitrates || {}
 
       const client = {
         code: response.code || 500,
         ok: response.ok || false,
+        message: response.message || '',
         data: {
           clientId: data.client_id || '',
+          clientName: data.name || '',
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoLow: bitrates.video_low || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
         },
       }
 
       return client
+    }
+
+    /**
+     *
+     * @param {string} roomId
+     * @param {string} clientId
+     * @param {string} clientName
+     */
+    setClientName = async (roomId, clientId, clientName) => {
+      if (roomId.trim().length === 0) {
+        throw new Error('Room ID must be a valid string')
+      }
+
+      if (clientId.trim().length === 0) {
+        throw new Error('Client ID must be a valid string')
+      }
+
+      if (clientName.trim().length === 0) {
+        throw new Error('Client name must be a valid string')
+      }
+
+      /** @type {import('./api-types.js').RoomAPIType.SetClientNameResponse} */
+      const response = await this._fetcher.put(
+        `/rooms/${roomId}/setname/${clientId}`,
+        {
+          body: JSON.stringify({
+            name: clientName,
+          }),
+        }
+      )
+
+      const data = response.data || {}
+      const bitrates = data.bitrates || {}
+
+      return {
+        code: response.code || 500,
+        ok: response.ok || false,
+        message: response.message || '',
+        data: {
+          clientId: data.client_id || '',
+          clientName: data.name || '',
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoLow: bitrates.video_low || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
+        },
+      }
     }
 
     /**
@@ -113,7 +195,8 @@ export const createApi = ({ fetcher }) => {
       const result = {
         code: response.code || 500,
         ok: response.ok || false,
-        data: response.data || null,
+        message: response.message || '',
+        data: null,
       }
 
       return result
@@ -136,7 +219,8 @@ export const createApi = ({ fetcher }) => {
       const result = {
         code: response.code || 500,
         ok: response.ok || false,
-        data: response.data || null,
+        message: response.message || '',
+        data: null,
       }
 
       return result
@@ -167,6 +251,7 @@ export const createApi = ({ fetcher }) => {
       const result = {
         code: response.code || 500,
         ok: response.ok || false,
+        message: response.message || '',
         data: {
           answer: data.answer,
         },
@@ -202,7 +287,8 @@ export const createApi = ({ fetcher }) => {
       const result = {
         code: response.code || 500,
         ok: response.ok || false,
-        data: response.data || null,
+        message: response.message || '',
+        data: null,
       }
 
       return result
@@ -235,7 +321,8 @@ export const createApi = ({ fetcher }) => {
       const result = {
         code: response.code || 500,
         ok: response.ok || false,
-        data: response.data || null,
+        message: response.message || '',
+        data: null,
       }
 
       return result
@@ -244,10 +331,28 @@ export const createApi = ({ fetcher }) => {
     /**
      * @param {string} roomId
      * @param {string} clientId
+     * @param {boolean} useBeacon
      */
-    leaveRoom = async (roomId, clientId) => {
+    leaveRoom = async (roomId, clientId, useBeacon = false) => {
       if (!roomId || !clientId) {
         throw new Error('Room ID, and client ID are required')
+      }
+
+      const endpoint = `/rooms/${roomId}/leave/${clientId}`
+
+      if (useBeacon) {
+        const response = navigator.sendBeacon(
+          `${this._fetcher.getBaseUrl()}${endpoint}`
+        )
+
+        const result = {
+          code: response ? 200 : 500,
+          ok: response,
+          message: response ? 'OK' : '',
+          data: null,
+        }
+
+        return result
       }
 
       /** @type {import('./api-types.js').RoomAPIType.BaseResponseBody} */
@@ -261,7 +366,8 @@ export const createApi = ({ fetcher }) => {
       const result = {
         code: response.code || 500,
         ok: response.ok || false,
-        data: response.data || null,
+        message: response.message || '',
+        data: null,
       }
 
       return result
@@ -281,10 +387,46 @@ export const createApi = ({ fetcher }) => {
       const result = {
         code: response.code || 500,
         ok: response.ok || false,
-        data: response.data || null,
+        message: response.message || '',
+        data: null,
       }
 
       return result
+    }
+
+    /**
+     *
+     * @param {string} roomId
+     * @param {string} name
+     * @param {boolean} ordered
+     */
+    createDataChannel = async (roomId, name, ordered = true) => {
+      if (typeof roomId !== 'string' || roomId.trim().length === 0) {
+        throw new Error('Room ID must be a valid string')
+      }
+
+      if (typeof roomId !== 'string' || roomId.trim().length === 0) {
+        throw new Error('Channel name must be a valid string')
+      }
+
+      if (typeof ordered !== 'boolean') {
+        ordered = true
+      }
+
+      /** @type {import('./api-types.js').RoomAPIType.BaseResponseBody} */
+      const response = await this._fetcher.post(
+        `/room/${roomId}/channel/create`,
+        {
+          body: JSON.stringify({ name: name, mode: ordered }),
+        }
+      )
+
+      return {
+        code: response.code || 500,
+        ok: response.ok || false,
+        message: response.message || '',
+        data: null,
+      }
     }
   }
 
@@ -296,6 +438,7 @@ export const createApi = ({ fetcher }) => {
         createRoom: api.createRoom,
         getRoom: api.getRoom,
         registerClient: api.registerClient,
+        setClientName: api.setClientName,
         sendIceCandidate: api.sendIceCandidate,
         checkNegotiateAllowed: api.checkNegotiateAllowed,
         negotiateConnection: api.negotiateConnection,
@@ -303,6 +446,7 @@ export const createApi = ({ fetcher }) => {
         subscribeTracks: api.subscribeTracks,
         leaveRoom: api.leaveRoom,
         endRoom: api.endRoom,
+        createDataChannel: api.createDataChannel,
       }
     },
   }
