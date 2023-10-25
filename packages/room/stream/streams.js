@@ -8,16 +8,14 @@ export const createStreams = () => {
        * To trigger the type safety
        * @augments {Map<string, import('./stream-types.js').RoomStreamType.InstanceStream>}
        */
-      // eslint-disable-next-line prettier/prettier
-      class StreamsMap extends Map { }
+      class StreamsMap extends Map {}
       this._streams = new StreamsMap()
 
       /**
        * To trigger the type safety
        * @augments {Map<string, import('./stream-types.js').RoomStreamType.DraftStream>}
        */
-      // eslint-disable-next-line prettier/prettier
-      class DraftStreamsMap extends Map { }
+      class DraftStreamsMap extends Map {}
       this._drafts = new DraftStreamsMap()
     }
 
@@ -60,6 +58,18 @@ export const createStreams = () => {
     }
 
     /**
+     * @param {string} trackId
+     * @returns {import('./stream-types.js').RoomStreamType.InstanceStream | null} Returns the stream data if the stream track id matches with the one given on parameter
+     */
+    getStreamByTrackId = (trackId) => {
+      const stream = this.getAllStreams().find((stream) => {
+        return !!stream.mediaStream.getTrackById(trackId)
+      })
+
+      return stream || null
+    }
+
+    /**
      * Get a total number of stored streams
      * @returns {number}
      */
@@ -87,6 +97,8 @@ export const createStreams = () => {
       const draft = this._drafts.get(key) || {}
 
       this._drafts.set(key, {
+        clientId: value.clientId || draft.clientId || undefined,
+        name: value.name || draft.name || undefined,
         origin: value.origin || draft.origin || undefined,
         source: value.source || draft.source || undefined,
         mediaStream: value.mediaStream || draft.mediaStream || undefined,
@@ -138,10 +150,12 @@ export const createStreams = () => {
         !data ||
         !(data.mediaStream instanceof MediaStream) ||
         typeof data.origin !== 'string' ||
-        typeof data.source !== 'string'
+        typeof data.source !== 'string' ||
+        typeof data.clientId !== 'string' ||
+        typeof data.name !== 'string'
       ) {
         throw new Error(
-          'Please provide valid stream origin, source, and MediaStream data'
+          'Please provide valid stream data (clientId, name, origin, source, MediaStream)'
         )
       }
 
@@ -158,6 +172,7 @@ export const createStreams = () => {
         removeStream: streams.removeStream,
         getAllStreams: streams.getAllStreams,
         getStream: streams.getStream,
+        getStreamByTrackId: streams.getStreamByTrackId,
         getTotalStreams: streams.getTotalStreams,
         hasStream: streams.hasStream,
         addDraft: streams.addDraft,
