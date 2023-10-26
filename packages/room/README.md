@@ -33,6 +33,9 @@ const client = await room.createClient(roomData.data.roomId);
 // create a new peer and automatically open connection to the remote peer
 const peer = await room.createPeer(roomData.data.roomId, client.data.clientId);
 
+// create a new data channel server for broadcasting data to all connected clients
+await room.createDataChannel(roomData.data.roomId, 'my-channel')
+
 // listen for a specific room event
 room.on(room.event.STREAM_AVAILABLE, function () {
   // handle event
@@ -65,9 +68,9 @@ await room.endRoom(roomData.data.roomId);
 
   A method to get the room data. It expects a `roomId` as a parameter. This method will return a promise.
 
-- `room.createClient(roomId: string, clientId?: string | undefined)`
+- `room.createClient(roomId: string, config?: object)`
 
-  A method to create and register a new client to the room. It expects two parameters. The `roomId` is required. If the client prefers to set their own client ID, the second client ID parameter can be set. This method will return a promise.
+  A method to create and register a new client to the room. It expects two parameters. The `roomId` is required. The second parameter is an optional config to set a custom client data. This method will return a promise.
 
 - `room.setClientName(roomId: string, clientId: string, clientName: string)`
 
@@ -110,6 +113,8 @@ const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, aud
 
 // Add the user media input stream to the peer
 peer.addStream(mediaStream.id, {
+  clientId: client.data.clientId,
+  name: 'Client A',
   origin: 'local', // local | remote
   source: 'media', // media | screen
   mediaStream: mediaStream,
@@ -119,6 +124,8 @@ const displayScreen = await navigator.mediaDevices.getDisplayMedia({ video: true
 
 // Add the display screen media input stream to the peer
 peer.addStream(displayScreen.id, {
+  clientId: client.data.clientId,
+  name: 'Screen from Client A',
   origin: 'local', // local | remote
   source: 'screen', // media | screen
   mediaStream: displayScreen,
@@ -171,6 +178,8 @@ peer.disconnect();
 - `peer.addStream(key, data)`
 
   - Required data:
+    - **clientId**: string,
+    - **name**: string,
     - **origin**: 'local' | 'remote'
     - **source**: 'media' | 'screen'
     - **mediaStream**: MediaStream
