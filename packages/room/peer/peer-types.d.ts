@@ -9,17 +9,24 @@ export declare namespace RoomPeerType {
   type InstancePeer = {
     connect: (roomId: string, clientId: string) => void
     disconnect: () => void
+    getClientId: () => string
+    getRoomId: () => string
     getPeerConnection: () => RTCPeerConnection | null
     addStream: (key: string, value: RoomStreamType.StreamParameters) => void
     removeStream: (key: string) => RoomStreamType.InstanceStream | null
     getAllStreams: () => RoomStreamType.InstanceStream[]
     getStream: (key: string) => RoomStreamType.InstanceStream | null
+    getStreamByTrackId: (
+      trackId: string
+    ) => RoomStreamType.InstanceStream | null
     getTotalStreams: () => number
     hasStream: (key: string) => boolean
     turnOnCamera: () => void
     turnOnMic: () => void
     turnOffCamera: () => void
     turnOffMic: () => void
+    observeVideo: (video: HTMLVideoElement) => void
+    unobserveVideo: (video: HTMLVideoElement) => void
   }
 
   type PeerDependencies = {
@@ -35,6 +42,15 @@ export declare namespace RoomPeerType {
     PEER_DISCONNECTED: 'peerDisconnected'
     STREAM_AVAILABLE: 'streamAvailable'
     STREAM_REMOVED: 'streamRemoved'
-    _STREAM_ADDED: 'streamAdded',
+    _STREAM_ADDED: 'streamAdded'
+    _INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable'
+  }
+
+  type RTCRtpSVCEncodingParameters = RTCRtpEncodingParameters & {
+    scalabilityMode?: string
+  }
+
+  type RTCRtpSVCTransceiverInit = RTCRtpTransceiverInit & {
+    sendEncodings?: RTCRtpSVCEncodingParameters[]
   }
 }
