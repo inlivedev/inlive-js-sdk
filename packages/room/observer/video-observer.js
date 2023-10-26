@@ -13,8 +13,10 @@ export class VideoObserver {
     this.#intervalGap = typeof intervalGap !== 'number' ? 1000 : intervalGap
     this.#lastReportTime = 0
     this.#dataChannel = dataChannel
-    this.#resizeObserver = new ResizeObserver(this.#onResize)
-    this.#intersectionObserver = new IntersectionObserver(this.#onIntersection)
+    this.#resizeObserver = new ResizeObserver(this.#onResize.bind(this))
+    this.#intersectionObserver = new IntersectionObserver(
+      this.#onIntersection.bind(this)
+    )
   }
 
   /**
