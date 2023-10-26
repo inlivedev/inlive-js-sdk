@@ -33,8 +33,11 @@ export declare namespace RoomAPIType {
     audio_red: number
     video: number
     video_high: number
+    video_high_pixels: number
     video_mid: number
+    video_mid_pixels: number
     video_low: number
+    video_low_pixels: number
     initial_bandwidth: number
   }
 
@@ -56,6 +59,7 @@ export declare namespace RoomAPIType {
     data: {
       room_id: string
       name: string
+      bitrates_config: Bitrates
     }
   }
 
