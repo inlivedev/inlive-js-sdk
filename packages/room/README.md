@@ -236,9 +236,9 @@ The stream object is an object created and stored after the method `peer.addStre
 #### Properties
 
 The stream object holds read-only properties based on the data client provided when creating a new stream.
-- **id**: The ID of the stream
+- **id**: The ID or key identifier of the stream
 - **clientId**: The ID of the client which transceive this specific stream.
-- **name**: The name or label for the stream.
+- **name**: The name or label for identification purpose.
 - **origin**: The origin of the stream. The value is between a `local` or `remote`
 - **source**: The source of the stream. MediaStream from `getUserMedia()` should set a **media** source and the one from `getDisplayMedia()` should set a **screen** source.
 - **mediaStream**: The MediaStream object
