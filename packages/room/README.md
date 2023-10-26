@@ -148,6 +148,14 @@ peer.disconnect();
 
 #### Methods
 
+- `peer.getClientId()`
+
+  A method to get the client ID currently used by the peer
+
+- `peer.getRoomId()`
+
+  A method to get the room ID currently used by the peer
+
 - `peer.getPeerConnection()`
 
   A method to get a [RTCPeerConnection](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection) object. This object is useful to get current client connection state and listen for events related to the WebRTC connection.
@@ -179,7 +187,11 @@ peer.disconnect();
 
 - `peer.getStream(key)`
 
-  A method to get and retrieve a specific stream object. It requires a key to find the data.
+  A method to get and retrieve a specific stream object based on key provided.
+
+- `peer.getStreamByTrackId(trackId: string)`
+
+  A method to get and retrieve a specific stream object based on track ID provided.
 
 - `peer.getTotalStreams()`
 
@@ -207,16 +219,26 @@ peer.disconnect();
 
 - `peer.replaceTrack(track: MediaStreamTrack)`
 
-  A method to replace the track currently being sent by sender with a new MediaStreamTrack
+  A method to replace the track currently being sent by sender with a new MediaStreamTrack.
+
+- `peer.observeVideo(videoElement: HTMLVideoElement)`
+
+  A method to observe video element for any visibility or resize changes. It requires an HTML video element to observe.
+
+- `peer.unobserveVideo(videoElement: HTMLVideoElement)`
+
+  A method to remove observer from video element. It requires an HTML video element which has been already observed.
 
 ### Stream object
 
-The stream object is an object created and stored after the method `peer.addStream()` is called. This object is mainly used to store the data for a specific MediaStream added by `peer.addStream()` method. We can say that a single stream is the representative of a single participant. Because of that, it's important to call the addStream method in order to create a local participant and establish a peer connection with remote peer.
+The stream object is an object created and stored after the method `peer.addStream()` is called. This object is mainly used to store the data for a specific MediaStream added by `peer.addStream()` method. We can say a single stream object is the representative of a single participant or we can call it a **client**.
 
 #### Properties
 
 The stream object holds read-only properties based on the data client provided when creating a new stream.
-- **id**: The ID  of the stream
+- **id**: The ID of the stream
+- **clientId**: The ID of the client which transceive this specific stream.
+- **name**: The name or label for the stream.
 - **origin**: The origin of the stream. The value is between a `local` or `remote`
 - **source**: The source of the stream. MediaStream from `getUserMedia()` should set a **media** source and the one from `getDisplayMedia()` should set a **screen** source.
 - **mediaStream**: The MediaStream object
