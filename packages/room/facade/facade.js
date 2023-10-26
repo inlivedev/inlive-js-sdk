@@ -62,7 +62,8 @@ export const createFacade = ({
            * @param {string} clientId
            */
           async (roomId, clientId) => {
-            return await peer.connect(roomId, clientId)
+            await peer.connect(roomId, clientId)
+            return peer
           },
         createDataChannel: api.createDataChannel,
         on: event.on,
