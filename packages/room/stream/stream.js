@@ -23,6 +23,10 @@ export const createStream = () => {
      * @param {MediaStreamTrack} newTrack
      */
     replaceTrack = (newTrack) => {
+      if (!(newTrack instanceof MediaStreamTrack)) {
+        throw new TypeError('The track must be an instance of MediaStreamTrack')
+      }
+
       const currentTrack = this.mediaStream.getTracks().find((currentTrack) => {
         return currentTrack.kind === newTrack.kind
       })

@@ -217,6 +217,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     replaceTrack = async (newTrack) => {
       if (!this._peerConnection) return
 
+      if (!(newTrack instanceof MediaStreamTrack)) {
+        throw new TypeError('The track must be an instance of MediaStreamTrack')
+      }
+
       for (const transceiver of this._peerConnection.getTransceivers()) {
         if (
           transceiver.sender.track &&
