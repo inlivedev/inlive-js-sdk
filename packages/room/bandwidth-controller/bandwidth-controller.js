@@ -1,285 +1,270 @@
 import { PeerEvents } from '../peer/peer.js'
 
-/**
- * @param {import('./bandwidth-controller-types.js').RoomBwControllerType.BwControllerDependencies} dependencies Dependencies for bandwidth controller module
- */
-export const createBandwidthController = ({ event, peer }) => {
-  const BandwidthController = class {
-    _event
-    _peer
-    _availableOutgoingBitrate
-    _lastUpdated
-    /** @type {import('./bandwidth-controller-types.js').RoomBwControllerType.InboundTracks} */
-    _inboundTracks
-    /** @type {import('./bandwidth-controller-types.js').RoomBwControllerType.OutboundTracks} */
-    _outboundTracks
+export class BandwidthController {
+  #event
+  #peer
+  #availableOutgoingBitrate
+  #lastUpdated
+  /** @type {import('./bandwidth-controller-types.js').RoomBwControllerType.InboundTracks} */
+  #inboundTracks
+  /** @type {import('./bandwidth-controller-types.js').RoomBwControllerType.OutboundTracks} */
+  #outboundTracks
+  /** @type {ReturnType<typeof setInterval> | null} */
+  #statsInterval
+  /** @type {RTCDataChannel | null} */
+  #internalDataChannel
 
-    constructor() {
-      this._peer = peer
-      this._event = event
-      this._availableOutgoingBitrate = 0
-      this._lastUpdated = 0
-      this._inboundTracks = {}
-      this._outboundTracks = {}
-      this._statsInterval = null
-      /** @type {RTCDataChannel | null} */
-      this._internalDataChannel = null
+  /**
+   * @param {import('./bandwidth-controller-types.js').RoomBwControllerType.BwControllerDependencies} dependencies Dependencies for bandwidth controller module
+   */
+  constructor({ event, peer }) {
+    this.#peer = peer
+    this.#event = event
+    this.#availableOutgoingBitrate = 0
+    this.#lastUpdated = 0
+    this.#inboundTracks = {}
+    this.#outboundTracks = {}
+    this.#statsInterval = null
+    this.#internalDataChannel = null
 
-      this._event.on(PeerEvents.PEER_CONNECTED, this._onPeerConnected)
-      this._event.on(PeerEvents.PEER_DISCONNECTED, this._onPeerDisconnected)
-      this._event.on(
-        PeerEvents._INTERNAL_DATACHANNEL_AVAILABLE,
-        this._onInternalDataChannelAvailable
-      )
-    }
+    this.#event.on(PeerEvents.PEER_CONNECTED, this.#onPeerConnected)
+    this.#event.on(PeerEvents.PEER_DISCONNECTED, this.#onPeerDisconnected)
+    this.#event.on(
+      PeerEvents._INTERNAL_DATACHANNEL_AVAILABLE,
+      this.#onInternalDataChannelAvailable
+    )
+  }
 
-    getVideoOutboundTracksLength = () => {
-      let length = 0
-      for (const trackId of Object.keys(this._outboundTracks)) {
-        if (this._outboundTracks[trackId].kind === 'video') {
-          length++
-        }
-      }
-      return length
-    }
-
-    getAudioOutboundTracksLength = () => {
-      let length = 0
-      for (const trackId of Object.keys(this._outboundTracks)) {
-        if (this._outboundTracks[trackId].kind === 'audio') {
-          length++
-        }
-      }
-      return length
-    }
-
-    getAvailable = async () => {
-      await this._updateStats()
-      return this._availableOutgoingBitrate
-    }
-
-    getOutbountStats() {
-      const stats = {
-        audio: {
-          totalBitrates: 0,
-          count: 0,
-        },
-        video: {
-          totalBitrates: 0,
-          count: 0,
-        },
-      }
-
-      let isZeroBitrate = false
-
-      for (const trackId of Object.keys(this._outboundTracks)) {
-        if (
-          this._outboundTracks[trackId].kind === 'audio' &&
-          (this._outboundTracks[trackId].rid === 'high' ||
-            this._outboundTracks[trackId].rid === '')
-        ) {
-          if (this._outboundTracks[trackId].bitrates === 0) {
-            isZeroBitrate = true
-            return
-          }
-          stats.audio.count++
-          stats.audio.totalBitrates += this._outboundTracks[trackId].bitrates
-        } else {
-          if (this._outboundTracks[trackId].bitrates === 0) {
-            isZeroBitrate = true
-            return
-          }
-          stats.video.count++
-          stats.video.totalBitrates += this._outboundTracks[trackId].bitrates
-        }
-      }
-
-      if (isZeroBitrate) return null
-
-      return stats
-    }
-
-    _onPeerConnected = () => {
-      if (this._statsInterval) {
-        clearInterval(this._statsInterval)
-        this._statsInterval = null
-      }
-
-      this._statsInterval = setInterval(this._updateStats, 3000)
-    }
-
-    _onPeerDisconnected = () => {
-      if (this._statsInterval) {
-        clearInterval(this._statsInterval)
-        this._statsInterval = null
+  getVideoOutboundTracksLength = () => {
+    let length = 0
+    for (const trackId of Object.keys(this.#outboundTracks)) {
+      if (this.#outboundTracks[trackId].kind === 'video') {
+        length++
       }
     }
+    return length
+  }
 
-    /**
-     * @param {RTCDataChannel} datachannel
-     */
-    _onInternalDataChannelAvailable = (datachannel) => {
-      this._internalDataChannel = datachannel
+  getAudioOutboundTracksLength = () => {
+    let length = 0
+    for (const trackId of Object.keys(this.#outboundTracks)) {
+      if (this.#outboundTracks[trackId].kind === 'audio') {
+        length++
+      }
+    }
+    return length
+  }
+
+  getAvailable = async () => {
+    await this.#updateStats()
+    return this.#availableOutgoingBitrate
+  }
+
+  getOutbountStats() {
+    const stats = {
+      audio: {
+        totalBitrates: 0,
+        count: 0,
+      },
+      video: {
+        totalBitrates: 0,
+        count: 0,
+      },
     }
 
-    _updateStats = async () => {
-      const peerConnection = this._peer.getPeerConnection()
+    let isZeroBitrate = false
 
-      if (Date.now() - this._lastUpdated < 1000 || !peerConnection) {
-        return
-      }
-
-      const stats = await peerConnection.getStats()
-      this._lastUpdated = Date.now()
-      let cpu = false
-      let bandwidth = false
-
-      for (const [, report] of stats) {
-        switch (report.type) {
-          case 'inbound-rtp':
-            this._processInboundStats(report)
-            break
-
-          case 'outbound-rtp':
-            this._processOutboundStats(report)
-            if (report.qualityLimitationReason === 'cpu') {
-              cpu = true
-            } else if (report.qualityLimitationReason === 'bandwidth') {
-              bandwidth = true
-            }
-            break
-
-          case 'candidate-pair':
-            if (typeof report.availableOutgoingBitrate !== 'undefined') {
-              this._availableOutgoingBitrate = report.availableOutgoingBitrate
-            }
-            break
-
-          default:
-            break
-        }
-      }
-
-      let reason = 'none'
-
-      if (cpu && bandwidth) reason = 'both'
-      else if (cpu) reason = 'cpu'
-      else if (bandwidth) reason = 'bandwidth'
-
-      this._sendStats({
-        available_outgoing_bitrate: this._availableOutgoingBitrate,
-        quality_limitation_reason: reason,
-      })
-    }
-
-    /**
-     * @param {import('./bandwidth-controller-types.js').RoomBwControllerType.PublisherStatsData} stats
-     */
-    _sendStats = async (stats) => {
-      if (!this._internalDataChannel) return
-      if (this._internalDataChannel.readyState !== 'open') return
-
-      /** @type {import('./bandwidth-controller-types.js').RoomBwControllerType.PublisherStatsReport} */
-      const statsReport = {
-        type: 'stats',
-        data: stats,
-      }
-
-      this._internalDataChannel.send(JSON.stringify(statsReport))
-    }
-
-    /**
-     * @param {import('./bandwidth-controller-types.js').RoomBwControllerType.RTCInboundRtpStreamStatsExtra} report
-     */
-    _processInboundStats = (report) => {
-      const trackId = report.trackIdentifier
-      const bytesReceived = report.bytesReceived || 0
-
-      if (typeof this._inboundTracks[trackId] === 'undefined') {
-        this._inboundTracks[trackId] = {
-          source:
-            this._peer.getStreamByTrackId(report.trackIdentifier)?.source || '',
-          kind: report.kind,
-          bytesReceived: 0,
-          bitrate: 0,
-          lastUpdated: 0,
-        }
-      }
-
+    for (const trackId of Object.keys(this.#outboundTracks)) {
       if (
-        this._inboundTracks[trackId].bytesReceived === 0 ||
-        bytesReceived === 0 ||
-        this._inboundTracks[trackId].lastUpdated === 0
+        this.#outboundTracks[trackId].kind === 'audio' &&
+        (this.#outboundTracks[trackId].rid === 'high' ||
+          this.#outboundTracks[trackId].rid === '')
       ) {
-        this._inboundTracks[trackId].bytesReceived = bytesReceived
-        this._inboundTracks[trackId].lastUpdated = this._lastUpdated
-        return
+        if (this.#outboundTracks[trackId].bitrates === 0) {
+          isZeroBitrate = true
+          return
+        }
+        stats.audio.count++
+        stats.audio.totalBitrates += this.#outboundTracks[trackId].bitrates
+      } else {
+        if (this.#outboundTracks[trackId].bitrates === 0) {
+          isZeroBitrate = true
+          return
+        }
+        stats.video.count++
+        stats.video.totalBitrates += this.#outboundTracks[trackId].bitrates
       }
-
-      const deltaBytes =
-        bytesReceived - this._inboundTracks[trackId].bytesReceived
-
-      this._inboundTracks[trackId].bytesReceived = bytesReceived
-
-      let bitrate = 0
-
-      const deltaMs =
-        this._lastUpdated - this._inboundTracks[trackId].lastUpdated
-      bitrate = ((deltaBytes * 8) / deltaMs) * 1000
-
-      this._inboundTracks[trackId].bitrate = bitrate
-      this._inboundTracks[trackId].lastUpdated = this._lastUpdated
     }
 
-    /**
-     * @param {import('./bandwidth-controller-types.js').RoomBwControllerType.RTCOutboundRtpStreamStatsExtra} report
-     */
-    _processOutboundStats = (report) => {
-      const trackId = report.id
+    if (isZeroBitrate) return null
 
-      if (typeof this._outboundTracks[trackId] === 'undefined') {
-        this._outboundTracks[trackId] = {
-          rid: report.rid || '',
-          kind: report.kind,
-          bytesSent: 0,
-          bitrates: 0,
-          lastUpdated: 0,
-        }
-      }
+    return stats
+  }
 
-      if (this._outboundTracks[trackId].bytesSent === 0) {
-        this._outboundTracks[trackId].bytesSent = report.bytesSent || 0
-        this._outboundTracks[trackId].lastUpdated = this._lastUpdated
-      }
+  #onPeerConnected = () => {
+    if (this.#statsInterval) {
+      clearInterval(this.#statsInterval)
+      this.#statsInterval = null
+    }
 
-      const deltaMs =
-        this._lastUpdated - this._outboundTracks[trackId].lastUpdated
+    this.#statsInterval = setInterval(this.#updateStats, 3000)
+  }
 
-      const deltaBytes =
-        report.bytesSent || 0 - this._outboundTracks[trackId].bytesSent
-
-      const bitrate = Math.floor(((deltaBytes * 8) / deltaMs) * 1000)
-
-      if (bitrate === 0) return
-
-      this._outboundTracks[trackId].bytesSent = report.bytesSent || 0
-      this._outboundTracks[trackId].bitrates = bitrate
-      this._outboundTracks[trackId].lastUpdated = this._lastUpdated
+  #onPeerDisconnected = () => {
+    if (this.#statsInterval) {
+      clearInterval(this.#statsInterval)
+      this.#statsInterval = null
     }
   }
 
-  return {
-    createInstance: () => {
-      const bandwidthController = new BandwidthController()
+  /**
+   * @param {RTCDataChannel} datachannel
+   */
+  #onInternalDataChannelAvailable = (datachannel) => {
+    this.#internalDataChannel = datachannel
+  }
 
-      return {
-        getVideoOutboundTracksLength:
-          bandwidthController.getVideoOutboundTracksLength,
-        getAudioOutboundTracksLength:
-          bandwidthController.getAudioOutboundTracksLength,
-        getAvailable: bandwidthController.getAvailable,
-        getOutbountStats: bandwidthController.getOutbountStats,
+  #updateStats = async () => {
+    const peerConnection = this.#peer.getPeerConnection()
+
+    if (Date.now() - this.#lastUpdated < 1000 || !peerConnection) {
+      return
+    }
+
+    const stats = await peerConnection.getStats()
+    this.#lastUpdated = Date.now()
+    let cpu = false
+    let bandwidth = false
+
+    for (const [, report] of stats) {
+      switch (report.type) {
+        case 'inbound-rtp':
+          this.#processInboundStats(report)
+          break
+
+        case 'outbound-rtp':
+          this.#processOutboundStats(report)
+          if (report.qualityLimitationReason === 'cpu') {
+            cpu = true
+          } else if (report.qualityLimitationReason === 'bandwidth') {
+            bandwidth = true
+          }
+          break
+
+        case 'candidate-pair':
+          if (typeof report.availableOutgoingBitrate !== 'undefined') {
+            this.#availableOutgoingBitrate = report.availableOutgoingBitrate
+          }
+          break
+
+        default:
+          break
       }
-    },
+    }
+
+    let reason = 'none'
+
+    if (cpu && bandwidth) reason = 'both'
+    else if (cpu) reason = 'cpu'
+    else if (bandwidth) reason = 'bandwidth'
+
+    this.#sendStats({
+      available_outgoing_bitrate: this.#availableOutgoingBitrate,
+      quality_limitation_reason: reason,
+    })
+  }
+
+  /**
+   * @param {import('./bandwidth-controller-types.js').RoomBwControllerType.PublisherStatsData} stats
+   */
+  #sendStats = async (stats) => {
+    if (!this.#internalDataChannel) return
+    if (this.#internalDataChannel.readyState !== 'open') return
+
+    /** @type {import('./bandwidth-controller-types.js').RoomBwControllerType.PublisherStatsReport} */
+    const statsReport = {
+      type: 'stats',
+      data: stats,
+    }
+
+    this.#internalDataChannel.send(JSON.stringify(statsReport))
+  }
+
+  /**
+   * @param {import('./bandwidth-controller-types.js').RoomBwControllerType.RTCInboundRtpStreamStatsExtra} report
+   */
+  #processInboundStats = (report) => {
+    const trackId = report.trackIdentifier
+    const bytesReceived = report.bytesReceived || 0
+
+    if (typeof this.#inboundTracks[trackId] === 'undefined') {
+      this.#inboundTracks[trackId] = {
+        source:
+          this.#peer.getStreamByTrackId(report.trackIdentifier)?.source || '',
+        kind: report.kind,
+        bytesReceived: 0,
+        bitrate: 0,
+        lastUpdated: 0,
+      }
+    }
+
+    if (
+      this.#inboundTracks[trackId].bytesReceived === 0 ||
+      bytesReceived === 0 ||
+      this.#inboundTracks[trackId].lastUpdated === 0
+    ) {
+      this.#inboundTracks[trackId].bytesReceived = bytesReceived
+      this.#inboundTracks[trackId].lastUpdated = this.#lastUpdated
+      return
+    }
+
+    const deltaBytes =
+      bytesReceived - this.#inboundTracks[trackId].bytesReceived
+
+    this.#inboundTracks[trackId].bytesReceived = bytesReceived
+
+    let bitrate = 0
+
+    const deltaMs = this.#lastUpdated - this.#inboundTracks[trackId].lastUpdated
+    bitrate = ((deltaBytes * 8) / deltaMs) * 1000
+
+    this.#inboundTracks[trackId].bitrate = bitrate
+    this.#inboundTracks[trackId].lastUpdated = this.#lastUpdated
+  }
+
+  /**
+   * @param {import('./bandwidth-controller-types.js').RoomBwControllerType.RTCOutboundRtpStreamStatsExtra} report
+   */
+  #processOutboundStats = (report) => {
+    const trackId = report.id
+
+    if (typeof this.#outboundTracks[trackId] === 'undefined') {
+      this.#outboundTracks[trackId] = {
+        rid: report.rid || '',
+        kind: report.kind,
+        bytesSent: 0,
+        bitrates: 0,
+        lastUpdated: 0,
+      }
+    }
+
+    if (this.#outboundTracks[trackId].bytesSent === 0) {
+      this.#outboundTracks[trackId].bytesSent = report.bytesSent || 0
+      this.#outboundTracks[trackId].lastUpdated = this.#lastUpdated
+    }
+
+    const deltaMs =
+      this.#lastUpdated - this.#outboundTracks[trackId].lastUpdated
+
+    const deltaBytes =
+      report.bytesSent || 0 - this.#outboundTracks[trackId].bytesSent
+
+    const bitrate = Math.floor(((deltaBytes * 8) / deltaMs) * 1000)
+
+    if (bitrate === 0) return
+
+    this.#outboundTracks[trackId].bytesSent = report.bytesSent || 0
+    this.#outboundTracks[trackId].bitrates = bitrate
+    this.#outboundTracks[trackId].lastUpdated = this.#lastUpdated
   }
 }

@@ -1,10 +1,7 @@
 import type { RoomPeerType } from '../peer/peer-types.js'
 import type { RoomEventType } from '../event/event-types.js'
-import type { createBandwidthController } from './bandwidth-controller.js'
 
 export declare namespace RoomBwControllerType {
-  type CreateBwController = typeof createBandwidthController
-
   type BwControllerDependencies = {
     event: RoomEventType.InstanceEvent
     peer: RoomPeerType.InstancePeer
