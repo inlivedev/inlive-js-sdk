@@ -114,7 +114,7 @@ const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, aud
 // Add the user media input stream to the peer
 peer.addStream(mediaStream.id, {
   clientId: client.data.clientId,
-  name: 'Client A',
+  name: 'Client A stream',
   origin: 'local', // local | remote
   source: 'media', // media | screen
   mediaStream: mediaStream,
@@ -125,7 +125,7 @@ const displayScreen = await navigator.mediaDevices.getDisplayMedia({ video: true
 // Add the display screen media input stream to the peer
 peer.addStream(displayScreen.id, {
   clientId: client.data.clientId,
-  name: 'Screen from Client A',
+  name: 'Screen by Client A',
   origin: 'local', // local | remote
   source: 'screen', // media | screen
   mediaStream: displayScreen,
