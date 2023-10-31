@@ -230,14 +230,6 @@ peer.disconnect();
 
   A method to replace the track currently being sent by sender with a new MediaStreamTrack.
 
-- `peer.observeVideo(videoElement: HTMLVideoElement)`
-
-  A method to observe video element for any visibility or resize changes. It requires an HTML video element to observe.
-
-- `peer.unobserveVideo(videoElement: HTMLVideoElement)`
-
-  A method to remove observer from video element. It requires an HTML video element which has been already observed.
-
 ### Stream object
 
 The stream object is an object created and stored after the method `peer.addStream()` is called. This object is mainly used to store the data for a specific MediaStream added by `peer.addStream()` method. We can say a single stream object is the representative of a single participant or we can call it a **client**.
