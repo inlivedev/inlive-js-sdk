@@ -437,7 +437,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         sendEncodings: [
           {
             maxBitrate: MAX_BITRATE,
-            scalabilityMode: 'L3T3',
+            scalabilityMode: 'L3T2',
           },
         ],
       }
