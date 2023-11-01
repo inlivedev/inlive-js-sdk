@@ -7,7 +7,7 @@ export const ChannelEvents = {
 }
 
 export const REASONS = {
-  CLOSED: 'closed',
+  PEER_CLOSED: 'peerClosed',
   NOT_FOUND: 'notfound',
   RECONNECT: 'reconnect',
 }
@@ -161,7 +161,9 @@ export const createChannel = ({ api, event, peer, streams }) => {
 
     _onPeerClosed = () => {
       this.disconnect()
-      this._event.emit(ChannelEvents.CHANNEL_CLOSED, { reason: REASONS.CLOSED })
+      this._event.emit(ChannelEvents.CHANNEL_CLOSED, {
+        reason: REASONS.PEER_CLOSED,
+      })
     }
 
     /**
