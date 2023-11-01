@@ -32,8 +32,11 @@ export const createApi = ({ fetcher }) => {
             audioRed: bitrates.audio_red || 0,
             video: bitrates.video || 0,
             videoHigh: bitrates.video_high || 0,
+            videoHighPixels: bitrates.video_high_pixels || 0,
             videoMid: bitrates.video_mid || 0,
+            videoMidPixels: bitrates.video_mid_pixels || 0,
             videoLow: bitrates.video_low || 0,
+            videoLowPixels: bitrates.video_low_pixels || 0,
             initialBandwidth: bitrates.initial_bandwidth || 0,
           },
         },
@@ -54,6 +57,7 @@ export const createApi = ({ fetcher }) => {
       const response = await this._fetcher.get(`/rooms/${roomId}`)
 
       const data = response.data || {}
+      const bitrates = data.bitrates_config || {}
 
       const room = {
         code: response.code || 500,
@@ -62,6 +66,18 @@ export const createApi = ({ fetcher }) => {
         data: {
           roomId: data.room_id || '',
           roomName: data.name || '',
+          bitrates: {
+            audio: bitrates.audio || 0,
+            audioRed: bitrates.audio_red || 0,
+            video: bitrates.video || 0,
+            videoHigh: bitrates.video_high || 0,
+            videoHighPixels: bitrates.video_high_pixels || 0,
+            videoMid: bitrates.video_mid || 0,
+            videoMidPixels: bitrates.video_mid_pixels || 0,
+            videoLow: bitrates.video_low || 0,
+            videoLowPixels: bitrates.video_low_pixels || 0,
+            initialBandwidth: bitrates.initial_bandwidth || 0,
+          },
         },
       }
 
@@ -112,8 +128,11 @@ export const createApi = ({ fetcher }) => {
             audioRed: bitrates.audio_red || 0,
             video: bitrates.video || 0,
             videoHigh: bitrates.video_high || 0,
+            videoHighPixels: bitrates.video_high_pixels || 0,
             videoMid: bitrates.video_mid || 0,
+            videoMidPixels: bitrates.video_mid_pixels || 0,
             videoLow: bitrates.video_low || 0,
+            videoLowPixels: bitrates.video_low_pixels || 0,
             initialBandwidth: bitrates.initial_bandwidth || 0,
           },
         },
@@ -166,8 +185,11 @@ export const createApi = ({ fetcher }) => {
             audioRed: bitrates.audio_red || 0,
             video: bitrates.video || 0,
             videoHigh: bitrates.video_high || 0,
+            videoHighPixels: bitrates.video_high_pixels || 0,
             videoMid: bitrates.video_mid || 0,
+            videoMidPixels: bitrates.video_mid_pixels || 0,
             videoLow: bitrates.video_low || 0,
+            videoLowPixels: bitrates.video_low_pixels || 0,
             initialBandwidth: bitrates.initial_bandwidth || 0,
           },
         },

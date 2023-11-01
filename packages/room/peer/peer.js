@@ -1,3 +1,13 @@
+import {
+  getBrowserName,
+  CHROME,
+  EDGE,
+  OPERA,
+  SAFARI,
+} from '../../internal/utils/get-browser-name.js'
+import { VideoObserver } from '../observer/video-observer.js'
+import { BandwidthController } from '../bandwidth-controller/bandwidth-controller.js'
+
 /** @type {import('./peer-types.js').RoomPeerType.PeerEvents} */
 export const PeerEvents = {
   PEER_CONNECTED: 'peerConnected',
@@ -5,7 +15,12 @@ export const PeerEvents = {
   STREAM_AVAILABLE: 'streamAvailable',
   STREAM_REMOVED: 'streamRemoved',
   _STREAM_ADDED: 'streamAdded',
+  _INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
 }
+
+const MAX_BITRATE = 1500 * 1000
+const MID_BITRATE = 500 * 1000
+const MIN_BITRATE = 150 * 1000
 
 /** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
 export const createPeer = ({ api, createStream, event, streams, config }) => {
@@ -18,12 +33,25 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _stream
     /** @type {RTCPeerConnection | null} */
     _peerConnection = null
+    _bwController
+    /** @type {VideoObserver | null} */
+    _videoObserver
+    /** @type {Array<HTMLVideoElement>} */
+    _pendingObservedVideo
 
     constructor() {
       this._api = api
       this._event = event
       this._streams = streams
       this._stream = createStream()
+
+      this._bwController = new BandwidthController({
+        peer: this,
+        event: this._event,
+      })
+
+      this._videoObserver = null
+      this._pendingObservedVideo = []
     }
 
     /**
@@ -63,7 +91,17 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._removeEventListener()
       this._peerConnection.close()
       this._peerConnection = null
+      this._roomId = ''
+      this._clientId = ''
       this._event.emit(PeerEvents.PEER_DISCONNECTED)
+    }
+
+    getClientId = () => {
+      return this._clientId
+    }
+
+    getRoomId = () => {
+      return this._roomId
     }
 
     getPeerConnection = () => {
@@ -112,6 +150,15 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     getStream = (key) => {
       this._streams.validateKey(key)
       return this._streams.getStream(key)
+    }
+
+    /**
+     * Get a specific stream by track ID
+     * @param {string} trackId
+     * @returns {import('../stream/stream-types.js').RoomStreamType.InstanceStream | null} Returns the stream data if the data exists
+     */
+    getStreamByTrackId = (trackId) => {
+      return this._streams.getStreamByTrackId(trackId)
     }
 
     /**
@@ -170,6 +217,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     replaceTrack = async (newTrack) => {
       if (!this._peerConnection) return
 
+      if (!(newTrack instanceof MediaStreamTrack)) {
+        throw new TypeError('The track must be an instance of MediaStreamTrack')
+      }
+
       for (const transceiver of this._peerConnection.getTransceivers()) {
         if (
           transceiver.sender.track &&
@@ -178,6 +229,29 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           await transceiver.sender.replaceTrack(newTrack)
         }
       }
+    }
+
+    /**
+     * @param {HTMLVideoElement} videoElement
+     */
+    observeVideo = (videoElement) => {
+      if (!this._videoObserver) {
+        this._pendingObservedVideo.push(videoElement)
+        return
+      }
+
+      this._videoObserver.observe(videoElement)
+    }
+
+    /**
+     * @param {HTMLVideoElement} videoElement
+     */
+    unobserveVideo = (videoElement) => {
+      if (!this._videoObserver) {
+        return
+      }
+
+      this._videoObserver.unobserve(videoElement)
     }
 
     _addEventListener = () => {
@@ -199,6 +273,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       )
 
       this._peerConnection.addEventListener('track', this._onTrack)
+
+      this._peerConnection.addEventListener('datachannel', this._onDataChannel)
 
       window.addEventListener('beforeunload', this._onBeforeUnload)
 
@@ -224,6 +300,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       )
 
       this._peerConnection.removeEventListener('track', this._onTrack)
+
+      this._peerConnection.removeEventListener(
+        'datachannel',
+        this._onDataChannel
+      )
 
       window.removeEventListener('beforeunload', this._onBeforeUnload)
     }
@@ -296,13 +377,108 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     }
 
     /**
+     * @param {RTCRtpCodecCapability[]} codecsList
+     * @param {string} codec
+     * @returns {RTCRtpCodecCapability[]}
+     */
+    _addCodec = (codecsList, codec) => {
+      const codecCapabilities = RTCRtpReceiver.getCapabilities('video')?.codecs
+
+      if (codecCapabilities) {
+        for (const codecCapability of codecCapabilities) {
+          if (codecCapability.mimeType === codec) {
+            codecsList.push(codecCapability)
+          }
+        }
+      }
+
+      return codecsList
+    }
+
+    /**
      * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
      */
     _addLocalMediaStream = (stream) => {
       if (!this._peerConnection) return
 
-      for (const track of stream.mediaStream.getTracks()) {
-        this._peerConnection.addTrack(track, stream.mediaStream)
+      /** @type {MediaStreamTrack | undefined} */
+      const audioTrack = stream.mediaStream.getAudioTracks()[0]
+
+      /** @type {MediaStreamTrack | undefined} */
+      const videoTrack = stream.mediaStream.getVideoTracks()[0]
+
+      if (audioTrack) {
+        this._peerConnection.addTransceiver(audioTrack, {
+          direction: 'sendonly',
+          streams: [stream.mediaStream],
+          sendEncodings: [{ priority: 'high' }],
+        })
+      }
+
+      const browserName = getBrowserName()
+      const simulcastBrowsers = [SAFARI, CHROME, EDGE, OPERA]
+
+      let svc = true
+
+      /** @type {RTCRtpCodecCapability[]} */
+      let codecList = []
+
+      codecList = this._addCodec(codecList, 'video/VP9')
+
+      if (codecList.length === 0) {
+        svc = false
+        codecList = this._addCodec(codecList, 'video/H264')
+      }
+
+      /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCTransceiverInit} */
+      const scaleableInit = {
+        direction: 'sendonly',
+        streams: [stream.mediaStream],
+        sendEncodings: [
+          {
+            maxBitrate: MAX_BITRATE,
+            scalabilityMode: 'L3T2',
+          },
+        ],
+      }
+
+      /** @type {RTCRtpTransceiverInit} */
+      const simulcastInit = {
+        direction: 'sendonly',
+        streams: [stream.mediaStream],
+      }
+
+      if (browserName !== null && simulcastBrowsers.includes(browserName)) {
+        simulcastInit['sendEncodings'] = [
+          // for firefox order matters... first high resolution, then scaled resolutions...
+          {
+            rid: 'high',
+            maxBitrate: MAX_BITRATE,
+            maxFramerate: 30,
+          },
+          {
+            rid: 'mid',
+            // eslint-disable-next-line unicorn/no-zero-fractions
+            scaleResolutionDownBy: 2.0,
+            maxFramerate: 30,
+            maxBitrate: MID_BITRATE,
+          },
+          {
+            rid: 'low',
+            // eslint-disable-next-line unicorn/no-zero-fractions
+            scaleResolutionDownBy: 4.0,
+            maxBitrate: MIN_BITRATE,
+            maxFramerate: 30,
+          },
+        ]
+      }
+
+      const tcvr = svc
+        ? this._peerConnection.addTransceiver(videoTrack, scaleableInit)
+        : this._peerConnection.addTransceiver(videoTrack, simulcastInit)
+
+      if (tcvr.setCodecPreferences !== undefined) {
+        tcvr.setCodecPreferences(codecList)
       }
     }
 
@@ -313,11 +489,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       if (!this._peerConnection) return
 
       for (const track of stream.mediaStream.getTracks()) {
-        const sender = this._peerConnection.addTrack(track, stream.mediaStream)
+        const transceiver = this._peerConnection.addTransceiver(track, {
+          direction: 'sendonly',
+          streams: [stream.mediaStream],
+        })
 
         track.addEventListener('ended', () => {
-          if (!this._peerConnection || !sender) return
-          this._peerConnection.removeTrack(sender)
+          if (!this._peerConnection || !transceiver.sender) return
+          this._peerConnection.removeTrack(transceiver.sender)
           this.removeStream(stream.id)
         })
       }
@@ -382,7 +561,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const { candidate } = event
 
       if (candidate) {
-        this._api.sendIceCandidate(this._roomId, this._clientId, candidate)
+        await this._api.sendIceCandidate(
+          this._roomId,
+          this._clientId,
+          candidate
+        )
       }
     }
 
@@ -393,7 +576,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const mediaStream = event.streams.find((stream) => stream.active === true)
 
       if (!(mediaStream instanceof MediaStream)) return
-
       if (this.hasStream(mediaStream.id)) return
 
       mediaStream.addEventListener('removetrack', (event) => {
@@ -409,6 +591,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const draftStream = this._streams.getDraft(mediaStream.id) || {}
 
       this.addStream(mediaStream.id, {
+        clientId: draftStream.clientId || '',
+        name: draftStream.name || '',
         origin: draftStream.origin || 'remote',
         source: draftStream.source || 'media',
         mediaStream: mediaStream,
@@ -417,11 +601,30 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._streams.removeDraft(mediaStream.id)
     }
 
+    /**
+     * @param {RTCDataChannelEvent} event
+     */
+    _onDataChannel = (event) => {
+      if (event.channel.label === 'internal') {
+        const internalChannel = event.channel
+        this._event.emit(
+          PeerEvents._INTERNAL_DATACHANNEL_AVAILABLE,
+          internalChannel
+        )
+
+        this._videoObserver = new VideoObserver(internalChannel, 1000)
+
+        for (const videoElement of this._pendingObservedVideo) {
+          this._videoObserver.observe(videoElement)
+        }
+      }
+    }
+
     _onBeforeUnload = async () => {
       if (!this._roomId || !this._clientId) return
 
+      this._api.leaveRoom(this._roomId, this._clientId, true)
       this.disconnect()
-      await this._api.leaveRoom(this._roomId, this._clientId)
     }
 
     /** @param {{ key: string, data: import('../stream/stream-types.js').RoomStreamType.AddStreamParameters }} data */
@@ -452,11 +655,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       return {
         connect: peer.connect,
         disconnect: peer.disconnect,
+        getClientId: peer.getClientId,
+        getRoomId: peer.getRoomId,
         getPeerConnection: peer.getPeerConnection,
         addStream: peer.addStream,
         removeStream: peer.removeStream,
         getAllStreams: peer.getAllStreams,
         getStream: peer.getStream,
+        getStreamByTrackId: peer.getStreamByTrackId,
         getTotalStreams: peer.getTotalStreams,
         hasStream: peer.hasStream,
         turnOnCamera: peer.turnOnCamera,
@@ -464,6 +670,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
         replaceTrack: peer.replaceTrack,
+        observeVideo: peer.observeVideo,
+        unobserveVideo: peer.unobserveVideo,
       }
     },
   }

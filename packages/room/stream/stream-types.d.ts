@@ -14,6 +14,8 @@ export declare namespace RoomStreamType {
 
   export type StreamParameters = {
     id: string
+    clientId: string
+    name: string
     origin: 'local' | 'remote'
     source: 'media' | 'screen'
     mediaStream: MediaStream
@@ -22,8 +24,10 @@ export declare namespace RoomStreamType {
   export type AddStreamParameters = Omit<StreamParameters, 'id'>
 
   export type DraftStream = {
-    origin?: StreamParameters['origin']
-    source?: StreamParameters['source']
-    mediaStream?: StreamParameters['mediaStream']
+    clientId?: string
+    name?: string
+    origin?: 'local' | 'remote'
+    source?: 'media' | 'screen'
+    mediaStream?: MediaStream
   }
 }
