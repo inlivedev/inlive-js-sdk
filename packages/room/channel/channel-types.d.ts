@@ -17,8 +17,9 @@ export declare namespace RoomChannelType {
   }
 
   type ChannelEvents = {
-    CHANNEL_CONNECTED: 'channelConnected'
-    CHANNEL_DISCONNECTED: 'channelDisconnected'
+    CHANNEL_OPENED: 'channelOpened'
+    CHANNEL_CLOSED: 'channelClosed'
+    CHANNEL_NOT_FOUND: 'channelNotFound'
   }
 
   type TrackSource = {

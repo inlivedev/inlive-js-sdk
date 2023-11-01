@@ -2,8 +2,9 @@ import { PeerEvents } from '../peer/peer.js'
 
 /** @type {import('./channel-types.js').RoomChannelType.ChannelEvents} */
 export const ChannelEvents = {
-  CHANNEL_CONNECTED: 'channelConnected',
-  CHANNEL_DISCONNECTED: 'channelDisconnected',
+  CHANNEL_OPENED: 'channelOpened',
+  CHANNEL_CLOSED: 'channelClosed',
+  CHANNEL_NOT_FOUND: 'channelNotFound',
 }
 
 /**
@@ -57,7 +58,6 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._startTime = Date.now()
       this._channel = channel
       this._addEventListener()
-      this._event.emit(ChannelEvents.CHANNEL_CONNECTED)
     }
 
     /**
@@ -69,12 +69,13 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._removeEventListener()
       this._channel.close()
       this._channel = null
-      this._event.emit(ChannelEvents.CHANNEL_DISCONNECTED)
+      this._event.emit(ChannelEvents.CHANNEL_CLOSED)
     }
 
     _addEventListener = () => {
       if (!this._channel) return
 
+      this._channel.addEventListener('open', this._onOpen)
       this._channel.addEventListener('error', this._onError)
       this._channel.addEventListener('candidate', this._onCandidate)
       this._channel.addEventListener('offer', this._onOffer)
@@ -88,6 +89,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
     _removeEventListener = () => {
       if (!this._channel) return
 
+      this._channel.removeEventListener('open', this._onOpen)
       this._channel.removeEventListener('error', this._onError)
       this._channel.removeEventListener('candidate', this._onCandidate)
       this._channel.removeEventListener('offer', this._onOffer)
@@ -110,10 +112,22 @@ export const createChannel = ({ api, event, peer, streams }) => {
       }
     }
 
-    _onError = () => {
+    _onOpen = () => {
+      this._event.emit(ChannelEvents.CHANNEL_OPENED)
+    }
+
+    _onError = async () => {
       const errorTime = Date.now()
 
       if (this._roomId && this._clientId) {
+        const response = await this._api.getClient(this._roomId, this._clientId)
+
+        if (response.code === 404) {
+          this.disconnect()
+          this._event.emit(ChannelEvents.CHANNEL_NOT_FOUND)
+          return
+        }
+
         // Reconnect
         if (errorTime - this._startTime < 1000) {
           setTimeout(() => {
