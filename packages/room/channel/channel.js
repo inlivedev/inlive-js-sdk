@@ -4,7 +4,12 @@ import { PeerEvents } from '../peer/peer.js'
 export const ChannelEvents = {
   CHANNEL_OPENED: 'channelOpened',
   CHANNEL_CLOSED: 'channelClosed',
-  CHANNEL_NOT_FOUND: 'channelNotFound',
+}
+
+export const REASONS = {
+  CLOSED: 'closed',
+  NOT_FOUND: 'notfound',
+  RECONNECT: 'reconnect',
 }
 
 /**
@@ -69,7 +74,6 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._removeEventListener()
       this._channel.close()
       this._channel = null
-      this._event.emit(ChannelEvents.CHANNEL_CLOSED)
     }
 
     _addEventListener = () => {
@@ -107,6 +111,9 @@ export const createChannel = ({ api, event, peer, streams }) => {
       ) {
         this._reconnecting = true
         this.disconnect()
+        this._event.emit(ChannelEvents.CHANNEL_CLOSED, {
+          reason: REASONS.RECONNECT,
+        })
         this.connect(this._roomId, this._clientId)
         this._reconnecting = false
       }
@@ -124,7 +131,9 @@ export const createChannel = ({ api, event, peer, streams }) => {
 
         if (response.code === 404) {
           this.disconnect()
-          this._event.emit(ChannelEvents.CHANNEL_NOT_FOUND)
+          this._event.emit(ChannelEvents.CHANNEL_CLOSED, {
+            reason: REASONS.NOT_FOUND,
+          })
           return
         }
 
@@ -152,6 +161,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
 
     _onPeerClosed = () => {
       this.disconnect()
+      this._event.emit(ChannelEvents.CHANNEL_CLOSED, { reason: REASONS.CLOSED })
     }
 
     /**

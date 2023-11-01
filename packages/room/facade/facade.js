@@ -73,7 +73,6 @@ export const createFacade = ({
         event: Object.freeze({
           CHANNEL_OPENED: roomEvents.channel.CHANNEL_OPENED,
           CHANNEL_CLOSED: roomEvents.channel.CHANNEL_CLOSED,
-          CHANNEL_NOT_FOUND: roomEvents.channel.CHANNEL_NOT_FOUND,
           PEER_OPENED: roomEvents.peer.PEER_OPENED,
           PEER_CLOSED: roomEvents.peer.PEER_CLOSED,
           STREAM_AVAILABLE: roomEvents.peer.STREAM_AVAILABLE,
