@@ -1,18 +1,3 @@
-import nodeFetch, {
-  Headers as NodeHeaders,
-  Request as NodeRequest,
-  Response as NodeResponse,
-} from 'node-fetch'
-
-if (!('fetch' in globalThis)) {
-  Object.assign(globalThis, {
-    fetch: nodeFetch,
-    Headers: NodeHeaders,
-    Request: NodeRequest,
-    Response: NodeResponse,
-  })
-}
-
 export const createFetcher = () => {
   const Fetcher = class {
     _baseUrl
