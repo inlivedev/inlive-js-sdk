@@ -36,8 +36,8 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._startTime = 0
       this._reconnecting = false
 
-      this._event.on(PeerEvents.PEER_CONNECTED, this._onPeerConnected)
-      this._event.on(PeerEvents.PEER_DISCONNECTED, this._onPeerDisconnected)
+      this._event.on(PeerEvents.PEER_OPENED, this._onPeerOpened)
+      this._event.on(PeerEvents.PEER_CLOSED, this._onPeerClosed)
     }
 
     /**
@@ -142,7 +142,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
     /**
      * @param {{ roomId: string, clientId: string }} data
      */
-    _onPeerConnected = (data) => {
+    _onPeerOpened = (data) => {
       if (!data) {
         throw new Error('Channel failed to connect')
       }
@@ -150,7 +150,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this.connect(data.roomId, data.clientId)
     }
 
-    _onPeerDisconnected = () => {
+    _onPeerClosed = () => {
       this.disconnect()
     }
 

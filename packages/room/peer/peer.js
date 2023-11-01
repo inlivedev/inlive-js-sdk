@@ -10,8 +10,8 @@ import { BandwidthController } from '../bandwidth-controller/bandwidth-controlle
 
 /** @type {import('./peer-types.js').RoomPeerType.PeerEvents} */
 export const PeerEvents = {
-  PEER_CONNECTED: 'peerConnected',
-  PEER_DISCONNECTED: 'peerDisconnected',
+  PEER_OPENED: 'peerOpened',
+  PEER_CLOSED: 'peerClosed',
   STREAM_AVAILABLE: 'streamAvailable',
   STREAM_REMOVED: 'streamRemoved',
   _STREAM_ADDED: 'streamAdded',
@@ -70,7 +70,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       })
 
       this._addEventListener()
-      this._event.emit(PeerEvents.PEER_CONNECTED, {
+      this._event.emit(PeerEvents.PEER_OPENED, {
         roomId: this._roomId,
         clientId: this._clientId,
       })
@@ -93,7 +93,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._peerConnection = null
       this._roomId = ''
       this._clientId = ''
-      this._event.emit(PeerEvents.PEER_DISCONNECTED)
+      this._event.emit(PeerEvents.PEER_CLOSED)
     }
 
     getClientId = () => {
