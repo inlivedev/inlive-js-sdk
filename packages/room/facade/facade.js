@@ -55,6 +55,7 @@ export const createFacade = ({
         createRoom: api.createRoom,
         getRoom: api.getRoom,
         createClient: api.registerClient,
+        getClient: api.getClient,
         setClientName: api.setClientName,
         createPeer:
           /**

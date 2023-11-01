@@ -142,6 +142,41 @@ export const createApi = ({ fetcher }) => {
     }
 
     /**
+     * @param {string} roomId
+     * @param {string} clientId
+     */
+    getClient = async (roomId, clientId) => {
+      if (roomId.trim().length === 0) {
+        throw new Error('Room ID must be a valid string')
+      }
+
+      if (clientId.trim().length === 0) {
+        throw new Error('Client ID must be a valid string')
+      }
+
+      /** @type {import('./api-types.js').RoomAPIType.GetClientResponseBody} */
+      const response = await this._fetcher.get(
+        `/rooms/${roomId}/client/${clientId}`
+      )
+
+      const data = response.data || {}
+      const events = data.events || {}
+
+      return {
+        code: response.code || 500,
+        ok: response.ok || false,
+        message: response.message || '',
+        data: {
+          clientId: data.id || '',
+          clientName: data.name || '',
+          connectionState: data.peer_connection_state || '',
+          iceConnectionState: data.ice_peer_connection_state || '',
+          events: events,
+        },
+      }
+    }
+
+    /**
      *
      * @param {string} roomId
      * @param {string} clientId
@@ -460,6 +495,7 @@ export const createApi = ({ fetcher }) => {
         createRoom: api.createRoom,
         getRoom: api.getRoom,
         registerClient: api.registerClient,
+        getClient: api.getClient,
         setClientName: api.setClientName,
         sendIceCandidate: api.sendIceCandidate,
         checkNegotiateAllowed: api.checkNegotiateAllowed,
