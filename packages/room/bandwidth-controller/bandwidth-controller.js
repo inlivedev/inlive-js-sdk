@@ -27,15 +27,15 @@ export class BandwidthController {
     this.#statsInterval = null
     this.#internalDataChannel = null
 
-    this.#event.on(PeerEvents.PEER_CONNECTED, this.#onPeerConnected)
-    this.#event.on(PeerEvents.PEER_DISCONNECTED, this.#onPeerDisconnected)
+    this.#event.on(PeerEvents.PEER_OPENED, this.#onPeerOpened)
+    this.#event.on(PeerEvents.PEER_CLOSED, this.#onPeerClosed)
     this.#event.on(
       PeerEvents._INTERNAL_DATACHANNEL_AVAILABLE,
       this.#onInternalDataChannelAvailable
     )
   }
 
-  #onPeerConnected = () => {
+  #onPeerOpened = () => {
     if (this.#statsInterval) {
       clearInterval(this.#statsInterval)
       this.#statsInterval = null
@@ -44,7 +44,7 @@ export class BandwidthController {
     this.#statsInterval = setInterval(this.#updateStats, 3000)
   }
 
-  #onPeerDisconnected = () => {
+  #onPeerClosed = () => {
     if (this.#statsInterval) {
       clearInterval(this.#statsInterval)
       this.#statsInterval = null
