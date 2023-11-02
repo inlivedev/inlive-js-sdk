@@ -617,6 +617,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         for (const videoElement of this._pendingObservedVideo) {
           this._videoObserver.observe(videoElement)
         }
+
+        internalChannel.addEventListener('message', (event) => {
+          const data = JSON.parse(event.data)
+
+          if (data.type === 'vad_started' || data.type === 'vad_ended') {
+            this._onVoiceActivity(data)
+          }
+        })
       }
     }
 
@@ -645,6 +653,17 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       this._event.emit(PeerEvents.STREAM_AVAILABLE, { stream })
+    }
+
+    /**
+     * @param {import('./peer-types.d.ts').RoomPeerType.VoiceActivity} vad
+     */
+    _onVoiceActivity = (vad) => {
+      const stream = this._streams.getStream(vad.stream_id)
+
+      if (!stream) return
+
+      stream.addVoiceActivity(vad)
     }
   }
 

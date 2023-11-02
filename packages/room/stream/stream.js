@@ -6,6 +6,9 @@ export const createStream = () => {
     origin
     source
     mediaStream
+    /** @type {Array<import('../peer/peer-types').RoomPeerType.VoiceActivityCallback>} */
+    voiceActivityCallbacks
+    audioLevel
 
     /**
      * @param {import('./stream-types.js').RoomStreamType.StreamParameters} streamParameters
@@ -17,6 +20,8 @@ export const createStream = () => {
       this.origin = origin
       this.source = source
       this.mediaStream = mediaStream
+      this.voiceActivityCallbacks = []
+      this.audioLevel = 0
     }
 
     /**
@@ -36,6 +41,33 @@ export const createStream = () => {
         this.mediaStream.addTrack(newTrack)
       }
     }
+
+    /**
+     * Listen for voice activity from stream
+     * @param {import('../peer/peer-types.d.ts').RoomPeerType.VoiceActivityCallback} callback
+     * @returns {void}
+     */
+    onVoiceActivity = (callback) => {
+      this.voiceActivityCallbacks.push(callback)
+    }
+
+    /**
+     * @param {import('../peer/peer-types.d.ts').RoomPeerType.VoiceActivity} activity
+     * @returns {void}
+     */
+    addVoiceActivity = (activity) => {
+      for (const callback of this.voiceActivityCallbacks) {
+        callback(activity)
+      }
+
+      if (activity.audio_levels) {
+        for (const level of activity.audio_levels) {
+          this.audioLevel = level.audio_level
+        }
+      } else {
+        this.audioLevel = 0
+      }
+    }
   }
 
   return {
@@ -52,7 +84,10 @@ export const createStream = () => {
         origin: stream.origin,
         source: stream.source,
         mediaStream: stream.mediaStream,
+        audioLevel: 0,
         replaceTrack: stream.replaceTrack,
+        onVoiceActivity: stream.onVoiceActivity,
+        addVoiceActivity: stream.addVoiceActivity,
       })
     },
   }
