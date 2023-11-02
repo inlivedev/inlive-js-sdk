@@ -72,6 +72,10 @@ await room.endRoom(roomData.data.roomId);
 
   A method to create and register a new client to the room. It expects two parameters. The `roomId` is required. The second parameter is an optional config to set a custom client data. This method will return a promise.
 
+- `room.getClient(roomId: string, clientId: string)`
+
+  A method to get the client data. It expects a `roomId` and `clientId` as parameters. This method will return a promise.
+
 - `room.setClientName(roomId: string, clientId: string, clientName: string)`
 
   A method to set a client name based on `clientId`. This is useful for setting a friendly name or label on a specific client. It requires `roomId`, `clientId` and `clientName` parameters to be set. This method  will return a promise.

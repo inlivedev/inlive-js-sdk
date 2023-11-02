@@ -2,8 +2,14 @@ import { PeerEvents } from '../peer/peer.js'
 
 /** @type {import('./channel-types.js').RoomChannelType.ChannelEvents} */
 export const ChannelEvents = {
-  CHANNEL_CONNECTED: 'channelConnected',
-  CHANNEL_DISCONNECTED: 'channelDisconnected',
+  CHANNEL_OPENED: 'channelOpened',
+  CHANNEL_CLOSED: 'channelClosed',
+}
+
+export const REASONS = {
+  PEER_CLOSED: 'peerClosed',
+  NOT_FOUND: 'notfound',
+  RECONNECT: 'reconnect',
 }
 
 /**
@@ -35,8 +41,8 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._startTime = 0
       this._reconnecting = false
 
-      this._event.on(PeerEvents.PEER_CONNECTED, this._onPeerConnected)
-      this._event.on(PeerEvents.PEER_DISCONNECTED, this._onPeerDisconnected)
+      this._event.on(PeerEvents.PEER_OPENED, this._onPeerOpened)
+      this._event.on(PeerEvents.PEER_CLOSED, this._onPeerClosed)
     }
 
     /**
@@ -57,7 +63,6 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._startTime = Date.now()
       this._channel = channel
       this._addEventListener()
-      this._event.emit(ChannelEvents.CHANNEL_CONNECTED)
     }
 
     /**
@@ -69,12 +74,12 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._removeEventListener()
       this._channel.close()
       this._channel = null
-      this._event.emit(ChannelEvents.CHANNEL_DISCONNECTED)
     }
 
     _addEventListener = () => {
       if (!this._channel) return
 
+      this._channel.addEventListener('open', this._onOpen)
       this._channel.addEventListener('error', this._onError)
       this._channel.addEventListener('candidate', this._onCandidate)
       this._channel.addEventListener('offer', this._onOffer)
@@ -88,6 +93,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
     _removeEventListener = () => {
       if (!this._channel) return
 
+      this._channel.removeEventListener('open', this._onOpen)
       this._channel.removeEventListener('error', this._onError)
       this._channel.removeEventListener('candidate', this._onCandidate)
       this._channel.removeEventListener('offer', this._onOffer)
@@ -105,15 +111,32 @@ export const createChannel = ({ api, event, peer, streams }) => {
       ) {
         this._reconnecting = true
         this.disconnect()
+        this._event.emit(ChannelEvents.CHANNEL_CLOSED, {
+          reason: REASONS.RECONNECT,
+        })
         this.connect(this._roomId, this._clientId)
         this._reconnecting = false
       }
     }
 
-    _onError = () => {
+    _onOpen = () => {
+      this._event.emit(ChannelEvents.CHANNEL_OPENED)
+    }
+
+    _onError = async () => {
       const errorTime = Date.now()
 
       if (this._roomId && this._clientId) {
+        const response = await this._api.getClient(this._roomId, this._clientId)
+
+        if (response.code === 404) {
+          this.disconnect()
+          this._event.emit(ChannelEvents.CHANNEL_CLOSED, {
+            reason: REASONS.NOT_FOUND,
+          })
+          return
+        }
+
         // Reconnect
         if (errorTime - this._startTime < 1000) {
           setTimeout(() => {
@@ -128,7 +151,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
     /**
      * @param {{ roomId: string, clientId: string }} data
      */
-    _onPeerConnected = (data) => {
+    _onPeerOpened = (data) => {
       if (!data) {
         throw new Error('Channel failed to connect')
       }
@@ -136,8 +159,11 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this.connect(data.roomId, data.clientId)
     }
 
-    _onPeerDisconnected = () => {
+    _onPeerClosed = () => {
       this.disconnect()
+      this._event.emit(ChannelEvents.CHANNEL_CLOSED, {
+        reason: REASONS.PEER_CLOSED,
+      })
     }
 
     /**

@@ -71,6 +71,22 @@ export declare namespace RoomAPIType {
     }
   }
 
+  type GetClientResponseBody = BaseResponseBody & {
+    data: {
+      id: string
+      name: string
+      peer_connection_state: RTCPeerConnectionState
+      ice_peer_connection_state: RTCIceConnectionState
+      events: {
+        [key: string]: {
+          name: string
+          timestamp: number
+          data: { [key: string]: string | null }
+        }
+      }
+    }
+  }
+
   type SetClientNameResponse = BaseResponseBody & {
     data: {
       client_id: string

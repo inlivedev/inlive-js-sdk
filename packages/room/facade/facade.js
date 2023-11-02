@@ -55,6 +55,7 @@ export const createFacade = ({
         createRoom: api.createRoom,
         getRoom: api.getRoom,
         createClient: api.registerClient,
+        getClient: api.getClient,
         setClientName: api.setClientName,
         createPeer:
           /**
@@ -70,10 +71,10 @@ export const createFacade = ({
         leaveRoom: api.leaveRoom,
         endRoom: api.endRoom,
         event: Object.freeze({
-          CHANNEL_CONNECTED: roomEvents.channel.CHANNEL_CONNECTED,
-          CHANNEL_DISCONNECTED: roomEvents.channel.CHANNEL_DISCONNECTED,
-          PEER_CONNECTED: roomEvents.peer.PEER_CONNECTED,
-          PEER_DISCONNECTED: roomEvents.peer.PEER_DISCONNECTED,
+          CHANNEL_OPENED: roomEvents.channel.CHANNEL_OPENED,
+          CHANNEL_CLOSED: roomEvents.channel.CHANNEL_CLOSED,
+          PEER_OPENED: roomEvents.peer.PEER_OPENED,
+          PEER_CLOSED: roomEvents.peer.PEER_CLOSED,
           STREAM_AVAILABLE: roomEvents.peer.STREAM_AVAILABLE,
           STREAM_REMOVED: roomEvents.peer.STREAM_REMOVED,
         }),
