@@ -1,26 +1,24 @@
 export const createStream = () => {
-  const Stream = class {
+  const Stream = class extends EventTarget {
     id
     clientId
     name
     origin
     source
     mediaStream
-    /** @type {Array<import('../peer/peer-types').RoomPeerType.VoiceActivityCallback>} */
-    voiceActivityCallbacks
     audioLevel
 
     /**
      * @param {import('./stream-types.js').RoomStreamType.StreamParameters} streamParameters
      */
     constructor({ id, clientId, name, origin, source, mediaStream }) {
+      super()
       this.id = id
       this.clientId = clientId
       this.name = name
       this.origin = origin
       this.source = source
       this.mediaStream = mediaStream
-      this.voiceActivityCallbacks = []
       this.audioLevel = 0
     }
 
@@ -43,30 +41,29 @@ export const createStream = () => {
     }
 
     /**
-     * Listen for voice activity from stream
-     * @param {import('../peer/peer-types.d.ts').RoomPeerType.VoiceActivityCallback} callback
-     * @returns {void}
-     */
-    onVoiceActivity = (callback) => {
-      this.voiceActivityCallbacks.push(callback)
-    }
-
-    /**
      * @param {import('../peer/peer-types.d.ts').RoomPeerType.VoiceActivity} activity
      * @returns {void}
      */
     addVoiceActivity = (activity) => {
-      for (const callback of this.voiceActivityCallbacks) {
-        callback(activity)
-      }
-
       if (activity.audio_levels) {
         for (const level of activity.audio_levels) {
           this.audioLevel = level.audio_level
+          this.#triggerVoiceActivityEvent()
         }
       } else {
         this.audioLevel = 0
+        this.#triggerVoiceActivityEvent()
       }
+    }
+
+    #triggerVoiceActivityEvent = () => {
+      const event = new CustomEvent('voiceactivity', {
+        detail: {
+          audioLevel: this.audioLevel,
+        },
+      })
+
+      this.dispatchEvent(event)
     }
   }
 
@@ -86,7 +83,6 @@ export const createStream = () => {
         mediaStream: stream.mediaStream,
         audioLevel: 0,
         replaceTrack: stream.replaceTrack,
-        onVoiceActivity: stream.onVoiceActivity,
         addVoiceActivity: stream.addVoiceActivity,
       })
     },
