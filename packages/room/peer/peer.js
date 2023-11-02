@@ -588,6 +588,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         }
       })
 
+      for (const track of mediaStream.getTracks()) {
+        track.addEventListener('ended', () => {
+          this.removeStream(mediaStream.id)
+        })
+      }
+
       const draftStream = this._streams.getDraft(mediaStream.id) || {}
 
       this.addStream(mediaStream.id, {
