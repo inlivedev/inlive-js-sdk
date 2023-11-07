@@ -56,18 +56,18 @@ export declare namespace RoomPeerType {
   }
 
   type AudioLevel = {
-    sequence_no: number
+    sequenceNo: number
     timestamp: number
-    audio_level: number
+    audioLevel: number
   }
 
   type VoiceActivity = {
     type: string
-    track_id: string
-    stream_id: string
+    trackID: string
+    streamID: string
     ssrc: number
-    clock_rate: number
-    audio_levels?: AudioLevel[]
+    clockRate: number
+    audioLevels?: AudioLevel[]
   }
 
   type VoiceActivityCallback = (voiceActivity: VoiceActivity) => void
