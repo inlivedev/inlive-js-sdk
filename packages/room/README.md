@@ -234,16 +234,22 @@ peer.disconnect();
 #### Events
 
 - `peer.addEventListener('voiceactivity', callback:function(ev:CustomEvent))`
-  
+
   A custom event to listen for voice activity level changes. The callback function will receive a CustomEvent object with `detail` property that contains the the `voiceActivity` object. The `voiceActivity` object type is described below.
-  ```
+  ```ts
+  type AudioLevel = {
+    sequenceNo: number
+    timestamp: number
+    audioLevel: number
+  }
+
   type VoiceActivity = {
     type: string
-    track_id: string
-    stream_id: string
+    trackID: string
+    streamID: string
     ssrc: number
-    clock_rate: number
-    audio_levels?: AudioLevel[]
+    clockRate: number
+    audioLevels?: AudioLevel[]
   }
   ```
 
@@ -257,7 +263,7 @@ The stream object holds read-only properties based on the provided client's data
 - **id**: The ID or key identifier of the stream
 - **clientId**: The ID of the client that transceives this specific stream.
 - **name**: The name or label for identification purposes.
-- **audioLevel**: The audio level of the stream. The value is 0 to 127 refer to [this doc](https://datatracker.ietf.org/doc/rfc6464/). The audio level will only updated if the stream has audio track and it is a remote stream. 
+- **audioLevel**: The audio level of the stream. The value is 0 to 127 refer to [this doc](https://datatracker.ietf.org/doc/rfc6464/). The audio level will only updated if the stream has audio track and it is a remote stream.
 - **origin**: The origin of the stream. The value is between a `local` or `remote`
 - **source**: The source of the stream. MediaStream from `getUserMedia()` should set a **media** source and the one from `getDisplayMedia()` should set a **screen** source.
 - **mediaStream**: The MediaStream object
@@ -272,5 +278,5 @@ The stream object holds read-only properties based on the provided client's data
 #### Events
 
 - `stream.addEventListener('voiceactivity', callback:function(ev:CustomEvent))`
-  
+
   A custom event to listen for voice activity level changes. The callback function will receive a CustomEvent object with `detail` property that contains the the `audioLevel` value.
