@@ -18,9 +18,11 @@ export const PeerEvents = {
   _INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
 }
 
-const MAX_BITRATE = 1500 * 1000
-const MID_BITRATE = 500 * 1000
-const MIN_BITRATE = 150 * 1000
+// This bitrate based on https://livekit.io/webrtc/bitrate-guide
+// optimal for 720p on webcam streaming
+const MAX_BITRATE = 700 * 1000
+const MID_BITRATE = 300 * 1000
+const MIN_BITRATE = 100 * 1000
 
 /** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
 export const createPeer = ({ api, createStream, event, streams, config }) => {
