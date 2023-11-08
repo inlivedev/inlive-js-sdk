@@ -20,7 +20,7 @@ export const PeerEvents = {
 
 // This bitrate based on https://livekit.io/webrtc/bitrate-guide
 // optimal for 720p on webcam streaming
-const MAX_BITRATE = 700 * 1000
+const MAX_BITRATE = 1000 * 1000
 const MID_BITRATE = 300 * 1000
 const MIN_BITRATE = 100 * 1000
 
@@ -379,25 +379,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     }
 
     /**
-     * @param {RTCRtpCodecCapability[]} codecsList
-     * @param {string} codec
-     * @returns {RTCRtpCodecCapability[]}
-     */
-    _addCodec = (codecsList, codec) => {
-      const codecCapabilities = RTCRtpReceiver.getCapabilities('video')?.codecs
-
-      if (codecCapabilities) {
-        for (const codecCapability of codecCapabilities) {
-          if (codecCapability.mimeType === codec) {
-            codecsList.push(codecCapability)
-          }
-        }
-      }
-
-      return codecsList
-    }
-
-    /**
      * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
      */
     _addLocalMediaStream = (stream) => {
@@ -420,16 +401,30 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const browserName = getBrowserName()
       const simulcastBrowsers = [SAFARI, CHROME, EDGE, OPERA]
 
-      let svc = true
+      let svc = false
 
-      /** @type {RTCRtpCodecCapability[]} */
-      let codecList = []
+      let preferedCodecs = []
 
-      codecList = this._addCodec(codecList, 'video/VP9')
+      let codecs = RTCRtpReceiver.getCapabilities('video')?.codecs
 
-      if (codecList.length === 0) {
-        svc = false
-        codecList = this._addCodec(codecList, 'video/H264')
+      if (codecs) {
+        // iterate over supported codecs and pull out the codecs we want
+        for (const codec of codecs) {
+          if (codec.mimeType === 'video/VP9') {
+            preferedCodecs.push(codec)
+          }
+        }
+
+        if (preferedCodecs.length > 0) {
+          svc = true
+        }
+
+        // push the rest of the codecs
+        for (const codec of codecs) {
+          if (codec.mimeType !== 'video/VP9') {
+            preferedCodecs.push(codec)
+          }
+        }
       }
 
       /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCTransceiverInit} */
@@ -480,7 +475,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         : this._peerConnection.addTransceiver(videoTrack, simulcastInit)
 
       if (tcvr.setCodecPreferences !== undefined) {
-        tcvr.setCodecPreferences(codecList)
+        tcvr.setCodecPreferences(preferedCodecs)
       }
     }
 
