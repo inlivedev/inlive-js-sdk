@@ -54,4 +54,21 @@ export declare namespace RoomPeerType {
   type RTCRtpSVCTransceiverInit = RTCRtpTransceiverInit & {
     sendEncodings?: RTCRtpSVCEncodingParameters[]
   }
+
+  type AudioLevel = {
+    sequenceNo: number
+    timestamp: number
+    audioLevel: number
+  }
+
+  type VoiceActivity = {
+    type: string
+    trackID: string
+    streamID: string
+    ssrc: number
+    clockRate: number
+    audioLevels?: AudioLevel[]
+  }
+
+  type VoiceActivityCallback = (voiceActivity: VoiceActivity) => void
 }

@@ -234,16 +234,40 @@ peer.disconnect();
 
   A method to replace the track currently being sent by sender with a new MediaStreamTrack.
 
+
+#### Events
+
+- `peer.addEventListener('voiceactivity', callback:function(ev:CustomEvent))`
+
+  A custom event to listen for voice activity level changes. The callback function will receive a CustomEvent object with `detail` property that contains the the `voiceActivity` object. The `voiceActivity` object type is described below.
+  ```ts
+  type AudioLevel = {
+    sequenceNo: number
+    timestamp: number
+    audioLevel: number
+  }
+
+  type VoiceActivity = {
+    type: string
+    trackID: string
+    streamID: string
+    ssrc: number
+    clockRate: number
+    audioLevels?: AudioLevel[]
+  }
+  ```
+
 ### Stream object
 
 The stream object is an object created and stored after the method `peer.addStream()` is called. This object is mainly used to store the data for a specific MediaStream added by `peer.addStream()` method. We can say a single stream object is the representative of a single participant or we can call it a **client**.
 
 #### Properties
 
-The stream object holds read-only properties based on the data client provided when creating a new stream.
+The stream object holds read-only properties based on the provided client's data when creating a new stream.
 - **id**: The ID or key identifier of the stream
-- **clientId**: The ID of the client which transceive this specific stream.
-- **name**: The name or label for identification purpose.
+- **clientId**: The ID of the client that transceives this specific stream.
+- **name**: The name or label for identification purposes.
+- **audioLevel**: The audio level of the stream. The value is 0 to 127 refer to [this doc](https://datatracker.ietf.org/doc/rfc6464/). The audio level will only updated if the stream has audio track and it is a remote stream.
 - **origin**: The origin of the stream. The value is between a `local` or `remote`
 - **source**: The source of the stream. MediaStream from `getUserMedia()` should set a **media** source and the one from `getDisplayMedia()` should set a **screen** source.
 - **mediaStream**: The MediaStream object
@@ -253,3 +277,10 @@ The stream object holds read-only properties based on the data client provided w
 - `stream.replaceTrack(track: MediaStreamTrack)`
 
   A method to replace the track currently being used by MediaStream with a new MediaStreamTrack
+
+
+#### Events
+
+- `stream.addEventListener('voiceactivity', callback:function(ev:CustomEvent))`
+
+  A custom event to listen for voice activity level changes. The callback function will receive a CustomEvent object with `detail` property that contains the the `audioLevel` value.

@@ -24,7 +24,7 @@ const MIN_BITRATE = 150 * 1000
 
 /** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
 export const createPeer = ({ api, createStream, event, streams, config }) => {
-  const Peer = class {
+  const Peer = class extends EventTarget {
     _roomId = ''
     _clientId = ''
     _api
@@ -40,6 +40,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _pendingObservedVideo
 
     constructor() {
+      super()
       this._api = api
       this._event = event
       this._streams = streams
@@ -623,6 +624,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         for (const videoElement of this._pendingObservedVideo) {
           this._videoObserver.observe(videoElement)
         }
+
+        internalChannel.addEventListener('message', (event) => {
+          const data = JSON.parse(event.data)
+
+          if (data.type === 'vad_started' || data.type === 'vad_ended') {
+            this._onVoiceActivity(data)
+          }
+        })
       }
     }
 
@@ -651,6 +660,25 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       this._event.emit(PeerEvents.STREAM_AVAILABLE, { stream })
+    }
+
+    /**
+     * @param {import('./peer-types.d.ts').RoomPeerType.VoiceActivity} vad
+     */
+    _onVoiceActivity = (vad) => {
+      const event = new CustomEvent('voiceactivity', {
+        detail: {
+          voiceActivity: vad,
+        },
+      })
+
+      this.dispatchEvent(event)
+
+      const stream = this._streams.getStream(vad.stream_id)
+
+      if (!stream) return
+
+      stream.addVoiceActivity(vad)
     }
   }
 

@@ -1,22 +1,25 @@
 export const createStream = () => {
-  const Stream = class {
+  const Stream = class extends EventTarget {
     id
     clientId
     name
     origin
     source
     mediaStream
+    audioLevel
 
     /**
      * @param {import('./stream-types.js').RoomStreamType.StreamParameters} streamParameters
      */
     constructor({ id, clientId, name, origin, source, mediaStream }) {
+      super()
       this.id = id
       this.clientId = clientId
       this.name = name
       this.origin = origin
       this.source = source
       this.mediaStream = mediaStream
+      this.audioLevel = 0
     }
 
     /**
@@ -36,6 +39,32 @@ export const createStream = () => {
         this.mediaStream.addTrack(newTrack)
       }
     }
+
+    /**
+     * @param {import('../peer/peer-types.d.ts').RoomPeerType.VoiceActivity} activity
+     * @returns {void}
+     */
+    addVoiceActivity = (activity) => {
+      if (activity.audio_levels) {
+        for (const level of activity.audio_levels) {
+          this.audioLevel = level.audio_level
+          this.#triggerVoiceActivityEvent()
+        }
+      } else {
+        this.audioLevel = 0
+        this.#triggerVoiceActivityEvent()
+      }
+    }
+
+    #triggerVoiceActivityEvent = () => {
+      const event = new CustomEvent('voiceactivity', {
+        detail: {
+          audioLevel: this.audioLevel,
+        },
+      })
+
+      this.dispatchEvent(event)
+    }
   }
 
   return {
@@ -52,7 +81,9 @@ export const createStream = () => {
         origin: stream.origin,
         source: stream.source,
         mediaStream: stream.mediaStream,
+        audioLevel: 0,
         replaceTrack: stream.replaceTrack,
+        addVoiceActivity: stream.addVoiceActivity,
       })
     },
   }
