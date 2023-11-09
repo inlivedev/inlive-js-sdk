@@ -7,15 +7,11 @@ import {
 } from '../../internal/utils/get-browser-name.js'
 import { VideoObserver } from '../observer/video-observer.js'
 import { BandwidthController } from '../bandwidth-controller/bandwidth-controller.js'
+import { RoomEvent } from '../index.js'
 
-/** @type {import('./peer-types.js').RoomPeerType.PeerEvents} */
-export const PeerEvents = {
-  PEER_OPENED: 'peerOpened',
-  PEER_CLOSED: 'peerClosed',
-  STREAM_AVAILABLE: 'streamAvailable',
-  STREAM_REMOVED: 'streamRemoved',
-  _STREAM_ADDED: 'streamAdded',
-  _INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
+export const InternalPeerEvents = {
+  STREAM_ADDED: 'streamAdded',
+  INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
 }
 
 // This bitrate based on https://livekit.io/webrtc/bitrate-guide
@@ -73,7 +69,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       })
 
       this._addEventListener()
-      this._event.emit(PeerEvents.PEER_OPENED, {
+      this._event.emit(RoomEvent.PEER_OPENED, {
         roomId: this._roomId,
         clientId: this._clientId,
       })
@@ -96,7 +92,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._peerConnection = null
       this._roomId = ''
       this._clientId = ''
-      this._event.emit(PeerEvents.PEER_CLOSED)
+      this._event.emit(RoomEvent.PEER_CLOSED)
     }
 
     getClientId = () => {
@@ -119,7 +115,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     addStream = (key, data) => {
       this._streams.validateKey(key)
       this._streams.validateStream(data)
-      this._event.emit(PeerEvents._STREAM_ADDED, { key, data })
+      this._event.emit(InternalPeerEvents.STREAM_ADDED, { key, data })
     }
 
     /**
@@ -132,7 +128,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const removedStream = this._streams.removeStream(key)
 
       if (removedStream) {
-        this._event.emit(PeerEvents.STREAM_REMOVED, { stream: removedStream })
+        this._event.emit(RoomEvent.STREAM_REMOVED, { stream: removedStream })
       }
 
       return removedStream
@@ -281,7 +277,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       window.addEventListener('beforeunload', this._onBeforeUnload)
 
-      this._event.on(PeerEvents._STREAM_ADDED, this._onStreamAdded)
+      this._event.on(InternalPeerEvents.STREAM_ADDED, this._onStreamAdded)
     }
 
     _removeEventListener = () => {
@@ -612,7 +608,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       if (event.channel.label === 'internal') {
         const internalChannel = event.channel
         this._event.emit(
-          PeerEvents._INTERNAL_DATACHANNEL_AVAILABLE,
+          InternalPeerEvents.INTERNAL_DATACHANNEL_AVAILABLE,
           internalChannel
         )
 
@@ -656,7 +652,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         this._addLocalScreenStream(stream)
       }
 
-      this._event.emit(PeerEvents.STREAM_AVAILABLE, { stream })
+      this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
     }
 
     /**

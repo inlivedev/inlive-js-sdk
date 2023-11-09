@@ -4,8 +4,8 @@ import { createApi } from '../api/api.js'
 import { createEvent } from '../event/event.js'
 import { createStreams } from '../stream/streams.js'
 import { createStream } from '../stream/stream.js'
-import { createPeer, PeerEvents } from '../peer/peer.js'
-import { createChannel, ChannelEvents } from '../channel/channel.js'
+import { createPeer } from '../peer/peer.js'
+import { createChannel } from '../channel/channel.js'
 import * as defaultConfig from '../config/config.js'
 
 const config = {
@@ -21,7 +21,6 @@ export const createFacade = ({
   stream: { createStream, createStreams },
   peer: { createPeer },
   channel: { createChannel },
-  roomEvents,
 }) => {
   return {
     /**
@@ -70,14 +69,6 @@ export const createFacade = ({
         on: event.on,
         leaveRoom: api.leaveRoom,
         endRoom: api.endRoom,
-        event: Object.freeze({
-          CHANNEL_OPENED: roomEvents.channel.CHANNEL_OPENED,
-          CHANNEL_CLOSED: roomEvents.channel.CHANNEL_CLOSED,
-          PEER_OPENED: roomEvents.peer.PEER_OPENED,
-          PEER_CLOSED: roomEvents.peer.PEER_CLOSED,
-          STREAM_AVAILABLE: roomEvents.peer.STREAM_AVAILABLE,
-          STREAM_REMOVED: roomEvents.peer.STREAM_REMOVED,
-        }),
       }
     },
   }
@@ -90,8 +81,4 @@ export const facade = createFacade({
   stream: { createStream, createStreams },
   peer: { createPeer },
   channel: { createChannel },
-  roomEvents: {
-    peer: PeerEvents,
-    channel: ChannelEvents,
-  },
 })

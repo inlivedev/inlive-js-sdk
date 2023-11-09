@@ -38,15 +38,6 @@ export declare namespace RoomPeerType {
     config: RoomType.Config
   }
 
-  type PeerEvents = {
-    PEER_OPENED: 'peerOpened'
-    PEER_CLOSED: 'peerClosed'
-    STREAM_AVAILABLE: 'streamAvailable'
-    STREAM_REMOVED: 'streamRemoved'
-    _STREAM_ADDED: 'streamAdded'
-    _INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable'
-  }
-
   type RTCRtpSVCEncodingParameters = RTCRtpEncodingParameters & {
     scalabilityMode?: string
   }

@@ -16,11 +16,6 @@ export declare namespace RoomChannelType {
     streams: RoomStreamType.InstanceStreams
   }
 
-  type ChannelEvents = {
-    CHANNEL_OPENED: 'channelOpened'
-    CHANNEL_CLOSED: 'channelClosed'
-  }
-
   type TrackSource = {
     track_id: string
     source: string

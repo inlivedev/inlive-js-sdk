@@ -7,9 +7,9 @@ This package is used to work with [inLive Hub and Room API services](https://hub
 To use this package, you need to import a `Room` module and initialize it in a global scope where you can export and import the room object returned everywhere in your application.
 
 ```js
-import { Room } from '@inlivedev/inlive-js-sdk';
+import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk';
 // Or if you prefer to load only the room module
-import { Room } from '@inlivedev/inlive-js-sdk/dist/room.js';
+import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk/dist/room.js';
 
 const room = Room()
 ```
@@ -37,11 +37,11 @@ const peer = await room.createPeer(roomData.data.roomId, client.data.clientId);
 await room.createDataChannel(roomData.data.roomId, 'my-channel')
 
 // listen for a specific room event
-room.on(room.event.STREAM_AVAILABLE, function () {
+room.on(RoomEvent.STREAM_AVAILABLE, function () {
   // handle event
 });
 
-room.on(room.event.STREAM_REMOVED, function () {
+room.on(RoomEvent.STREAM_REMOVED, function () {
   // handle event
 });
 
@@ -51,12 +51,6 @@ await room.leaveRoom(roomData.data.roomId, client.data.clientId);
 // To end the room for everyone
 await room.endRoom(roomData.data.roomId);
 ```
-
-#### Properties
-
-- `event` : **object**
-
-  A collection of room events available to listen by accessing `room.event.<EVENT_NAME>`.
 
 #### Methods
 
