@@ -30,9 +30,5 @@ export declare namespace RoomFacadeType {
     channel: {
       createChannel: RoomChannelType.CreateChannel
     }
-    roomEvents: {
-      peer: RoomPeerType.PeerEvents
-      channel: RoomChannelType.ChannelEvents
-    }
   }
 }

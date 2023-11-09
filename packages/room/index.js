@@ -1,5 +1,14 @@
 import { facade } from './facade/facade.js'
 
+export const RoomEvent = Object.freeze({
+  CHANNEL_OPENED: 'channelOpened',
+  CHANNEL_CLOSED: 'channelClosed',
+  PEER_OPENED: 'peerOpened',
+  PEER_CLOSED: 'peerClosed',
+  STREAM_AVAILABLE: 'streamAvailable',
+  STREAM_REMOVED: 'streamRemoved',
+})
+
 /**
  * @typedef {ReturnType<import('./facade/facade-types.js').RoomFacadeType.CreateInstanceFacade>} RoomInstance
  */

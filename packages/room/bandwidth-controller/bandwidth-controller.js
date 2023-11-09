@@ -1,4 +1,5 @@
-import { PeerEvents } from '../peer/peer.js'
+import { InternalPeerEvents } from '../peer/peer.js'
+import { RoomEvent } from '../index.js'
 
 export class BandwidthController {
   #event
@@ -27,10 +28,10 @@ export class BandwidthController {
     this.#statsInterval = null
     this.#internalDataChannel = null
 
-    this.#event.on(PeerEvents.PEER_OPENED, this.#onPeerOpened)
-    this.#event.on(PeerEvents.PEER_CLOSED, this.#onPeerClosed)
+    this.#event.on(RoomEvent.PEER_OPENED, this.#onPeerOpened)
+    this.#event.on(RoomEvent.PEER_CLOSED, this.#onPeerClosed)
     this.#event.on(
-      PeerEvents._INTERNAL_DATACHANNEL_AVAILABLE,
+      InternalPeerEvents.INTERNAL_DATACHANNEL_AVAILABLE,
       this.#onInternalDataChannelAvailable
     )
   }

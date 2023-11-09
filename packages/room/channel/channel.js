@@ -1,10 +1,4 @@
-import { PeerEvents } from '../peer/peer.js'
-
-/** @type {import('./channel-types.js').RoomChannelType.ChannelEvents} */
-export const ChannelEvents = {
-  CHANNEL_OPENED: 'channelOpened',
-  CHANNEL_CLOSED: 'channelClosed',
-}
+import { RoomEvent } from '../index.js'
 
 export const REASONS = {
   PEER_CLOSED: 'peerClosed',
@@ -41,8 +35,8 @@ export const createChannel = ({ api, event, peer, streams }) => {
       this._startTime = 0
       this._reconnecting = false
 
-      this._event.on(PeerEvents.PEER_OPENED, this._onPeerOpened)
-      this._event.on(PeerEvents.PEER_CLOSED, this._onPeerClosed)
+      this._event.on(RoomEvent.PEER_OPENED, this._onPeerOpened)
+      this._event.on(RoomEvent.PEER_CLOSED, this._onPeerClosed)
     }
 
     /**
@@ -111,7 +105,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
       ) {
         this._reconnecting = true
         this.disconnect()
-        this._event.emit(ChannelEvents.CHANNEL_CLOSED, {
+        this._event.emit(RoomEvent.CHANNEL_CLOSED, {
           reason: REASONS.RECONNECT,
         })
         this.connect(this._roomId, this._clientId)
@@ -120,7 +114,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
     }
 
     _onOpen = () => {
-      this._event.emit(ChannelEvents.CHANNEL_OPENED)
+      this._event.emit(RoomEvent.CHANNEL_OPENED)
     }
 
     _onError = async () => {
@@ -131,7 +125,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
 
         if (response.code === 404) {
           this.disconnect()
-          this._event.emit(ChannelEvents.CHANNEL_CLOSED, {
+          this._event.emit(RoomEvent.CHANNEL_CLOSED, {
             reason: REASONS.NOT_FOUND,
           })
           return
@@ -161,7 +155,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
 
     _onPeerClosed = () => {
       this.disconnect()
-      this._event.emit(ChannelEvents.CHANNEL_CLOSED, {
+      this._event.emit(RoomEvent.CHANNEL_CLOSED, {
         reason: REASONS.PEER_CLOSED,
       })
     }
