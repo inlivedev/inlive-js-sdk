@@ -36,6 +36,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _videoObserver
     /** @type {Array<HTMLVideoElement>} */
     _pendingObservedVideo
+    /** @type {Array<RTCIceCandidate>} */
+    _pendingIceCandidates
 
     constructor() {
       super()
@@ -51,6 +53,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       this._videoObserver = null
       this._pendingObservedVideo = []
+      this._pendingIceCandidates = []
     }
 
     /**
@@ -541,6 +544,29 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         const { answer } = negotiateResponse.data
         const sdpAnswer = new RTCSessionDescription(answer)
         await this._peerConnection.setRemoteDescription(sdpAnswer)
+
+        // add pending ice candidates if any
+        for (const candidate of this._pendingIceCandidates) {
+          await this._peerConnection.addIceCandidate(candidate)
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    /**
+     * @param {RTCIceCandidate} candidate
+     */
+    addIceCandidate = async (candidate) => {
+      if (!this._peerConnection) return
+
+      if (!this._peerConnection.remoteDescription) {
+        this._pendingIceCandidates.push(candidate)
+        return
+      }
+
+      try {
+        await this._peerConnection.addIceCandidate(candidate)
       } catch (error) {
         console.error(error)
       }
@@ -686,6 +712,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         getRoomId: peer.getRoomId,
         getPeerConnection: peer.getPeerConnection,
         addStream: peer.addStream,
+        addIceCandidate: peer.addIceCandidate,
         removeStream: peer.removeStream,
         getAllStreams: peer.getAllStreams,
         getStream: peer.getStream,
