@@ -163,15 +163,9 @@ export const createChannel = ({ api, event, peer, streams }) => {
     /**
      * @param {MessageEvent} event
      */
-    _onCandidate = async (event) => {
-      const peerConnection = this._peer.getPeerConnection()
-
-      if (!peerConnection || !peerConnection.remoteDescription) {
-        return
-      }
-
+    _onCandidate = (event) => {
       const candidate = new RTCIceCandidate(JSON.parse(event.data))
-      await peerConnection.addIceCandidate(candidate)
+      this._peer.addIceCandidate(candidate)
     }
 
     /**

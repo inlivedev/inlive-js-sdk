@@ -13,6 +13,7 @@ export declare namespace RoomPeerType {
     getRoomId: () => string
     getPeerConnection: () => RTCPeerConnection | null
     addStream: (key: string, value: RoomStreamType.StreamParameters) => void
+    addIceCandidate: (candidate: RTCIceCandidate) => void
     removeStream: (key: string) => RoomStreamType.InstanceStream | null
     getAllStreams: () => RoomStreamType.InstanceStream[]
     getStream: (key: string) => RoomStreamType.InstanceStream | null
