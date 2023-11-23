@@ -11,6 +11,7 @@ import * as defaultConfig from '../config/config.js'
 const config = {
   api: defaultConfig.api,
   webrtc: defaultConfig.webrtc,
+  media: defaultConfig.media,
 }
 
 /** @param {import('./facade-types.js').RoomFacadeType.FacadeDependencies} facadeDependencies Dependencies for facade module */
