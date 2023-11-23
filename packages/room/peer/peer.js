@@ -387,16 +387,39 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       /** @type {MediaStreamTrack | undefined} */
       const audioTrack = stream.mediaStream.getAudioTracks()[0]
 
-      /** @type {MediaStreamTrack | undefined} */
-      const videoTrack = stream.mediaStream.getVideoTracks()[0]
-
       if (audioTrack) {
-        this._peerConnection.addTransceiver(audioTrack, {
+        const audioTsvr = this._peerConnection.addTransceiver(audioTrack, {
           direction: 'sendonly',
           streams: [stream.mediaStream],
           sendEncodings: [{ priority: 'high' }],
         })
+
+        let audioCodecs = RTCRtpReceiver.getCapabilities('audio')?.codecs
+
+        if (audioCodecs && config.media.audio.red) {
+          const audioPreferedCodecs = []
+
+          for (const codec of audioCodecs) {
+            if (codec.mimeType === 'audio/red') {
+              audioPreferedCodecs.push(codec)
+            }
+          }
+
+          // push the rest of the codecs
+          for (const codec of audioCodecs) {
+            if (codec.mimeType === 'audio/opus') {
+              audioPreferedCodecs.push(codec)
+            }
+          }
+
+          if (audioTsvr.setCodecPreferences !== undefined) {
+            audioTsvr.setCodecPreferences(audioPreferedCodecs)
+          }
+        }
       }
+
+      /** @type {MediaStreamTrack | undefined} */
+      const videoTrack = stream.mediaStream.getVideoTracks()[0]
 
       const browserName = getBrowserName()
       const simulcastBrowsers = [SAFARI, CHROME, EDGE, OPERA]

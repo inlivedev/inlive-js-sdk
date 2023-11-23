@@ -7,6 +7,24 @@ export declare namespace RoomType {
     webrtc: {
       iceServers: RTCIceServer[]
     }
+
+    media: {
+      video: {
+        width: number
+        height: number
+        frameRate: number
+        facingMode: string
+        aspectRatio: number
+        maxBitrate: number
+        codec: string
+      }
+      audio: {
+        echoCancellation: boolean
+        noiseSuppression: boolean
+        autoGainControl: boolean
+        red: boolean
+      }
+    }
   }
 
   type UserConfig = {
