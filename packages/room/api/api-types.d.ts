@@ -95,6 +95,10 @@ export declare namespace RoomAPIType {
     }
   }
 
+  type GetMetadataResponse = BaseResponseBody & {
+    data: any
+  }
+
   type NegotiateConnectionResponseBody = BaseResponseBody & {
     data: {
       answer: RTCSessionDescription
