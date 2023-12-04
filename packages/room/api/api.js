@@ -14,6 +14,7 @@ export const createApi = ({ fetcher }) => {
     createRoom = async (name = '', id = '') => {
       /** @type {import('./api-types.js').RoomAPIType.CreateRoomResponseBody} */
       const response = await this._fetcher.post(`/rooms/create`, {
+        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
         body: JSON.stringify({ name, id }),
       })
 
@@ -54,7 +55,9 @@ export const createApi = ({ fetcher }) => {
       }
 
       /** @type {import('./api-types.js').RoomAPIType.GetRoomResponseBody} */
-      const response = await this._fetcher.get(`/rooms/${roomId}`)
+      const response = await this._fetcher.get(`/rooms/${roomId}`, {
+        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
+      })
 
       const data = response.data || {}
       const bitrates = data.bitrates_config || {}
