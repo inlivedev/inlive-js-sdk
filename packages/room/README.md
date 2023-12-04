@@ -11,8 +11,22 @@ import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk';
 // Or if you prefer to load only the room module
 import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk/dist/room.js';
 
-const room = Room()
+const room = Room({
+  api : {
+    // Aditional parameter, required for some function
+    apiKey : YOUR_API_KEY
+  }
+})
 ```
+
+### Authentication 
+Some function in the Room Object require the apiKey parameter to be defined, since the SDK is designed to be used on Client and Server Side
+
+If the Library is used on the client side you might not need to pass the `apiKey` parameter
+
+The following function require apiKey to be defined : 
+* `Room.createRoom()`
+* `Room.getRoom()`
 
 ### Room object
 
@@ -54,11 +68,15 @@ await room.endRoom(roomData.data.roomId);
 
 #### Methods
 
-- `room.createRoom(name?: string | undefined, id?: string | undefined)`
+- `room.createRoom(name?: string | undefined, id?: string | undefined)` 
+
+  > 🔐 Require ApiKey
 
   A method to create a new room. If the optional `name` and `id` parameters are passed, the room will be created under those name and id. This method will return a promise.
 
 - `room.getRoom(roomId: string)`
+
+  > 🔐 Require ApiKey
 
   A method to get the room data. It expects a `roomId` as a parameter. This method will return a promise.
 
