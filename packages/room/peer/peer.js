@@ -396,7 +396,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
         let audioCodecs = RTCRtpReceiver.getCapabilities('audio')?.codecs
 
-        if (audioCodecs && config.media.audio.red) {
+        if (
+          audioCodecs &&
+          config.media.audio.red &&
+          stream.source === 'media'
+        ) {
           const audioPreferedCodecs = []
 
           for (const codec of audioCodecs) {
@@ -416,6 +420,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             audioTsvr.setCodecPreferences(audioPreferedCodecs)
           }
         }
+
+        audioTrack.addEventListener('ended', () => {
+          if (!this._peerConnection || !audioTsvr.sender) return
+          this._peerConnection.removeTrack(audioTsvr.sender)
+          this.removeStream(stream.id)
+        })
       }
 
       /** @type {MediaStreamTrack | undefined} */
@@ -457,7 +467,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         sendEncodings: [
           {
             maxBitrate: MAX_BITRATE,
-            scalabilityMode: 'L3T2',
+            scalabilityMode: 'L3T3',
+            maxFramerate: 30,
           },
         ],
       }
@@ -500,26 +511,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       if (tcvr.setCodecPreferences !== undefined) {
         tcvr.setCodecPreferences(preferedCodecs)
       }
-    }
 
-    /**
-     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
-     */
-    _addLocalScreenStream = (stream) => {
-      if (!this._peerConnection) return
-
-      for (const track of stream.mediaStream.getTracks()) {
-        const transceiver = this._peerConnection.addTransceiver(track, {
-          direction: 'sendonly',
-          streams: [stream.mediaStream],
-        })
-
-        track.addEventListener('ended', () => {
-          if (!this._peerConnection || !transceiver.sender) return
-          this._peerConnection.removeTrack(transceiver.sender)
-          this.removeStream(stream.id)
-        })
-      }
+      videoTrack.addEventListener('ended', () => {
+        if (!this._peerConnection || !tcvr.sender) return
+        this._peerConnection.removeTrack(tcvr.sender)
+        this.removeStream(stream.id)
+      })
     }
 
     _onIceConnectionStateChange = async () => {
@@ -693,12 +690,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       this._streams.addStream(key, stream)
 
-      if (stream.origin === 'local' && stream.source === 'media') {
+      if (stream.origin === 'local') {
         this._addLocalMediaStream(stream)
-      }
-
-      if (stream.origin === 'local' && stream.source === 'screen') {
-        this._addLocalScreenStream(stream)
       }
 
       this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })

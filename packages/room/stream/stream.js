@@ -45,9 +45,9 @@ export const createStream = () => {
      * @returns {void}
      */
     addVoiceActivity = (activity) => {
-      if (activity.audio_levels) {
-        for (const level of activity.audio_levels) {
-          this.audioLevel = level.audio_level
+      if (activity.audioLevels) {
+        for (const level of activity.audioLevels) {
+          this.audioLevel = level.audioLevel
           this.#triggerVoiceActivityEvent()
         }
       } else {
@@ -84,6 +84,8 @@ export const createStream = () => {
         audioLevel: 0,
         replaceTrack: stream.replaceTrack,
         addVoiceActivity: stream.addVoiceActivity,
+        addEventListener: stream.addEventListener,
+        removeEventListener: stream.removeEventListener,
       })
     },
   }
