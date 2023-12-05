@@ -442,7 +442,9 @@ export const createApi = ({ fetcher }) => {
       }
 
       /** @type {import('./api-types.js').RoomAPIType.BaseResponseBody} */
-      const response = await this._fetcher.put(`/rooms/${roomId}/end`)
+      const response = await this._fetcher.put(`/rooms/${roomId}/end`, {
+        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
+      })
 
       const result = {
         code: response.code || 500,
