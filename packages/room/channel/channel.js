@@ -82,6 +82,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
         'tracks_available',
         this._onTracksAvailable
       )
+      this._channel.addEventListener('meta_changed', this._onMetaChanged)
     }
 
     _removeEventListener = () => {
@@ -96,6 +97,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
         'tracks_available',
         this._onTracksAvailable
       )
+      this._channel.removeEventListener('meta_changed', this._onMetaChanged)
     }
 
     _reconnect = () => {
@@ -257,6 +259,21 @@ export const createChannel = ({ api, event, peer, streams }) => {
         this._clientId,
         subscribingTracks
       )
+    }
+
+    /**
+     * @param {MessageEvent} event
+     */
+    _onMetaChanged = async (event) => {
+      const data = typeof event.data === 'string' ? JSON.parse(event.data) : {}
+      const key = Object.keys(data)[0]
+
+      if (key) {
+        this._event.emit(RoomEvent.META_CHANGED, {
+          key: key,
+          data: data,
+        })
+      }
     }
   }
 

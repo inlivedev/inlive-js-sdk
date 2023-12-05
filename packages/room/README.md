@@ -92,6 +92,18 @@ await room.endRoom(roomData.data.roomId);
 
   A method to set a client name based on `clientId`. This is useful for setting a friendly name or label on a specific client. It requires `roomId`, `clientId` and `clientName` parameters to be set. This method  will return a promise.
 
+- `room.getMetadata(roomId: string, key: string)`
+
+  A method to get a specific room metadata based on metadata `key` provided. It expects the `roomId` and `key` as parameters. This method will return a promise.
+
+- `room.setMetadata(roomId: string, metadata: object)`
+
+  A method to set metadata for a specific room. You can store multiple keys and data as an object. This method will return a promise.
+
+- `room.deleteMetadata(roomId: string, key: string)`
+
+  A method to delete a specific room metadata based on metadata `key` provided. It expects the `roomId` and `key` as parameters. This method will return a promise.
+
 - `room.createPeer(roomId: string, clientId: string)`
 
   A method to create a peer that manages the WebRTC peer to peer connection. It requires `roomId` and `clientId` parameters to be set. This method will return a promise.

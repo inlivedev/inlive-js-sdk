@@ -236,6 +236,96 @@ export const createApi = ({ fetcher }) => {
 
     /**
      * @param {string} roomId
+     * @param {string} key
+     */
+    getMetadata = async (roomId, key) => {
+      if (roomId.trim().length === 0) {
+        throw new Error('Room ID must be a valid string')
+      }
+
+      if (key.trim().length === 0) {
+        throw new Error('Metadata key must be a valid string')
+      }
+
+      /** @type {import('./api-types.js').RoomAPIType.GetMetadataResponse} */
+      const response = await this._fetcher.get(
+        `/rooms/${roomId}/getmeta/${key}`
+      )
+
+      const data = response.data || {}
+
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        message: response.message || '',
+        data: data,
+      }
+
+      return result
+    }
+
+    /**
+     * @param {string} roomId
+     * @param {{[key: string]: any}} metadata
+     */
+    setMetadata = async (roomId, metadata) => {
+      if (!roomId) {
+        throw new Error('Room ID is required')
+      }
+
+      if (
+        typeof metadata !== 'object' ||
+        metadata === null ||
+        Array.isArray(metadata)
+      ) {
+        throw new TypeError('Metadata must be a valid object')
+      }
+
+      /** @type {import('./api-types.js').RoomAPIType.BaseResponseBody} */
+      const response = await this._fetcher.post(`/rooms/${roomId}/setmeta`, {
+        body: JSON.stringify(metadata),
+      })
+
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        message: response.message || '',
+        data: null,
+      }
+
+      return result
+    }
+
+    /**
+     * @param {string} roomId
+     * @param {string} key
+     */
+    deleteMetadata = async (roomId, key) => {
+      if (roomId.trim().length === 0) {
+        throw new Error('Room ID must be a valid string')
+      }
+
+      if (key.trim().length === 0) {
+        throw new Error('Metadata key must be a valid string')
+      }
+
+      /** @type {import('./api-types.js').RoomAPIType.BaseResponseBody} */
+      const response = await this._fetcher.delete(
+        `/rooms/${roomId}/deletemeta/${key}`
+      )
+
+      const result = {
+        code: response.code || 500,
+        ok: response.ok || false,
+        message: response.message || '',
+        data: null,
+      }
+
+      return result
+    }
+
+    /**
+     * @param {string} roomId
      * @param {string} clientId
      * @param {RTCIceCandidate} candidate
      */
@@ -502,6 +592,9 @@ export const createApi = ({ fetcher }) => {
         registerClient: api.registerClient,
         getClient: api.getClient,
         setClientName: api.setClientName,
+        getMetadata: api.getMetadata,
+        setMetadata: api.setMetadata,
+        deleteMetadata: api.deleteMetadata,
         sendIceCandidate: api.sendIceCandidate,
         checkNegotiateAllowed: api.checkNegotiateAllowed,
         negotiateConnection: api.negotiateConnection,

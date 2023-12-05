@@ -58,6 +58,9 @@ export const createFacade = ({
         createClient: api.registerClient,
         getClient: api.getClient,
         setClientName: api.setClientName,
+        getMetadata: api.getMetadata,
+        setMetadata: api.setMetadata,
+        deleteMetadata: api.deleteMetadata,
         createPeer:
           /**
            * @param {string} roomId
