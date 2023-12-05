@@ -1,10 +1,15 @@
 export const createFetcher = () => {
   const Fetcher = class {
+    _apiKey
     _baseUrl
 
-    /** @param {string} baseUrl  */
-    constructor(baseUrl) {
+    /**
+     * @param {string}  apiKey
+     * @param {string} baseUrl
+     */
+    constructor(baseUrl, apiKey) {
       this._baseUrl = baseUrl
+      this._apiKey = apiKey
     }
 
     /**
@@ -61,6 +66,10 @@ export const createFetcher = () => {
 
     getBaseUrl = () => {
       return this._baseUrl
+    }
+
+    getApiKey = () => {
+      return this._apiKey
     }
 
     /**
@@ -120,11 +129,15 @@ export const createFetcher = () => {
   }
 
   return {
-    /** @param {string} baseUrl */
-    createInstance: (baseUrl) => {
-      const fetcher = new Fetcher(baseUrl)
+    /**
+     * @param {string} baseUrl
+     * @param {string} apiKey
+     */
+    createInstance: (baseUrl, apiKey) => {
+      const fetcher = new Fetcher(baseUrl, apiKey)
 
       return {
+        getApiKey: fetcher.getApiKey,
         getBaseUrl: fetcher.getBaseUrl,
         get: fetcher.get,
         post: fetcher.post,
