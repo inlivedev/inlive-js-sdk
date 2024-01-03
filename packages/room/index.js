@@ -10,6 +10,8 @@ export const RoomEvent = Object.freeze({
   META_CHANGED: 'metaChanged',
 })
 
+export { REASONS as ChannelClosureReasons } from './channel/channel.js'
+
 /**
  * @typedef {ReturnType<import('./facade/facade-types.js').RoomFacadeType.CreateInstanceFacade>} RoomInstance
  */
