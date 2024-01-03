@@ -157,7 +157,9 @@ export const createChannel = ({ api, event, peer, streams }) => {
             } catch (error) {
               if (error instanceof TypeError) {
                 if (error.name === 'NetworkError') {
-                  this._reconnect()
+                  setTimeout(() => {
+                    onError()
+                  }, 1000)
                 } else {
                   this.disconnect()
                   this._event.emit(RoomEvent.CHANNEL_CLOSED, {
