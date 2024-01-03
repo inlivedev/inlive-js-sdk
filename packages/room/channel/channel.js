@@ -138,12 +138,20 @@ export const createChannel = ({ api, event, peer, streams }) => {
               )
 
               if (response.code === 404) {
-                console.log('client was removed from room')
+                console.log(
+                  'client was removed from room, client need to reconnect manually'
+                )
                 this.disconnect()
                 this._event.emit(RoomEvent.CHANNEL_CLOSED, {
                   reason: REASONS.NOT_FOUND,
                 })
                 return
+              }
+
+              if (response.code === 200) {
+                console.log(
+                  'client is still in room, will reconnect automatically'
+                )
               }
 
               // Reconnect
@@ -155,17 +163,10 @@ export const createChannel = ({ api, event, peer, streams }) => {
                 this._reconnect()
               }
             } catch (error) {
-              if (error instanceof TypeError) {
-                if (error.name === 'NetworkError') {
-                  setTimeout(() => {
-                    onError()
-                  }, 1000)
-                } else {
-                  this.disconnect()
-                  this._event.emit(RoomEvent.CHANNEL_CLOSED, {
-                    reason: REASONS.UNKNOWN,
-                  })
-                }
+              if (error instanceof Error && error.name === 'NetworkError') {
+                setTimeout(() => {
+                  onError()
+                }, 1000)
               }
             }
           }
