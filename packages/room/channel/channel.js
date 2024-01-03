@@ -120,28 +120,42 @@ export const createChannel = ({ api, event, peer, streams }) => {
     }
 
     _onError = async () => {
-      const errorTime = Date.now()
-
-      if (this._roomId && this._clientId) {
-        const response = await this._api.getClient(this._roomId, this._clientId)
-
-        if (response.code === 404) {
-          this.disconnect()
-          this._event.emit(RoomEvent.CHANNEL_CLOSED, {
-            reason: REASONS.NOT_FOUND,
-          })
-          return
-        }
-
-        // Reconnect
-        if (errorTime - this._startTime < 1000) {
+      const onError = async () => {
+        if (!navigator.onLine) {
           setTimeout(() => {
-            this._reconnect()
+            onError()
           }, 1000)
         } else {
-          this._reconnect()
+          const errorTime = Date.now()
+
+          console.log('Checking if client is still in room')
+          if (this._roomId && this._clientId) {
+            const response = await this._api.getClient(
+              this._roomId,
+              this._clientId
+            )
+
+            if (response.code === 404) {
+              console.log('Client removed from room')
+              this.disconnect()
+              this._event.emit(RoomEvent.CHANNEL_CLOSED, {
+                reason: REASONS.NOT_FOUND,
+              })
+              return
+            }
+
+            // Reconnect
+            if (errorTime - this._startTime < 1000) {
+              setTimeout(() => {
+                this._reconnect()
+              }, 1000)
+            } else {
+              this._reconnect()
+            }
+          }
         }
       }
+      onError()
     }
 
     /**
