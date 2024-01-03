@@ -4,6 +4,7 @@ export const REASONS = {
   PEER_CLOSED: 'peerClosed',
   NOT_FOUND: 'notfound',
   RECONNECT: 'reconnect',
+  UNKNOWN: 'unknown',
 }
 
 /**
@@ -128,29 +129,42 @@ export const createChannel = ({ api, event, peer, streams }) => {
         } else {
           const errorTime = Date.now()
 
-          console.log('Checking if client is still in room')
+          console.log('checking if client is still in room...')
           if (this._roomId && this._clientId) {
-            const response = await this._api.getClient(
-              this._roomId,
-              this._clientId
-            )
+            try {
+              const response = await this._api.getClient(
+                this._roomId,
+                this._clientId
+              )
 
-            if (response.code === 404) {
-              console.log('Client removed from room')
-              this.disconnect()
-              this._event.emit(RoomEvent.CHANNEL_CLOSED, {
-                reason: REASONS.NOT_FOUND,
-              })
-              return
-            }
+              if (response.code === 404) {
+                console.log('client was removed from room')
+                this.disconnect()
+                this._event.emit(RoomEvent.CHANNEL_CLOSED, {
+                  reason: REASONS.NOT_FOUND,
+                })
+                return
+              }
 
-            // Reconnect
-            if (errorTime - this._startTime < 1000) {
-              setTimeout(() => {
+              // Reconnect
+              if (errorTime - this._startTime < 1000) {
+                setTimeout(() => {
+                  this._reconnect()
+                }, 1000)
+              } else {
                 this._reconnect()
-              }, 1000)
-            } else {
-              this._reconnect()
+              }
+            } catch (error) {
+              if (error instanceof TypeError) {
+                if (error.name === 'NetworkError') {
+                  this._reconnect()
+                } else {
+                  this.disconnect()
+                  this._event.emit(RoomEvent.CHANNEL_CLOSED, {
+                    reason: REASONS.UNKNOWN,
+                  })
+                }
+              }
             }
           }
         }
