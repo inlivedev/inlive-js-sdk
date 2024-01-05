@@ -23,16 +23,16 @@ export const createFetcher = () => {
 
       const contentType = response.headers.get('content-type')
       if (contentType && contentType.includes('application/json')) {
-        return response
-          .json()
-          .then((json) => ({
-            ...json,
+        try {
+          const jsonResp = await response.json()
+          return {
+            ...jsonResp,
             code: response.status,
             ok: response.ok,
-          }))
-          .catch((error) => {
-            throw error
-          })
+          }
+        } catch (error) {
+          throw new Error(`Cannot process response from the server: ${error}`)
+        }
       } else {
         throw new Error(`Cannot process response from the server`)
       }
