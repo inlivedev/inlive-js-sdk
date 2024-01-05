@@ -14,12 +14,6 @@ export const InternalPeerEvents = {
   INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
 }
 
-// This bitrate based on https://livekit.io/webrtc/bitrate-guide
-// optimal for 720p on webcam streaming
-const MAX_BITRATE = 1000 * 1000
-const MID_BITRATE = 300 * 1000
-const MIN_BITRATE = 100 * 1000
-
 /** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
 export const createPeer = ({ api, createStream, event, streams, config }) => {
   const Peer = class extends EventTarget {
@@ -102,6 +96,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       return this._clientId
     }
 
+    getRoom() {
+      return this._api.getRoom(this._roomId)
+    }
+
     getRoomId = () => {
       return this._roomId
     }
@@ -113,12 +111,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /**
      * Add a new stream
      * @param {string} key
-     * @param {import('../stream/stream-types.js').RoomStreamType.AddStreamParameters} data
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
      */
-    addStream = (key, data) => {
+    addStream = (key, stream) => {
       this._streams.validateKey(key)
-      this._streams.validateStream(data)
-      this._event.emit(InternalPeerEvents.STREAM_ADDED, { key, data })
+      this._streams.validateStream(stream)
+      this._event.emit(InternalPeerEvents.STREAM_ADDED, { key, stream })
     }
 
     /**
@@ -381,11 +379,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /**
      * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
      */
-    _addLocalMediaStream = (stream) => {
+    _addLocalMediaStream = async (stream) => {
       if (!this._peerConnection) return
 
       /** @type {MediaStreamTrack | undefined} */
       const audioTrack = stream.mediaStream.getAudioTracks()[0]
+      const room = await this.getRoom()
 
       if (audioTrack) {
         const audioTsvr = this._peerConnection.addTransceiver(audioTrack, {
@@ -403,16 +402,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         ) {
           const audioPreferedCodecs = []
 
-          for (const codec of audioCodecs) {
-            if (codec.mimeType === 'audio/red') {
-              audioPreferedCodecs.push(codec)
-            }
-          }
+          const codecPreferences = room.data.codecPreferences
 
-          // push the rest of the codecs
           for (const codec of audioCodecs) {
-            if (codec.mimeType === 'audio/opus') {
-              audioPreferedCodecs.push(codec)
+            for (const codecPreference of codecPreferences) {
+              if (codec.mimeType === codecPreference) {
+                audioPreferedCodecs.push(codec)
+              }
             }
           }
 
@@ -441,21 +437,24 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       let codecs = RTCRtpReceiver.getCapabilities('video')?.codecs
 
       if (codecs) {
-        // iterate over supported codecs and pull out the codecs we want
         for (const codec of codecs) {
-          if (codec.mimeType === 'video/VP9') {
-            preferedCodecs.push(codec)
-          }
-        }
+          for (const codecPreference of room.data.codecPreferences) {
+            if (codec.mimeType === codecPreference) {
+              preferedCodecs.push(codec)
 
-        if (preferedCodecs.length > 0) {
-          svc = true
+              if (codec.mimeType === 'video/VP9') {
+                svc = true
+              }
+            }
+          }
         }
 
         // push the rest of the codecs
         for (const codec of codecs) {
-          if (codec.mimeType !== 'video/VP9') {
-            preferedCodecs.push(codec)
+          for (const preferedCodec of preferedCodecs) {
+            if (codec.mimeType !== preferedCodec.mimeType) {
+              preferedCodecs.push(codec)
+            }
           }
         }
       }
@@ -466,7 +465,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         streams: [stream.mediaStream],
         sendEncodings: [
           {
-            maxBitrate: MAX_BITRATE,
+            maxBitrate: room.data.bitrates.videoHigh,
             scalabilityMode: 'L3T3',
             maxFramerate: 30,
           },
@@ -484,7 +483,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           // for firefox order matters... first high resolution, then scaled resolutions...
           {
             rid: 'high',
-            maxBitrate: MAX_BITRATE,
+            maxBitrate: room.data.bitrates.videoHigh,
             maxFramerate: 30,
           },
           {
@@ -492,13 +491,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             // eslint-disable-next-line unicorn/no-zero-fractions
             scaleResolutionDownBy: 2.0,
             maxFramerate: 30,
-            maxBitrate: MID_BITRATE,
+            maxBitrate: room.data.bitrates.videoMid,
           },
           {
             rid: 'low',
             // eslint-disable-next-line unicorn/no-zero-fractions
             scaleResolutionDownBy: 4.0,
-            maxBitrate: MIN_BITRATE,
+            maxBitrate: room.data.bitrates.videoLow,
             maxFramerate: 30,
           },
         ]
@@ -635,14 +634,20 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       const draftStream = this._streams.getDraft(mediaStream.id) || {}
-
-      this.addStream(mediaStream.id, {
+      const data = {
         clientId: draftStream.clientId || '',
         name: draftStream.name || '',
         origin: draftStream.origin || 'remote',
         source: draftStream.source || 'media',
         mediaStream: mediaStream,
+      }
+
+      const stream = this._stream.createInstance({
+        id: mediaStream.id,
+        ...data,
       })
+
+      this.addStream(mediaStream.id, stream)
 
       this._streams.removeDraft(mediaStream.id)
     }
@@ -681,13 +686,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this.disconnect()
     }
 
-    /** @param {{ key: string, data: import('../stream/stream-types.js').RoomStreamType.AddStreamParameters }} data */
-    _onStreamAdded = ({ key, data }) => {
-      const stream = this._stream.createInstance({
-        id: key,
-        ...data,
-      })
-
+    /** @param {{ key: string, stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} stream */
+    _onStreamAdded = ({ key, stream }) => {
       this._streams.addStream(key, stream)
 
       if (stream.origin === 'local') {
@@ -725,6 +725,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         connect: peer.connect,
         disconnect: peer.disconnect,
         getClientId: peer.getClientId,
+        getRoom: peer.getRoom,
         getRoomId: peer.getRoomId,
         getPeerConnection: peer.getPeerConnection,
         addStream: peer.addStream,

@@ -2,6 +2,8 @@
 export const createApi = ({ fetcher }) => {
   const Api = class {
     _fetcher
+    /** @type {import('../room-types.js').RoomType.Room | null} */
+    _room = null
 
     constructor() {
       this._fetcher = fetcher
@@ -18,7 +20,7 @@ export const createApi = ({ fetcher }) => {
       })
 
       const data = response.data || {}
-      const bitrates = data.bitrates_config || {}
+      const bitrates = data.bitrate_configs || {}
 
       const room = {
         code: response.code || 500,
@@ -39,7 +41,15 @@ export const createApi = ({ fetcher }) => {
             videoLowPixels: bitrates.video_low_pixels || 0,
             initialBandwidth: bitrates.initial_bandwidth || 0,
           },
+          codecPreferences: data.codec_preferences || [],
         },
+      }
+
+      this._room = {
+        id: room.data.roomId,
+        name: room.data.roomName,
+        bitrateConfigs: room.data.bitrates,
+        codecPreferences: room.data.codecPreferences,
       }
 
       return room
@@ -53,11 +63,25 @@ export const createApi = ({ fetcher }) => {
         throw new Error('Room ID must be a valid string')
       }
 
+      if (this._room && this._room.id === roomId) {
+        return {
+          code: 200,
+          ok: true,
+          message: 'OK',
+          data: {
+            roomId: this._room.id,
+            roomName: this._room.name,
+            bitrates: this._room.bitrateConfigs,
+            codecPreferences: this._room.codecPreferences,
+          },
+        }
+      }
+
       /** @type {import('./api-types.js').RoomAPIType.GetRoomResponseBody} */
       const response = await this._fetcher.get(`/rooms/${roomId}`)
 
       const data = response.data || {}
-      const bitrates = data.bitrates_config || {}
+      const bitrates = data.bitrate_configs || {}
 
       const room = {
         code: response.code || 500,
@@ -78,7 +102,15 @@ export const createApi = ({ fetcher }) => {
             videoLowPixels: bitrates.video_low_pixels || 0,
             initialBandwidth: bitrates.initial_bandwidth || 0,
           },
+          codecPreferences: data.codec_preferences || [],
         },
+      }
+
+      this._room = {
+        id: room.data.roomId,
+        name: room.data.roomName,
+        bitrateConfigs: room.data.bitrates,
+        codecPreferences: room.data.codecPreferences,
       }
 
       return room
