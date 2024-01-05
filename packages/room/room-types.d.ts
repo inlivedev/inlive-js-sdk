@@ -3,6 +3,7 @@ export declare namespace RoomType {
     api: {
       baseUrl: string
       version: string
+      apiKey: string
     }
     webrtc: {
       iceServers: RTCIceServer[]
@@ -31,6 +32,7 @@ export declare namespace RoomType {
     api?: {
       baseUrl?: string
       version?: string
+      apiKey?: string
     }
     webrtc?: {
       iceServers?: RTCIceServer[]

@@ -1,6 +1,7 @@
 export const api = {
   baseUrl: 'https://hub.inlive.app',
   version: 'v1',
+  apiKey: '',
 }
 
 export const webrtc = {

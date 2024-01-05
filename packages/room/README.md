@@ -11,8 +11,22 @@ import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk';
 // Or if you prefer to load only the room module
 import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk/dist/room.js';
 
-const room = Room()
+const room = Room({
+  api : {
+    // Aditional parameter, required for some function
+    apiKey : YOUR_API_KEY
+  }
+})
 ```
+
+### Authentication 
+Some function in the Room Object require the apiKey parameter to be defined, since the SDK is designed to be used on Client and Server Side
+
+If the Library is used on the client side you might not need to pass the `apiKey` parameter
+
+The following function require apiKey to be defined : 
+* `Room.createRoom()`
+* `Room.getRoom()`
 
 ### Room object
 
@@ -54,11 +68,15 @@ await room.endRoom(roomData.data.roomId);
 
 #### Methods
 
-- `room.createRoom(name?: string | undefined, id?: string | undefined)`
+- `room.createRoom(name?: string | undefined, id?: string | undefined)` 
+
+  > 🔐 Require ApiKey
 
   A method to create a new room. If the optional `name` and `id` parameters are passed, the room will be created under those name and id. This method will return a promise.
 
 - `room.getRoom(roomId: string)`
+
+  > 🔐 Require ApiKey
 
   A method to get the room data. It expects a `roomId` as a parameter. This method will return a promise.
 
@@ -73,6 +91,18 @@ await room.endRoom(roomData.data.roomId);
 - `room.setClientName(roomId: string, clientId: string, clientName: string)`
 
   A method to set a client name based on `clientId`. This is useful for setting a friendly name or label on a specific client. It requires `roomId`, `clientId` and `clientName` parameters to be set. This method  will return a promise.
+
+- `room.getMetadata(roomId: string, key: string)`
+
+  A method to get a specific room metadata based on metadata `key` provided. It expects the `roomId` and `key` as parameters. This method will return a promise.
+
+- `room.setMetadata(roomId: string, metadata: object)`
+
+  A method to set metadata for a specific room. You can store multiple keys and data as an object. This method will return a promise.
+
+- `room.deleteMetadata(roomId: string, key: string)`
+
+  A method to delete a specific room metadata based on metadata `key` provided. It expects the `roomId` and `key` as parameters. This method will return a promise.
 
 - `room.createPeer(roomId: string, clientId: string)`
 

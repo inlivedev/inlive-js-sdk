@@ -31,7 +31,8 @@ export const createFacade = ({
       merge(config, userConfig)
 
       const baseUrl = `${config.api.baseUrl}/${config.api.version}`
-      const fetcher = createFetcher().createInstance(baseUrl)
+      const apiKey = config.api.apiKey
+      const fetcher = createFetcher().createInstance(baseUrl, apiKey)
       const api = createApi({
         fetcher,
       }).createInstance()
@@ -57,6 +58,9 @@ export const createFacade = ({
         createClient: api.registerClient,
         getClient: api.getClient,
         setClientName: api.setClientName,
+        getMetadata: api.getMetadata,
+        setMetadata: api.setMetadata,
+        deleteMetadata: api.deleteMetadata,
         createPeer:
           /**
            * @param {string} roomId
