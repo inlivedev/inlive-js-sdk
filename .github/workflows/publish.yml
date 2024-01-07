@@ -1,7 +1,8 @@
 on: 
   push:
-    tags:        
-      - '**' 
+    branches:
+      - main
+      - dev
 jobs:
   publish:
     runs-on: ubuntu-latest
