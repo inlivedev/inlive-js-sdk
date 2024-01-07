@@ -121,7 +121,7 @@ export const createApi = ({ fetcher }) => {
 
     /**
      * @param {string} roomId
-     * @param {{clientId?: string, clientName?: string}} [config]
+     * @param {{clientId?: string, clientName?: string, enableVAD?: boolean}} [config]
      */
     registerClient = async (roomId, config = {}) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
@@ -137,6 +137,10 @@ export const createApi = ({ fetcher }) => {
 
       if (config.clientName && config.clientName.trim().length > 0) {
         body.name = config.clientName
+      }
+
+      if (typeof config.enableVAD === 'boolean') {
+        body.enable_vad = config.enableVAD
       }
 
       const options =
