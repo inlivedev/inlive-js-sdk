@@ -48,18 +48,23 @@ export const createStream = () => {
       if (activity.audioLevels) {
         for (const level of activity.audioLevels) {
           this.audioLevel = level.audioLevel
-          this.#triggerVoiceActivityEvent()
+          this.#triggerVoiceActivityEvent(this.audioLevel)
         }
       } else {
         this.audioLevel = 0
-        this.#triggerVoiceActivityEvent()
+        this.#triggerVoiceActivityEvent(this.audioLevel)
       }
     }
 
-    #triggerVoiceActivityEvent = () => {
+    /**
+     * @param audioLevel {number}
+     * @returns {void}
+     */
+
+    #triggerVoiceActivityEvent = (audioLevel) => {
       const event = new CustomEvent('voiceactivity', {
         detail: {
-          audioLevel: this.audioLevel,
+          audioLevel: audioLevel,
         },
       })
 

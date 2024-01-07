@@ -51,7 +51,8 @@ export declare namespace RoomAPIType {
     data: {
       room_id: string
       name: string
-      bitrates_config: Bitrates
+      bitrate_configs: Bitrates
+      codec_preferences: string[]
     }
   }
 
@@ -59,7 +60,8 @@ export declare namespace RoomAPIType {
     data: {
       room_id: string
       name: string
-      bitrates_config: Bitrates
+      bitrate_configs: Bitrates
+      codec_preferences: string[]
     }
   }
 

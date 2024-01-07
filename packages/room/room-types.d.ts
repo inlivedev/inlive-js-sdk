@@ -38,4 +38,24 @@ export declare namespace RoomType {
       iceServers?: RTCIceServer[]
     }
   }
+
+  type BitrateConfigs = {
+    audioRed: number
+    audio: number
+    video: number
+    videoHigh: number
+    videoHighPixels: number
+    videoMid: number
+    videoMidPixels: number
+    videoLow: number
+    videoLowPixels: number
+    initialBandwidth: number
+  }
+
+  type Room = {
+    id: string
+    name: string
+    codecPreferences: string[]
+    bitrateConfigs: BitrateConfigs
+  }
 }

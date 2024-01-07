@@ -9,7 +9,7 @@ export const createEvent = () => {
 
     /**
      * @param {string} eventName - The name of the event
-     * @param {import('../../internal/types/types.js').SharedType.ObjectLiteral} [value] - The actual value sent
+     * @param {any} [value] - The actual value sent
      */
     emit = (eventName, value = {}) => {
       if (typeof eventName !== 'string' || eventName.trim().length === 0) {
