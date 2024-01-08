@@ -10,7 +10,6 @@ import { BandwidthController } from '../bandwidth-controller/bandwidth-controlle
 import { RoomEvent } from '../index.js'
 
 export const InternalPeerEvents = {
-  STREAM_ADDED: 'streamAdded',
   INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
 }
 
@@ -111,12 +110,24 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /**
      * Add a new stream
      * @param {string} key
-     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     * @param {import('../stream/stream-types.js').RoomStreamType.AddStreamParameters} data
      */
-    addStream = (key, stream) => {
+    addStream = (key, data) => {
       this._streams.validateKey(key)
-      this._streams.validateStream(stream)
-      this._event.emit(InternalPeerEvents.STREAM_ADDED, { key, stream })
+      this._streams.validateStream(data)
+
+      const stream = this._stream.createInstance({
+        id: key,
+        ...data,
+      })
+
+      this._streams.addStream(key, stream)
+
+      if (stream.origin === 'local') {
+        this._addLocalMediaStream(stream)
+      }
+
+      this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
     }
 
     /**
@@ -277,8 +288,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._peerConnection.addEventListener('datachannel', this._onDataChannel)
 
       window.addEventListener('beforeunload', this._onBeforeUnload)
-
-      this._event.on(InternalPeerEvents.STREAM_ADDED, this._onStreamAdded)
     }
 
     _removeEventListener = () => {
@@ -634,20 +643,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       const draftStream = this._streams.getDraft(mediaStream.id) || {}
-      const data = {
+
+      this.addStream(mediaStream.id, {
         clientId: draftStream.clientId || '',
         name: draftStream.name || '',
         origin: draftStream.origin || 'remote',
         source: draftStream.source || 'media',
         mediaStream: mediaStream,
-      }
-
-      const stream = this._stream.createInstance({
-        id: mediaStream.id,
-        ...data,
       })
-
-      this.addStream(mediaStream.id, stream)
 
       this._streams.removeDraft(mediaStream.id)
     }
@@ -684,17 +687,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       this._api.leaveRoom(this._roomId, this._clientId, true)
       this.disconnect()
-    }
-
-    /** @param {{ key: string, stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} stream */
-    _onStreamAdded = ({ key, stream }) => {
-      this._streams.addStream(key, stream)
-
-      if (stream.origin === 'local') {
-        this._addLocalMediaStream(stream)
-      }
-
-      this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
     }
 
     /**
