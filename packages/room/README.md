@@ -19,12 +19,12 @@ const room = Room({
 })
 ```
 
-### Authentication 
+### Authentication
 Some function in the Room Object require the apiKey parameter to be defined, since the SDK is designed to be used on Client and Server Side
 
 If the Library is used on the client side you might not need to pass the `apiKey` parameter
 
-The following function require apiKey to be defined : 
+The following function require apiKey to be defined :
 * `Room.createRoom()`
 * `Room.getRoom()`
 
@@ -68,7 +68,7 @@ await room.endRoom(roomData.data.roomId);
 
 #### Methods
 
-- `room.createRoom(name?: string | undefined, id?: string | undefined)` 
+- `room.createRoom(name?: string | undefined, id?: string | undefined)`
 
   > 🔐 Require ApiKey
 
@@ -140,7 +140,7 @@ const peer = await room.createPeer(roomData.data.roomId, client.data.clientId);
 const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
 // Add the user media input stream to the peer
-peer.addStream(mediaStream.id, {
+await peer.addStream(mediaStream.id, {
   clientId: client.data.clientId,
   name: 'Client A stream',
   origin: 'local', // local | remote
@@ -151,7 +151,7 @@ peer.addStream(mediaStream.id, {
 const displayScreen = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
 
 // Add the display screen media input stream to the peer
-peer.addStream(displayScreen.id, {
+await peer.addStream(displayScreen.id, {
   clientId: client.data.clientId,
   name: 'Screen by Client A',
   origin: 'local', // local | remote
@@ -212,7 +212,7 @@ peer.disconnect();
     - **source**: 'media' | 'screen'
     - **mediaStream**: MediaStream
 
-  A method to add and store a MediaStream object to the peer which returns a stream object. The benefit of storing and adding a MediaStream object to the peer is to keep track for every MediaStream available both from the local and remote peers. When the data `origin` value is `local`, it will try to reconfiguring the connection and trigger peer [negotiationneeded event](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/negotiationneeded_event). It requires key which is an id or any key to help retrieving the data.
+  A method to add and store a MediaStream object to the peer which returns a stream object. The benefit of storing and adding a MediaStream object to the peer is to keep track for every MediaStream available both from the local and remote peers. When the data `origin` value is `local`, it will try to reconfiguring the connection and trigger peer [negotiationneeded event](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/negotiationneeded_event). It requires key which is an id or any key to help retrieving the data. This method will return a promise.
 
 - `peer.removeStream(key)`
 
