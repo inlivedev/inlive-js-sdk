@@ -36,7 +36,7 @@ export const createFetcher = () => {
       } else {
         const textResponse = await response.text()
         throw new Error(
-          `Cannot process response from the server. ${textResponse}.`
+          `Cannot process response from the server because of unsupported content-type. ${textResponse}.`
         )
       }
     }
