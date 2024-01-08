@@ -340,14 +340,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       if (!mediaTrack) return
 
-      for (const sender of peerConnection.getSenders()) {
-        if (!sender.track) return
+      const transceivers = peerConnection.getTransceivers()
 
-        if (
-          sender.track.kind === mediaTrack.kind &&
-          sender.track.id === mediaTrack.id
-        ) {
-          sender.track.enabled = enabled
+      for (const transceiver of transceivers) {
+        const track = transceiver.sender.track
+        if (!track) return
+
+        if (track.kind === mediaTrack.kind && track.id === mediaTrack.id) {
+          track.enabled = enabled
         }
       }
     }
