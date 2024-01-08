@@ -112,7 +112,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {string} key
      * @param {import('../stream/stream-types.js').RoomStreamType.AddStreamParameters} data
      */
-    addStream = (key, data) => {
+    addStream = async (key, data) => {
       this._streams.validateKey(key)
       this._streams.validateStream(data)
 
@@ -124,7 +124,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._streams.addStream(key, stream)
 
       if (stream.origin === 'local') {
-        this._addLocalMediaStream(stream)
+        await this._addLocalMediaStream(stream)
       }
 
       this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
@@ -644,7 +644,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       const draftStream = this._streams.getDraft(mediaStream.id) || {}
 
-      this.addStream(mediaStream.id, {
+      await this.addStream(mediaStream.id, {
         clientId: draftStream.clientId || '',
         name: draftStream.name || '',
         origin: draftStream.origin || 'remote',
