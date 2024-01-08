@@ -18,7 +18,7 @@ export const createFetcher = () => {
      */
     _resolution = async (response) => {
       if (!response) {
-        throw new Error(`Cannot process response from the server`)
+        throw new Error(`No response received from the server.`)
       }
 
       const contentType = response.headers.get('content-type')
@@ -34,7 +34,10 @@ export const createFetcher = () => {
           throw new Error(`Cannot process response from the server: ${error}`)
         }
       } else {
-        throw new Error(`Cannot process response from the server`)
+        const textResponse = await response.text()
+        throw new Error(
+          `Cannot process response from the server. ${textResponse}.`
+        )
       }
     }
 
