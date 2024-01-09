@@ -4,7 +4,7 @@ export const REASONS = {
   PEER_CLOSED: 'peerClosed',
   NOT_FOUND: 'notfound',
   RECONNECT: 'reconnect',
-  UNKNOWN: 'unknown',
+  TIMEOUT: 'timeout',
 }
 
 /**
@@ -121,10 +121,19 @@ export const createChannel = ({ api, event, peer, streams }) => {
     }
 
     _onError = async () => {
+      const errorTime = Date.now()
+
       const onError = async () => {
+        if (errorTime - Date.now() < 5000) {
+          this.disconnect()
+          this._event.emit(RoomEvent.CHANNEL_CLOSED, {
+            reason: REASONS.TIMEOUT,
+          })
+        }
         if (!navigator.onLine) {
           setTimeout(() => {
             onError()
+            return
           }, 1000)
         } else {
           const errorTime = Date.now()
