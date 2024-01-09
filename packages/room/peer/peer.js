@@ -73,8 +73,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     connect = async (roomId, clientId, peerConfig) => {
       if (this._peerConnection) return
 
+      const bitrateConfig = peerConfig?.bitrate || {}
+
       this._roomId = roomId
       this._clientId = clientId
+      this._maxBitrate = bitrateConfig.maxBitrate || this._maxBitrate
+      this._midBitrate = bitrateConfig.midBitrate || this._midBitrate
+      this._minBitrate = bitrateConfig.minBitrate || this._minBitrate
 
       const codecPreferences = Array.isArray(peerConfig?.codecs)
         ? peerConfig.codecs
@@ -436,19 +441,32 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           config.media.audio.red &&
           stream.source === 'media'
         ) {
+          /** @type {RTCRtpCodecCapability[]} */
           const audioPreferedCodecs = []
 
-          for (const audioCodec of audioCodecs) {
+          if (this._audioCodecPreferences.length > 0) {
             for (const audioCodecPreference of this._audioCodecPreferences) {
-              if (audioCodec.mimeType === audioCodecPreference) {
+              for (const audioCodec of audioCodecs) {
+                if (audioCodec.mimeType === audioCodecPreference) {
+                  audioPreferedCodecs.push(audioCodec)
+                }
+              }
+            }
+          } else {
+            for (const audioCodec of audioCodecs) {
+              if (audioCodec.mimeType === 'audio/red') {
+                audioPreferedCodecs.push(audioCodec)
+              }
+            }
+
+            for (const audioCodec of audioCodecs) {
+              if (audioCodec.mimeType === 'audio/opus') {
                 audioPreferedCodecs.push(audioCodec)
               }
             }
           }
 
-          if (audioTsvr.setCodecPreferences !== undefined) {
-            audioTsvr.setCodecPreferences(audioPreferedCodecs)
-          }
+          audioTsvr.setCodecPreferences(audioPreferedCodecs)
         }
 
         audioTrack.addEventListener('ended', () => {
