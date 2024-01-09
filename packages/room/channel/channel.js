@@ -124,7 +124,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
       const errorTime = Date.now()
 
       const onError = async () => {
-        if (errorTime - Date.now() < 5000) {
+        if (errorTime - Date.now() > 5000) {
           this.disconnect()
           this._event.emit(RoomEvent.CHANNEL_CLOSED, {
             reason: REASONS.TIMEOUT,
