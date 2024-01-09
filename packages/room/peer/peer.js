@@ -86,9 +86,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         : []
 
       for (const codec of codecPreferences) {
-        if (codec.includes('audio')) {
+        if (codec.toLowerCase().includes('audio')) {
           this._audioCodecPreferences.push(codec)
-        } else if (codec.includes('video')) {
+        } else if (codec.toLowerCase().includes('video')) {
           this._videoCodecPreferences.push(codec)
         }
       }
