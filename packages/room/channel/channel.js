@@ -138,7 +138,6 @@ export const createChannel = ({ api, event, peer, streams }) => {
         } else {
           const errorTime = Date.now()
 
-          console.log('checking if client is still in room...')
           if (this._roomId && this._clientId) {
             try {
               const response = await this._api.getClient(
@@ -147,20 +146,11 @@ export const createChannel = ({ api, event, peer, streams }) => {
               )
 
               if (response.code === 404) {
-                console.log(
-                  'client was removed from room, client need to reconnect manually'
-                )
                 this.disconnect()
                 this._event.emit(RoomEvent.CHANNEL_CLOSED, {
                   reason: REASONS.NOT_FOUND,
                 })
                 return
-              }
-
-              if (response.code === 200) {
-                console.log(
-                  'client is still in room, will reconnect automatically'
-                )
               }
 
               // Reconnect
