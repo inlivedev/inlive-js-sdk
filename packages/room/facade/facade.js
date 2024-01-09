@@ -65,9 +65,10 @@ export const createFacade = ({
           /**
            * @param {string} roomId
            * @param {string} clientId
+           * @param {import('../peer/peer-types.js').RoomPeerType.PeerConfig} [config]
            */
-          async (roomId, clientId) => {
-            await peer.connect(roomId, clientId)
+          async (roomId, clientId, config) => {
+            await peer.connect(roomId, clientId, config)
             return peer
           },
         createDataChannel: api.createDataChannel,
