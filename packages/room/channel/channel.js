@@ -129,6 +129,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
           this._event.emit(RoomEvent.CHANNEL_CLOSED, {
             reason: REASONS.TIMEOUT,
           })
+          return
         }
         if (!navigator.onLine) {
           setTimeout(() => {
