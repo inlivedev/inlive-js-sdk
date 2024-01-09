@@ -484,28 +484,41 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       let svc = false
 
-      let preferedCodecs = []
-
-      let videoCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs
+      /** @type {RTCRtpCodecCapability[]} */
+      const videoPreferedCodecs = []
+      const videoCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs
 
       if (videoCodecs) {
-        for (const videoCodec of videoCodecs) {
-          for (const codecPreference of this._videoCodecPreferences) {
-            if (videoCodec.mimeType === codecPreference) {
-              preferedCodecs.push(videoCodec)
+        if (this._videoCodecPreferences.length > 0) {
+          for (const videoCodecPreference of this._videoCodecPreferences) {
+            for (const videoCodec of videoCodecs) {
+              if (videoCodec.mimeType === videoCodecPreference) {
+                videoPreferedCodecs.push(videoCodec)
 
-              if (videoCodec.mimeType === 'video/VP9') {
-                svc = true
+                if (videoCodec.mimeType === 'video/VP9') {
+                  svc = true
+                }
               }
             }
           }
-        }
 
-        // push the rest of the codecs
-        for (const codec of videoCodecs) {
-          for (const preferedCodec of preferedCodecs) {
-            if (codec.mimeType !== preferedCodec.mimeType) {
-              preferedCodecs.push(codec)
+          // push the rest of the codecs
+          for (const videoCodec of videoCodecs) {
+            if (!this._videoCodecPreferences.includes(videoCodec.mimeType)) {
+              videoPreferedCodecs.push(videoCodec)
+            }
+          }
+        } else {
+          for (const videoCodec of videoCodecs) {
+            if (videoCodec.mimeType === 'video/H264') {
+              videoPreferedCodecs.push(videoCodec)
+            }
+          }
+
+          // push the rest of the codecs
+          for (const videoCodec of videoCodecs) {
+            if (videoCodec.mimeType !== 'video/H264') {
+              videoPreferedCodecs.push(videoCodec)
             }
           }
         }
@@ -559,9 +572,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         ? this._peerConnection.addTransceiver(videoTrack, scaleableInit)
         : this._peerConnection.addTransceiver(videoTrack, simulcastInit)
 
-      if (tcvr.setCodecPreferences !== undefined) {
-        tcvr.setCodecPreferences(preferedCodecs)
-      }
+      tcvr.setCodecPreferences(videoPreferedCodecs)
 
       videoTrack.addEventListener('ended', () => {
         if (!this._peerConnection || !tcvr.sender) return
