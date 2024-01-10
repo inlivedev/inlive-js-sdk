@@ -31,6 +31,16 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _pendingObservedVideo
     /** @type {Array<RTCIceCandidate>} */
     _pendingIceCandidates
+    /** @type {string[]} */
+    _audioCodecPreferences
+    /** @type {string[]} */
+    _videoCodecPreferences
+    /** @type {number} */
+    _maxBitrate
+    /** @type {number} */
+    _midBitrate
+    /** @type {number} */
+    _minBitrate
 
     constructor() {
       super()
@@ -47,18 +57,41 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._videoObserver = null
       this._pendingObservedVideo = []
       this._pendingIceCandidates = []
+      this._audioCodecPreferences = []
+      this._videoCodecPreferences = []
+      this._maxBitrate = 1200 * 1000
+      this._midBitrate = 500 * 1000
+      this._minBitrate = 150 * 1000
     }
 
     /**
      * Initiate a peer connection
      * @param {string} roomId
      * @param {string} clientId
+     * @param {import('./peer-types.js').RoomPeerType.PeerConfig} [peerConfig]
      */
-    connect = async (roomId, clientId) => {
+    connect = async (roomId, clientId, peerConfig) => {
       if (this._peerConnection) return
+
+      const bitrateConfig = peerConfig?.bitrate || {}
 
       this._roomId = roomId
       this._clientId = clientId
+      this._maxBitrate = bitrateConfig.maxBitrate || this._maxBitrate
+      this._midBitrate = bitrateConfig.midBitrate || this._midBitrate
+      this._minBitrate = bitrateConfig.minBitrate || this._minBitrate
+
+      const codecPreferences = Array.isArray(peerConfig?.codecs)
+        ? peerConfig.codecs
+        : []
+
+      for (const codec of codecPreferences) {
+        if (codec.toLowerCase().includes('audio')) {
+          this._audioCodecPreferences.push(codec)
+        } else if (codec.toLowerCase().includes('video')) {
+          this._videoCodecPreferences.push(codec)
+        }
+      }
 
       this._peerConnection = new RTCPeerConnection({
         iceServers: config.webrtc.iceServers,
@@ -112,7 +145,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {string} key
      * @param {import('../stream/stream-types.js').RoomStreamType.AddStreamParameters} data
      */
-    addStream = async (key, data) => {
+    addStream = (key, data) => {
       this._streams.validateKey(key)
       this._streams.validateStream(data)
 
@@ -124,7 +157,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._streams.addStream(key, stream)
 
       if (stream.origin === 'local') {
-        await this._addLocalMediaStream(stream)
+        this._addLocalMediaStream(stream)
       }
 
       this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
@@ -388,12 +421,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /**
      * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
      */
-    _addLocalMediaStream = async (stream) => {
+    _addLocalMediaStream = (stream) => {
       if (!this._peerConnection) return
 
       /** @type {MediaStreamTrack | undefined} */
       const audioTrack = stream.mediaStream.getAudioTracks()[0]
-      const room = await this.getRoom()
 
       if (audioTrack) {
         const audioTsvr = this._peerConnection.addTransceiver(audioTrack, {
@@ -409,21 +441,32 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           config.media.audio.red &&
           stream.source === 'media'
         ) {
+          /** @type {RTCRtpCodecCapability[]} */
           const audioPreferedCodecs = []
 
-          const codecPreferences = room.data.codecPreferences
+          if (this._audioCodecPreferences.length > 0) {
+            for (const audioCodecPreference of this._audioCodecPreferences) {
+              for (const audioCodec of audioCodecs) {
+                if (audioCodec.mimeType === audioCodecPreference) {
+                  audioPreferedCodecs.push(audioCodec)
+                }
+              }
+            }
+          } else {
+            for (const audioCodec of audioCodecs) {
+              if (audioCodec.mimeType === 'audio/red') {
+                audioPreferedCodecs.push(audioCodec)
+              }
+            }
 
-          for (const codec of audioCodecs) {
-            for (const codecPreference of codecPreferences) {
-              if (codec.mimeType === codecPreference) {
-                audioPreferedCodecs.push(codec)
+            for (const audioCodec of audioCodecs) {
+              if (audioCodec.mimeType === 'audio/opus') {
+                audioPreferedCodecs.push(audioCodec)
               }
             }
           }
 
-          if (audioTsvr.setCodecPreferences !== undefined) {
-            audioTsvr.setCodecPreferences(audioPreferedCodecs)
-          }
+          audioTsvr.setCodecPreferences(audioPreferedCodecs)
         }
 
         audioTrack.addEventListener('ended', () => {
@@ -441,28 +484,42 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       let svc = false
 
-      let preferedCodecs = []
+      /** @type {RTCRtpCodecCapability[]} */
+      const videoPreferedCodecs = []
+      const videoCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs
 
-      let codecs = RTCRtpReceiver.getCapabilities('video')?.codecs
+      if (videoCodecs) {
+        if (this._videoCodecPreferences.length > 0) {
+          for (const videoCodecPreference of this._videoCodecPreferences) {
+            for (const videoCodec of videoCodecs) {
+              if (videoCodec.mimeType === videoCodecPreference) {
+                videoPreferedCodecs.push(videoCodec)
 
-      if (codecs) {
-        for (const codec of codecs) {
-          for (const codecPreference of room.data.codecPreferences) {
-            if (codec.mimeType === codecPreference) {
-              preferedCodecs.push(codec)
-
-              if (codec.mimeType === 'video/VP9') {
-                svc = true
+                if (videoCodec.mimeType === 'video/VP9') {
+                  svc = true
+                }
               }
             }
           }
-        }
 
-        // push the rest of the codecs
-        for (const codec of codecs) {
-          for (const preferedCodec of preferedCodecs) {
-            if (codec.mimeType !== preferedCodec.mimeType) {
-              preferedCodecs.push(codec)
+          // push the rest of the codecs
+          for (const videoCodec of videoCodecs) {
+            if (!this._videoCodecPreferences.includes(videoCodec.mimeType)) {
+              videoPreferedCodecs.push(videoCodec)
+            }
+          }
+        } else {
+          for (const videoCodec of videoCodecs) {
+            if (videoCodec.mimeType === 'video/VP9') {
+              videoPreferedCodecs.push(videoCodec)
+              svc = true
+            }
+          }
+
+          // push the rest of the codecs
+          for (const videoCodec of videoCodecs) {
+            if (videoCodec.mimeType !== 'video/VP9') {
+              videoPreferedCodecs.push(videoCodec)
             }
           }
         }
@@ -474,7 +531,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         streams: [stream.mediaStream],
         sendEncodings: [
           {
-            maxBitrate: room.data.bitrates.videoHigh,
+            maxBitrate: this._maxBitrate,
             scalabilityMode: 'L3T3',
             maxFramerate: 30,
           },
@@ -492,7 +549,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           // for firefox order matters... first high resolution, then scaled resolutions...
           {
             rid: 'high',
-            maxBitrate: room.data.bitrates.videoHigh,
+            maxBitrate: this._maxBitrate,
             maxFramerate: 30,
           },
           {
@@ -500,13 +557,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             // eslint-disable-next-line unicorn/no-zero-fractions
             scaleResolutionDownBy: 2.0,
             maxFramerate: 30,
-            maxBitrate: room.data.bitrates.videoMid,
+            maxBitrate: this._midBitrate,
           },
           {
             rid: 'low',
             // eslint-disable-next-line unicorn/no-zero-fractions
             scaleResolutionDownBy: 4.0,
-            maxBitrate: room.data.bitrates.videoLow,
+            maxBitrate: this._minBitrate,
             maxFramerate: 30,
           },
         ]
@@ -516,9 +573,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         ? this._peerConnection.addTransceiver(videoTrack, scaleableInit)
         : this._peerConnection.addTransceiver(videoTrack, simulcastInit)
 
-      if (tcvr.setCodecPreferences !== undefined) {
-        tcvr.setCodecPreferences(preferedCodecs)
-      }
+      tcvr.setCodecPreferences(videoPreferedCodecs)
 
       videoTrack.addEventListener('ended', () => {
         if (!this._peerConnection || !tcvr.sender) return
@@ -644,7 +699,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       const draftStream = this._streams.getDraft(mediaStream.id) || {}
 
-      await this.addStream(mediaStream.id, {
+      this.addStream(mediaStream.id, {
         clientId: draftStream.clientId || '',
         name: draftStream.name || '',
         origin: draftStream.origin || 'remote',
