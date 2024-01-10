@@ -512,6 +512,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           for (const videoCodec of videoCodecs) {
             if (videoCodec.mimeType === 'video/VP9') {
               videoPreferedCodecs.push(videoCodec)
+              svc = true
             }
           }
 
