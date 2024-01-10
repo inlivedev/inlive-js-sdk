@@ -510,14 +510,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         } else {
           for (const videoCodec of videoCodecs) {
-            if (videoCodec.mimeType === 'video/H264') {
+            if (videoCodec.mimeType === 'video/VP9') {
               videoPreferedCodecs.push(videoCodec)
             }
           }
 
           // push the rest of the codecs
           for (const videoCodec of videoCodecs) {
-            if (videoCodec.mimeType !== 'video/H264') {
+            if (videoCodec.mimeType !== 'video/VP9') {
               videoPreferedCodecs.push(videoCodec)
             }
           }
