@@ -4,6 +4,7 @@ export const REASONS = {
   PEER_CLOSED: 'peerClosed',
   NOT_FOUND: 'notfound',
   RECONNECT: 'reconnect',
+  TIMEOUT: 'timeout',
 }
 
 /**
@@ -122,26 +123,56 @@ export const createChannel = ({ api, event, peer, streams }) => {
     _onError = async () => {
       const errorTime = Date.now()
 
-      if (this._roomId && this._clientId) {
-        const response = await this._api.getClient(this._roomId, this._clientId)
-
-        if (response.code === 404) {
+      const onError = async () => {
+        if (errorTime - Date.now() > 5000) {
           this.disconnect()
           this._event.emit(RoomEvent.CHANNEL_CLOSED, {
-            reason: REASONS.NOT_FOUND,
+            reason: REASONS.TIMEOUT,
           })
           return
         }
-
-        // Reconnect
-        if (errorTime - this._startTime < 1000) {
+        if (!navigator.onLine) {
           setTimeout(() => {
-            this._reconnect()
+            onError()
+            return
           }, 1000)
         } else {
-          this._reconnect()
+          const errorTime = Date.now()
+
+          if (this._roomId && this._clientId) {
+            try {
+              const response = await this._api.getClient(
+                this._roomId,
+                this._clientId
+              )
+
+              if (response.code === 404) {
+                this.disconnect()
+                this._event.emit(RoomEvent.CHANNEL_CLOSED, {
+                  reason: REASONS.NOT_FOUND,
+                })
+                return
+              }
+
+              // Reconnect
+              if (errorTime - this._startTime < 1000) {
+                setTimeout(() => {
+                  this._reconnect()
+                }, 1000)
+              } else {
+                this._reconnect()
+              }
+            } catch (error) {
+              if (error instanceof Error && error.name === 'NetworkError') {
+                setTimeout(() => {
+                  onError()
+                }, 1000)
+              }
+            }
+          }
         }
       }
+      onError()
     }
 
     /**
