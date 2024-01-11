@@ -40,14 +40,16 @@ export declare namespace RoomPeerType {
   }
 
   type BitrateConfig = {
-    minBitrate?: number
+    lowBitrate?: number
     midBitrate?: number
-    maxBitrate?: number
+    highBitrate?: number
   }
 
   type PeerConfig = {
     codecs?: string[]
     bitrate?: BitrateConfig
+    scalabilityMode?: string
+    maxFramerate?: number
   }
 
   type RTCRtpSVCEncodingParameters = RTCRtpEncodingParameters & {

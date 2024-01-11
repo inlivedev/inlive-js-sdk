@@ -36,11 +36,15 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /** @type {string[]} */
     _videoCodecPreferences
     /** @type {number} */
-    _maxBitrate
+    _highBitrate
     /** @type {number} */
     _midBitrate
     /** @type {number} */
-    _minBitrate
+    _lowBitrate
+    /** @type {number} */
+    _maxFramerate
+    /** @type {string} */
+    _scalabilityMode
 
     constructor() {
       super()
@@ -59,9 +63,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._pendingIceCandidates = []
       this._audioCodecPreferences = []
       this._videoCodecPreferences = []
-      this._maxBitrate = 1200 * 1000
+      this._highBitrate = 1200 * 1000
       this._midBitrate = 500 * 1000
-      this._minBitrate = 150 * 1000
+      this._lowBitrate = 150 * 1000
+      this._maxFramerate = 30
+      this._scalabilityMode = 'L3T1'
     }
 
     /**
@@ -77,9 +83,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       this._roomId = roomId
       this._clientId = clientId
-      this._maxBitrate = bitrateConfig.maxBitrate || this._maxBitrate
+      this._highBitrate = bitrateConfig.highBitrate || this._highBitrate
       this._midBitrate = bitrateConfig.midBitrate || this._midBitrate
-      this._minBitrate = bitrateConfig.minBitrate || this._minBitrate
+      this._lowBitrate = bitrateConfig.lowBitrate || this._lowBitrate
+      this._maxFramerate = peerConfig?.maxFramerate || this._maxFramerate
+      this._scalabilityMode =
+        peerConfig?.scalabilityMode || this._scalabilityMode
 
       const codecPreferences = Array.isArray(peerConfig?.codecs)
         ? peerConfig.codecs
@@ -531,9 +540,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         streams: [stream.mediaStream],
         sendEncodings: [
           {
-            maxBitrate: this._maxBitrate,
-            scalabilityMode: 'L3T3',
-            maxFramerate: 30,
+            maxBitrate: this._highBitrate,
+            scalabilityMode: this._scalabilityMode,
+            maxFramerate: this._maxFramerate,
           },
         ],
       }
@@ -549,22 +558,22 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           // for firefox order matters... first high resolution, then scaled resolutions...
           {
             rid: 'high',
-            maxBitrate: this._maxBitrate,
-            maxFramerate: 30,
+            maxBitrate: this._highBitrate,
+            maxFramerate: this._maxFramerate,
           },
           {
             rid: 'mid',
             // eslint-disable-next-line unicorn/no-zero-fractions
             scaleResolutionDownBy: 2.0,
-            maxFramerate: 30,
+            maxFramerate: this._maxFramerate,
             maxBitrate: this._midBitrate,
           },
           {
             rid: 'low',
             // eslint-disable-next-line unicorn/no-zero-fractions
             scaleResolutionDownBy: 4.0,
-            maxBitrate: this._minBitrate,
-            maxFramerate: 30,
+            maxBitrate: this._lowBitrate,
+            maxFramerate: this._maxFramerate,
           },
         ]
       }
