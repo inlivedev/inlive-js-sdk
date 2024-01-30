@@ -6,6 +6,11 @@ export const api = {
 
 export const webrtc = {
   iceServers: [
+    // Disable stun server because we deploy behind stunner gateway
+    // https://github.com/l7mp/stunner
+    // {
+    //   urls: 'stun:stun.inlive.app:3478',
+    // },
     {
       urls: 'turn:turn.inlive.app:3478',
       username: 'inlive',
