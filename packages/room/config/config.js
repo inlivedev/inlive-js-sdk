@@ -11,9 +11,6 @@ export const webrtc = {
       username: 'inlive',
       credential: 'inlivesdkturn',
     },
-    {
-      urls: 'stun:turn.inlive.app:3478',
-    },
   ],
 }
 
