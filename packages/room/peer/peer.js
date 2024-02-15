@@ -4,6 +4,7 @@ import {
   EDGE,
   OPERA,
   SAFARI,
+  FIREFOX,
 } from '../../internal/utils/get-browser-name.js'
 import { VideoObserver } from '../observer/video-observer.js'
 import { BandwidthController } from '../bandwidth-controller/bandwidth-controller.js'
@@ -506,7 +507,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
               if (videoCodec.mimeType === videoCodecPreference) {
                 videoPreferedCodecs.push(videoCodec)
 
-                if (videoCodec.mimeType === 'video/VP9') {
+                if (
+                  videoCodec.mimeType === 'video/VP9' &&
+                  browserName !== FIREFOX
+                ) {
                   svc = true
                 }
               }
@@ -523,7 +527,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           for (const videoCodec of videoCodecs) {
             if (videoCodec.mimeType === 'video/VP9') {
               videoPreferedCodecs.push(videoCodec)
-              svc = true
+
+              if (browserName !== FIREFOX) {
+                svc = true
+              }
             }
           }
 
