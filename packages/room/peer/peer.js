@@ -475,7 +475,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             }
           }
 
-          audioTsvr.setCodecPreferences(audioPreferedCodecs)
+          if ('setCodecPreferences' in audioTsvr) {
+            audioTsvr.setCodecPreferences(audioPreferedCodecs)
+          }
         }
 
         audioTrack.addEventListener('ended', () => {
@@ -582,7 +584,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         ? this._peerConnection.addTransceiver(videoTrack, scaleableInit)
         : this._peerConnection.addTransceiver(videoTrack, simulcastInit)
 
-      tcvr.setCodecPreferences(videoPreferedCodecs)
+      if ('setCodecPreferences' in tcvr) {
+        tcvr.setCodecPreferences(videoPreferedCodecs)
+      }
 
       videoTrack.addEventListener('ended', () => {
         if (!this._peerConnection || !tcvr.sender) return
