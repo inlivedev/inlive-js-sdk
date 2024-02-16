@@ -509,7 +509,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
                 if (
                   videoCodec.mimeType === 'video/VP9' &&
-                  browserName !== FIREFOX
+                  browserName !== FIREFOX &&
+                  stream.source !== 'media'
                 ) {
                   svc = true
                 }
@@ -528,7 +529,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             if (videoCodec.mimeType === 'video/VP9') {
               videoPreferedCodecs.push(videoCodec)
 
-              if (browserName !== FIREFOX) {
+              if (browserName !== FIREFOX && stream.source !== 'media') {
                 svc = true
               }
             }
