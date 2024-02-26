@@ -84,6 +84,10 @@ export const createChannel = ({ api, event, peer, streams }) => {
         this._onTracksAvailable
       )
       this._channel.addEventListener('meta_changed', this._onMetaChanged)
+      this._channel.addEventListener(
+        'allow_negotiation',
+        this._onAllowNegotiation
+      )
     }
 
     _removeEventListener = () => {
@@ -99,6 +103,10 @@ export const createChannel = ({ api, event, peer, streams }) => {
         this._onTracksAvailable
       )
       this._channel.removeEventListener('meta_changed', this._onMetaChanged)
+      this._channel.removeEventListener(
+        'allow_negotiation',
+        this._onAllowNegotiation
+      )
     }
 
     _reconnect = () => {
@@ -305,6 +313,11 @@ export const createChannel = ({ api, event, peer, streams }) => {
           data: data,
         })
       }
+    }
+
+    _onAllowNegotiation = async () => {
+      if (!this._roomId || !this._clientId) return
+      this._peer.negotiate()
     }
   }
 
