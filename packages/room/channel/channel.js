@@ -317,7 +317,6 @@ export const createChannel = ({ api, event, peer, streams }) => {
 
     _onAllowNegotiation = async () => {
       if (!this._roomId || !this._clientId) return
-      console.log('allow_negotiation, re-running negotiation')
       this._peer.negotiate()
     }
   }
