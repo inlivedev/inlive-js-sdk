@@ -30,6 +30,7 @@ export declare namespace RoomPeerType {
     observeVideo: (video: HTMLVideoElement) => void
     unobserveVideo: (video: HTMLVideoElement) => void
     negotiate: () => void
+    pendingNegotiation: boolean
   }
 
   type PeerDependencies = {

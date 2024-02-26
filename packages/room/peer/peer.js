@@ -32,8 +32,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _pendingObservedVideo
     /** @type {Array<RTCIceCandidate>} */
     _pendingIceCandidates
-    /** @type {boolean} */
-    _pendingNegotiation
     /** @type {string[]} */
     _audioCodecPreferences
     /** @type {string[]} */
@@ -48,6 +46,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _maxFramerate
     /** @type {string} */
     _scalabilityMode
+    /** @type {boolean} */
+    pendingNegotiation
 
     constructor() {
       super()
@@ -64,7 +64,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._videoObserver = null
       this._pendingObservedVideo = []
       this._pendingIceCandidates = []
-      this._pendingNegotiation = false
+      this.pendingNegotiation = false
       this._audioCodecPreferences = []
       this._videoCodecPreferences = []
       this._highBitrate = 1200 * 1000
@@ -404,7 +404,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       )
 
       if (!allowNegotiateResponse.ok) {
-        this._pendingNegotiation = true
+        this.pendingNegotiation = true
         return
       }
 
@@ -630,7 +630,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       )
 
       if (!allowNegotiateResponse.ok) {
-        this._pendingNegotiation = true
+        this.pendingNegotiation = true
         return
       }
 
@@ -657,7 +657,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         const { answer } = negotiateResponse.data
         const sdpAnswer = new RTCSessionDescription(answer)
         await this._peerConnection.setRemoteDescription(sdpAnswer)
-        this._pendingNegotiation = true
+        this.pendingNegotiation = true
 
         // add pending ice candidates if any
         for (const candidate of this._pendingIceCandidates) {
@@ -822,7 +822,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         observeVideo: peer.observeVideo,
         unobserveVideo: peer.unobserveVideo,
         negotiate: peer.negotiate,
-        pendingNegotiation: peer._pendingNegotiation,
+        pendingNegotiation: peer.pendingNegotiation,
       }
     },
   }
