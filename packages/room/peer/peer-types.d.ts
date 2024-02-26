@@ -29,6 +29,7 @@ export declare namespace RoomPeerType {
     replaceTrack: (track: MediaStreamTrack) => Promise<void>
     observeVideo: (video: HTMLVideoElement) => void
     unobserveVideo: (video: HTMLVideoElement) => void
+    negotiate: () => void
   }
 
   type PeerDependencies = {

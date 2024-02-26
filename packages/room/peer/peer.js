@@ -32,6 +32,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _pendingObservedVideo
     /** @type {Array<RTCIceCandidate>} */
     _pendingIceCandidates
+    /** @type {boolean} */
+    _pendingNegotiation
     /** @type {string[]} */
     _audioCodecPreferences
     /** @type {string[]} */
@@ -62,6 +64,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._videoObserver = null
       this._pendingObservedVideo = []
       this._pendingIceCandidates = []
+      this._pendingNegotiation = false
       this._audioCodecPreferences = []
       this._videoCodecPreferences = []
       this._highBitrate = 1200 * 1000
@@ -316,10 +319,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         this._onIceConnectionStateChange
       )
 
-      this._peerConnection.addEventListener(
-        'negotiationneeded',
-        this._onNegotiationNeeded
-      )
+      this._peerConnection.addEventListener('negotiationneeded', this.negotiate)
 
       this._peerConnection.addEventListener(
         'icecandidate',
@@ -343,7 +343,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       this._peerConnection.removeEventListener(
         'negotiationneeded',
-        this._onNegotiationNeeded
+        this.negotiate
       )
 
       this._peerConnection.removeEventListener(
@@ -403,7 +403,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         this._clientId
       )
 
-      if (!allowNegotiateResponse.ok) return
+      if (!allowNegotiateResponse.ok) {
+        this._pendingNegotiation = true
+        return
+      }
 
       try {
         const offer = await this._peerConnection.createOffer({
@@ -449,7 +452,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         if (
           audioCodecs &&
           config.media.audio.red &&
-          stream.source === 'media'
+          stream.source === 'media' &&
+          'setCodecPreferences' in audioTsvr
         ) {
           /** @type {RTCRtpCodecCapability[]} */
           const audioPreferedCodecs = []
@@ -475,10 +479,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
               }
             }
           }
-
-          if ('setCodecPreferences' in audioTsvr) {
-            audioTsvr.setCodecPreferences(audioPreferedCodecs)
-          }
+          audioTsvr.setCodecPreferences(audioPreferedCodecs)
         }
 
         audioTrack.addEventListener('ended', () => {
@@ -510,7 +511,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
                 if (
                   videoCodec.mimeType === 'video/VP9' &&
                   browserName !== FIREFOX &&
-                  stream.source !== 'media'
+                  stream.source !== 'screen'
                 ) {
                   svc = true
                 }
@@ -615,15 +616,23 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
     }
 
-    _onNegotiationNeeded = async () => {
+    /**
+     * negotiate will start negotiation process
+     */
+    negotiate = async () => {
       if (!this._roomId || !this._clientId) return
+
+      if (!this._peerConnection) return
 
       const allowNegotiateResponse = await this._api.checkNegotiateAllowed(
         this._roomId,
         this._clientId
       )
 
-      if (!allowNegotiateResponse.ok || !this._peerConnection) return
+      if (!allowNegotiateResponse.ok) {
+        this._pendingNegotiation = true
+        return
+      }
 
       try {
         const offer = await this._peerConnection.createOffer()
@@ -648,6 +657,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         const { answer } = negotiateResponse.data
         const sdpAnswer = new RTCSessionDescription(answer)
         await this._peerConnection.setRemoteDescription(sdpAnswer)
+        this._pendingNegotiation = true
 
         // add pending ice candidates if any
         for (const candidate of this._pendingIceCandidates) {
@@ -811,6 +821,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         replaceTrack: peer.replaceTrack,
         observeVideo: peer.observeVideo,
         unobserveVideo: peer.unobserveVideo,
+        negotiate: peer.negotiate,
       }
     },
   }

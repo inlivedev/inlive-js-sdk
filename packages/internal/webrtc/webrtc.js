@@ -18,12 +18,11 @@ const webrtc = (() => {
 
   /**
    * Open and create a new peer connection
-   *
    * @returns {RTCPeerConnection} Returns a new RTCPeerConnection object
    */
   const openConnection = () => {
     const peerConnection = new RTCPeerConnection({
-      iceServers,
+      iceServers: iceServers,
     })
 
     return peerConnection
@@ -46,7 +45,6 @@ const webrtc = (() => {
 
   /**
    * Create a local offer and gather ICE connection
-   *
    * @param {RTCPeerConnection | null} peerConnection - The RTCPeerConnection object
    */
   const createLocalOffer = async (peerConnection) => {
