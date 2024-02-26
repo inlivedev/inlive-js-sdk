@@ -822,6 +822,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         observeVideo: peer.observeVideo,
         unobserveVideo: peer.unobserveVideo,
         negotiate: peer.negotiate,
+        pendingNegotiation: peer._pendingNegotiation,
       }
     },
   }
