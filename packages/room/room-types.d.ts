@@ -1,42 +1,16 @@
+import { api, webrtc, media } from './config/config.js'
+
 export declare namespace RoomType {
   type Config = {
-    api: {
-      baseUrl: string
-      version: string
-      apiKey: string
-    }
-    webrtc: {
-      iceServers: RTCIceServer[]
-    }
-
-    media: {
-      video: {
-        width: number
-        height: number
-        frameRate: number
-        facingMode: string
-        aspectRatio: number
-        maxBitrate: number
-        codec: string
-      }
-      audio: {
-        echoCancellation: boolean
-        noiseSuppression: boolean
-        autoGainControl: boolean
-        red: boolean
-      }
-    }
+    api: typeof api
+    webrtc: typeof webrtc
+    media: typeof media
   }
 
   type UserConfig = {
-    api?: {
-      baseUrl?: string
-      version?: string
-      apiKey?: string
-    }
-    webrtc?: {
-      iceServers?: RTCIceServer[]
-    }
+    api?: Partial<typeof api>
+    webrtc?: Partial<typeof webrtc>
+    media?: Partial<typeof media>
   }
 
   type BitrateConfigs = {
