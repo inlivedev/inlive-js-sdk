@@ -29,7 +29,7 @@ export declare namespace RoomPeerType {
     replaceTrack: (track: MediaStreamTrack) => Promise<void>
     observeVideo: (video: HTMLVideoElement) => void
     unobserveVideo: (video: HTMLVideoElement) => void
-    negotiate: () => void
+    negotiate: () => Promise<void>
     pendingNegotiation: boolean
   }
 
@@ -39,19 +39,6 @@ export declare namespace RoomPeerType {
     event: RoomEventType.InstanceEvent
     streams: RoomStreamType.InstanceStreams
     config: RoomType.Config
-  }
-
-  type BitrateConfig = {
-    lowBitrate?: number
-    midBitrate?: number
-    highBitrate?: number
-  }
-
-  type PeerConfig = {
-    codecs?: string[]
-    bitrate?: BitrateConfig
-    scalabilityMode?: string
-    maxFramerate?: number
   }
 
   type RTCRtpSVCEncodingParameters = RTCRtpEncodingParameters & {
