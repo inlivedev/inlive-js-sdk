@@ -6,13 +6,7 @@ import { createStreams } from '../stream/streams.js'
 import { createStream } from '../stream/stream.js'
 import { createPeer } from '../peer/peer.js'
 import { createChannel } from '../channel/channel.js'
-import * as defaultConfig from '../config/config.js'
-
-const config = {
-  api: defaultConfig.api,
-  webrtc: defaultConfig.webrtc,
-  media: defaultConfig.media,
-}
+import * as config from '../config/config.js'
 
 /** @param {import('./facade-types.js').RoomFacadeType.FacadeDependencies} facadeDependencies Dependencies for facade module */
 export const createFacade = ({
@@ -65,10 +59,9 @@ export const createFacade = ({
           /**
            * @param {string} roomId
            * @param {string} clientId
-           * @param {import('../peer/peer-types.js').RoomPeerType.PeerConfig} [config]
            */
-          async (roomId, clientId, config) => {
-            await peer.connect(roomId, clientId, config)
+          async (roomId, clientId) => {
+            await peer.connect(roomId, clientId)
             return peer
           },
         createDataChannel: api.createDataChannel,
@@ -81,7 +74,7 @@ export const createFacade = ({
 }
 
 export const facade = createFacade({
-  config,
+  config: config,
   api: { createFetcher, createApi },
   event: { createEvent },
   stream: { createStream, createStreams },
