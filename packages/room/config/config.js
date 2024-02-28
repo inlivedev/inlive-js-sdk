@@ -27,7 +27,7 @@ export const media = {
     maxFramerate: 30,
     facingMode: 'user',
     aspectRatio: 1.777_777_777_8,
-    codecs: ['video/VP9', 'video/VP8', 'video/H264'],
+    videoCodecs: ['video/VP9', 'video/VP8', 'video/H264'],
     simulcast: false,
     bitrate: {
       highBitrate: 1200 * 1000,
@@ -42,7 +42,7 @@ export const media = {
     frameRate: 24,
     maxFramerate: 30,
     aspectRatio: 1.777_777_777_8,
-    codecs: ['video/VP9', 'video/VP8', 'video/H264'],
+    videoCodecs: ['video/VP9', 'video/VP8', 'video/H264'],
     simulcast: false,
     bitrate: {
       highBitrate: 1200 * 1000,
@@ -51,8 +51,8 @@ export const media = {
     },
     scalabilityMode: 'L3T1',
   },
-  audio: {
-    codecs: ['audio/red', 'audio/opus'],
+  microphone: {
+    audioCodecs: ['audio/red', 'audio/opus'],
     echoCancellation: true,
     noiseSuppression: true,
     autoGainControl: true,

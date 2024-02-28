@@ -421,8 +421,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         const preferredAudioCodecs = []
 
         if (stream.source === 'media' && systemAudioCodecs.length > 0) {
-          if (config.media.audio.codecs.length > 0) {
-            for (const audioCodec of config.media.audio.codecs) {
+          if (config.media.microphone.audioCodecs.length > 0) {
+            for (const audioCodec of config.media.microphone.audioCodecs) {
               for (const systemAudioCodec of systemAudioCodecs) {
                 if (
                   systemAudioCodec.mimeType.toLowerCase() ===
@@ -471,8 +471,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         /** @type {RTCRtpCodecCapability[]} */
         const preferredWebcamCodecs = []
 
-        if (config.media.webcam.codecs.length > 0) {
-          for (const webcamCodec of config.media.webcam.codecs) {
+        if (config.media.webcam.videoCodecs.length > 0) {
+          for (const webcamCodec of config.media.webcam.videoCodecs) {
             for (const systemVideoCodec of systemVideoCodecs) {
               if (
                 systemVideoCodec.mimeType.toLowerCase() ===
@@ -570,8 +570,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         /** @type {RTCRtpCodecCapability[]} */
         const preferredScreenCodecs = []
 
-        if (config.media.screen.codecs.length > 0) {
-          for (const screenCodec of config.media.screen.codecs) {
+        if (config.media.screen.videoCodecs.length > 0) {
+          for (const screenCodec of config.media.screen.videoCodecs) {
             for (const systemVideoCodec of systemVideoCodecs) {
               if (
                 systemVideoCodec.mimeType.toLowerCase() ===
