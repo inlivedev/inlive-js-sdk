@@ -171,6 +171,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       if (stream.origin === 'local') {
         this._addLocalMediaStream(stream)
+        this.negotiate()
       }
 
       this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
@@ -186,6 +187,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const removedStream = this._streams.removeStream(key)
 
       if (removedStream) {
+        if (removedStream.origin === 'local') {
+          this.negotiate()
+        }
+
         this._event.emit(RoomEvent.STREAM_REMOVED, { stream: removedStream })
       }
 
@@ -284,6 +289,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           transceiver.sender.track.kind === newTrack.kind
         ) {
           await transceiver.sender.replaceTrack(newTrack)
+          await this.negotiate()
         }
       }
     }
@@ -319,8 +325,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         this._onIceConnectionStateChange
       )
 
-      this._peerConnection.addEventListener('negotiationneeded', this.negotiate)
-
       this._peerConnection.addEventListener(
         'icecandidate',
         this._onIceCandidate
@@ -339,11 +343,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._peerConnection.removeEventListener(
         'iceconnectionstatechange',
         this._onIceConnectionStateChange
-      )
-
-      this._peerConnection.removeEventListener(
-        'negotiationneeded',
-        this.negotiate
       )
 
       this._peerConnection.removeEventListener(
