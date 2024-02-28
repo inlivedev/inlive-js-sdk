@@ -3,9 +3,7 @@ export declare namespace SharedType {
     [key: string]: any
   }
 
-  type DeepPartial<Thing> = Thing extends object
-    ? {
-        [Key in keyof Thing]?: DeepPartial<Thing[Key]>
-      }
-    : Thing
+  type DeepPartial<Thing> = Thing extends any[]
+    ? Thing
+    : { [Key in keyof Thing]?: DeepPartial<Thing[Key]> }
 }
