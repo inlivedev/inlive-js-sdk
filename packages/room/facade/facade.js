@@ -1,4 +1,5 @@
-import merge from 'lodash-es/merge.js'
+import mergeWith from 'lodash-es/mergeWith.js'
+import isArray from 'lodash-es/isArray.js'
 import { createFetcher } from '../api/fetcher.js'
 import { createApi } from '../api/api.js'
 import { createEvent } from '../event/event.js'
@@ -22,10 +23,12 @@ export const createFacade = ({
      * @param {import('../room-types.js').RoomType.UserConfig} userConfig
      */
     createInstance: (userConfig) => {
-      merge(config, userConfig)
+      const mergedConfig = mergeWith({}, config, userConfig, (_, b) => {
+        return isArray(b) ? b : undefined
+      })
 
-      const baseUrl = `${config.api.baseUrl}/${config.api.version}`
-      const apiKey = config.api.apiKey
+      const baseUrl = `${mergedConfig.api.baseUrl}/${mergedConfig.api.version}`
+      const apiKey = mergedConfig.api.apiKey
       const fetcher = createFetcher().createInstance(baseUrl, apiKey)
       const api = createApi({
         fetcher,
@@ -34,7 +37,7 @@ export const createFacade = ({
       const streams = createStreams().createInstance()
       const peer = createPeer({
         api,
-        config,
+        config: mergedConfig,
         createStream,
         event,
         streams,
