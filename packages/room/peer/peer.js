@@ -171,7 +171,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       if (stream.origin === 'local') {
         this._addLocalMediaStream(stream)
-        this.negotiate()
       }
 
       this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
@@ -187,10 +186,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const removedStream = this._streams.removeStream(key)
 
       if (removedStream) {
-        if (removedStream.origin === 'local') {
-          this.negotiate()
-        }
-
         this._event.emit(RoomEvent.STREAM_REMOVED, { stream: removedStream })
       }
 
@@ -333,6 +328,26 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._peerConnection.addEventListener('track', this._onTrack)
 
       this._peerConnection.addEventListener('datachannel', this._onDataChannel)
+
+      this._event.on(
+        RoomEvent.STREAM_AVAILABLE,
+        /** @param {{ stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} data  */
+        async ({ stream }) => {
+          if (stream.origin === 'local') {
+            await this.negotiate()
+          }
+        }
+      )
+
+      this._event.on(
+        RoomEvent.STREAM_REMOVED,
+        /** @param {{ stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} data  */
+        async ({ stream }) => {
+          if (stream.origin === 'local') {
+            await this.negotiate()
+          }
+        }
+      )
 
       window.addEventListener('beforeunload', this._onBeforeUnload)
     }
@@ -638,9 +653,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         await this._peerConnection.setLocalDescription(offer)
 
         if (!this._peerConnection.localDescription) {
-          throw new Error(
-            'Failed to set the local description on negotiationneeded'
-          )
+          throw new Error('Failed to set the local description on negotiate')
         }
 
         const negotiateResponse = await this._api.negotiateConnection(
