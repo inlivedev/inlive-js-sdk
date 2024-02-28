@@ -22,7 +22,7 @@ export const webrtc = {
 export const media = {
   webcam: {
     maxFramerate: 30,
-    videoCodecs: ['video/VP9', 'video/VP8', 'video/H264'],
+    videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
     simulcast: false,
     bitrate: {
       highBitrate: 1200 * 1000,
@@ -33,7 +33,7 @@ export const media = {
   },
   screen: {
     maxFramerate: 30,
-    videoCodecs: ['video/VP9', 'video/VP8', 'video/H264'],
+    videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
     simulcast: false,
     bitrate: {
       highBitrate: 1200 * 1000,
