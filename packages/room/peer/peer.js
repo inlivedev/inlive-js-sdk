@@ -403,6 +403,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _addLocalMediaStream = (stream) => {
       if (!this._peerConnection) return
 
+      const supportsSetCodecPreferences =
+        window.RTCRtpTransceiver &&
+        'setCodecPreferences' in window.RTCRtpTransceiver.prototype
+
       /** @type {MediaStreamTrack | undefined} */
       const audioTrack = stream.mediaStream.getAudioTracks()[0]
 
@@ -444,7 +448,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         }
 
-        if ('setCodecPreferences' in audioTransceiver) {
+        if (supportsSetCodecPreferences) {
           audioTransceiver.setCodecPreferences(preferredAudioCodecs)
         } else {
           // TODO: Set codec preferences by modifying the SDP
@@ -552,7 +556,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           transceiverInit
         )
 
-        if ('setCodecPreferences' in videoTransceiver) {
+        if (supportsSetCodecPreferences) {
           videoTransceiver.setCodecPreferences(preferredWebcamCodecs)
         } else {
           // TODO: Set codec preferences by modifying the SDP
@@ -634,7 +638,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           transceiverInit
         )
 
-        if ('setCodecPreferences' in videoTransceiver) {
+        if (supportsSetCodecPreferences) {
           videoTransceiver.setCodecPreferences(preferredScreenCodecs)
         } else {
           // TODO: Set codec preferences by modifying the SDP
