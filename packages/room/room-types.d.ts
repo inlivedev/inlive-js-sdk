@@ -1,3 +1,4 @@
+import type { SharedType } from '../internal/types/types.js'
 import { api, webrtc, media } from './config/config.js'
 
 export declare namespace RoomType {
@@ -8,9 +9,9 @@ export declare namespace RoomType {
   }
 
   type UserConfig = {
-    api?: Partial<typeof api>
-    webrtc?: Partial<typeof webrtc>
-    media?: Partial<typeof media>
+    api?: SharedType.DeepPartial<typeof api>
+    webrtc?: SharedType.DeepPartial<typeof webrtc>
+    media?: SharedType.DeepPartial<typeof media>
   }
 
   type BitrateConfigs = {
