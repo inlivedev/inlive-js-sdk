@@ -438,10 +438,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             }
           } else {
             for (const systemAudioCodec of systemAudioCodecs) {
-              if (
-                systemAudioCodec.mimeType === 'audio/red' ||
-                systemAudioCodec.mimeType === 'audio/opus'
-              ) {
+              if (systemAudioCodec.mimeType === 'audio/red') {
+                preferredAudioCodecs.push(systemAudioCodec)
+              }
+            }
+            for (const systemAudioCodec of systemAudioCodecs) {
+              if (systemAudioCodec.mimeType === 'audio/opus') {
                 preferredAudioCodecs.push(systemAudioCodec)
               }
             }
@@ -488,11 +490,19 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         } else {
           for (const systemVideoCodec of systemVideoCodecs) {
-            if (
-              systemVideoCodec.mimeType === 'video/VP9' ||
-              systemVideoCodec.mimeType === 'video/VP8' ||
-              systemVideoCodec.mimeType === 'video/H264'
-            ) {
+            if (systemVideoCodec.mimeType === 'video/VP9') {
+              preferredWebcamCodecs.push(systemVideoCodec)
+            }
+          }
+
+          for (const systemVideoCodec of systemVideoCodecs) {
+            if (systemVideoCodec.mimeType === 'video/H264') {
+              preferredWebcamCodecs.push(systemVideoCodec)
+            }
+          }
+
+          for (const systemVideoCodec of systemVideoCodecs) {
+            if (systemVideoCodec.mimeType === 'video/VP8') {
               preferredWebcamCodecs.push(systemVideoCodec)
             }
           }
@@ -587,10 +597,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         } else {
           for (const systemVideoCodec of systemVideoCodecs) {
-            if (
-              systemVideoCodec.mimeType === 'video/VP8' ||
-              systemVideoCodec.mimeType === 'video/H264'
-            ) {
+            if (systemVideoCodec.mimeType === 'video/VP8') {
               preferredScreenCodecs.push(systemVideoCodec)
             }
           }
