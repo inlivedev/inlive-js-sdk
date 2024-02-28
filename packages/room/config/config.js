@@ -23,7 +23,7 @@ export const media = {
   webcam: {
     maxFramerate: 30,
     videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
-    simulcast: false,
+    simulcast: true,
     bitrate: {
       highBitrate: 1200 * 1000,
       midBitrate: 500 * 1000,
