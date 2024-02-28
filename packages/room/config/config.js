@@ -33,7 +33,7 @@ export const media = {
   },
   screen: {
     maxFramerate: 30,
-    videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
+    videoCodecs: ['video/VP8'],
     simulcast: false,
     bitrate: {
       highBitrate: 1200 * 1000,
