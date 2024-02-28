@@ -250,6 +250,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           transceiver.sender.track.kind === newTrack.kind
         ) {
           await transceiver.sender.replaceTrack(newTrack)
+          await this.negotiate()
         }
       }
     }
@@ -285,8 +286,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         this._onIceConnectionStateChange
       )
 
-      this._peerConnection.addEventListener('negotiationneeded', this.negotiate)
-
       this._peerConnection.addEventListener(
         'icecandidate',
         this._onIceCandidate
@@ -295,6 +294,26 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._peerConnection.addEventListener('track', this._onTrack)
 
       this._peerConnection.addEventListener('datachannel', this._onDataChannel)
+
+      this._event.on(
+        RoomEvent.STREAM_AVAILABLE,
+        /** @param {{ stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} data  */
+        async ({ stream }) => {
+          if (stream.origin === 'local') {
+            await this.negotiate()
+          }
+        }
+      )
+
+      this._event.on(
+        RoomEvent.STREAM_REMOVED,
+        /** @param {{ stream: import('../stream/stream-types.js').RoomStreamType.InstanceStream }} data  */
+        async ({ stream }) => {
+          if (stream.origin === 'local') {
+            await this.negotiate()
+          }
+        }
+      )
 
       window.addEventListener('beforeunload', this._onBeforeUnload)
     }
@@ -305,11 +324,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._peerConnection.removeEventListener(
         'iceconnectionstatechange',
         this._onIceConnectionStateChange
-      )
-
-      this._peerConnection.removeEventListener(
-        'negotiationneeded',
-        this.negotiate
       )
 
       this._peerConnection.removeEventListener(
@@ -697,9 +711,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         await this._peerConnection.setLocalDescription(offer)
 
         if (!this._peerConnection.localDescription) {
-          throw new Error(
-            'Failed to set the local description on negotiationneeded'
-          )
+          throw new Error('Failed to set the local description on negotiate')
         }
 
         const negotiateResponse = await this._api.negotiateConnection(

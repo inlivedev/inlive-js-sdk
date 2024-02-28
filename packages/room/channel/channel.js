@@ -85,8 +85,8 @@ export const createChannel = ({ api, event, peer, streams }) => {
       )
       this._channel.addEventListener('meta_changed', this._onMetaChanged)
       this._channel.addEventListener(
-        'allow_negotiation',
-        this._onAllowNegotiation
+        'allowed_renegotation',
+        this._onAllowedRenegotiation
       )
     }
 
@@ -104,8 +104,8 @@ export const createChannel = ({ api, event, peer, streams }) => {
       )
       this._channel.removeEventListener('meta_changed', this._onMetaChanged)
       this._channel.removeEventListener(
-        'allow_negotiation',
-        this._onAllowNegotiation
+        'allowed_renegotation',
+        this._onAllowedRenegotiation
       )
     }
 
@@ -315,9 +315,9 @@ export const createChannel = ({ api, event, peer, streams }) => {
       }
     }
 
-    _onAllowNegotiation = async () => {
+    _onAllowedRenegotiation = async () => {
       if (!this._roomId || !this._clientId) return
-      this._peer.negotiate()
+      await this._peer.negotiate()
     }
   }
 
