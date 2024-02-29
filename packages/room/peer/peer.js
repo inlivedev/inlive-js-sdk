@@ -434,7 +434,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         )
 
         const systemAudioCodecs =
-          RTCRtpReceiver.getCapabilities('audio')?.codecs || []
+          RTCRtpSender.getCapabilities('audio')?.codecs || []
         const preferredAudioCodecs = []
 
         if (stream.source === 'media' && systemAudioCodecs.length > 0) {
@@ -505,7 +505,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       if (videoTrack) {
         const systemVideoCodecs =
-          RTCRtpReceiver.getCapabilities('video')?.codecs || []
+          RTCRtpSender.getCapabilities('video')?.codecs || []
 
         for (const videoCodec of config.media[type].videoCodecs) {
           for (const systemVideoCodec of systemVideoCodecs) {
@@ -524,14 +524,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           streams: [stream.mediaStream],
         }
 
-        const svc =
+        const svcEnabled =
           config.media[type].svc &&
           config.media[type].simulcast &&
           browserName !== FIREFOX
 
-        const simulcast = config.media[type].simulcast
+        const simulcastEnabled = config.media[type].simulcast
 
-        if (svc) {
+        if (svcEnabled) {
           /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCEncodingParameters} */
           const scalableEncoding = {
             maxBitrate: config.media[type].bitrate.highBitrate,
@@ -539,7 +539,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             maxFramerate: config.media[type].maxFramerate,
           }
           transceiverInit.sendEncodings = [scalableEncoding]
-        } else if (simulcast) {
+        } else if (simulcastEnabled) {
           /** @type {RTCRtpEncodingParameters[]} */
           const simulcastEncoding = [
             // for firefox order matters... first high resolution, then scaled resolutions...
