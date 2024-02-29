@@ -22,14 +22,14 @@ export const webrtc = {
 export const media = {
   webcam: {
     maxFramerate: 30,
-    videoCodecs: ['video/VP9'],
+    videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
     simulcast: true,
     svc: true,
     scalabilityMode: 'L3T1',
   },
   screen: {
     maxFramerate: 30,
-    videoCodecs: ['video/VP8'],
+    videoCodecs: ['video/VP8', 'video/H264', 'video/VP9'],
     simulcast: false,
     svc: false,
     scalabilityMode: 'L3T1',
