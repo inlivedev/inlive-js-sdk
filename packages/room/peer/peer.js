@@ -480,9 +480,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       if (stream.source === 'media') {
-        this._initVideoTransceiver(stream, config, 'webcam')
+        this._addVideoTransceiver(stream, config, 'webcam')
       } else if (stream.source === 'screen') {
-        this._initVideoTransceiver(stream, config, 'screen')
+        this._addVideoTransceiver(stream, config, 'screen')
       }
     }
 
@@ -491,7 +491,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {import('../room-types.js').RoomType.Config} config
      * @param {'webcam' | 'screen'} type
      */
-    _initVideoTransceiver = (stream, config, type) => {
+    _addVideoTransceiver = (stream, config, type) => {
       if (!this._peerConnection) return
 
       const supportsSetCodecPreferences =
