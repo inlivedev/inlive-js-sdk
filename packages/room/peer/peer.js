@@ -526,10 +526,18 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
         const svcEnabled =
           config.media[type].svc &&
+          config.media[type].scalabilityMode &&
           config.media[type].simulcast &&
+          config.media[type].maxFramerate &&
+          config.media[type].bitrate.highBitrate &&
           browserName !== FIREFOX
 
-        const simulcastEnabled = config.media[type].simulcast
+        const simulcastEnabled =
+          config.media[type].simulcast &&
+          config.media[type].maxFramerate &&
+          config.media[type].bitrate.highBitrate &&
+          config.media[type].bitrate.midBitrate &&
+          config.media[type].bitrate.lowBitrate
 
         if (svcEnabled) {
           /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCEncodingParameters} */
