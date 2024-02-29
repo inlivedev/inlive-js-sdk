@@ -446,6 +446,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
                   audioCodec.toLowerCase()
                 ) {
                   preferredAudioCodecs.push(systemAudioCodec)
+                  systemAudioCodecs.splice(
+                    systemAudioCodecs.indexOf(systemAudioCodec),
+                    1
+                  )
                 }
               }
             }
@@ -453,14 +457,27 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             for (const systemAudioCodec of systemAudioCodecs) {
               if (systemAudioCodec.mimeType === 'audio/red') {
                 preferredAudioCodecs.push(systemAudioCodec)
+                systemAudioCodecs.splice(
+                  systemAudioCodecs.indexOf(systemAudioCodec),
+                  1
+                )
               }
             }
             for (const systemAudioCodec of systemAudioCodecs) {
               if (systemAudioCodec.mimeType === 'audio/opus') {
                 preferredAudioCodecs.push(systemAudioCodec)
+                systemAudioCodecs.splice(
+                  systemAudioCodecs.indexOf(systemAudioCodec),
+                  1
+                )
               }
             }
           }
+        }
+
+        // Add all remaining codecs
+        for (const audioCodec of systemAudioCodecs) {
+          preferredAudioCodecs.push(audioCodec)
         }
 
         if (supportsSetCodecPreferences) {
@@ -514,8 +531,17 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
               videoCodec.toLowerCase()
             ) {
               preferredCodecs.push(systemVideoCodec)
+              systemVideoCodecs.splice(
+                systemVideoCodecs.indexOf(systemVideoCodec),
+                1
+              )
             }
           }
+        }
+
+        // Add all remaining codecs
+        for (const videoCodec of systemVideoCodecs) {
+          preferredCodecs.push(videoCodec)
         }
 
         /** @type {RTCRtpTransceiverInit} */
