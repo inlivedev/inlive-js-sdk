@@ -24,6 +24,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _bwController
     /** @type {VideoObserver | null} */
     _videoObserver
+    /** @type {number} */
+    _highBitrate
+    /** @type {number} */
+    _midBitrate
+    /** @type {number} */
+    _lowBitrate
     /** @type {Array<HTMLVideoElement>} */
     _pendingObservedVideo
     /** @type {Array<RTCIceCandidate>} */
@@ -44,6 +50,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       })
 
       this._videoObserver = null
+      this._highBitrate = 1200 * 1000
+      this._midBitrate = 500 * 1000
+      this._lowBitrate = 150 * 1000
       this._pendingObservedVideo = []
       this._pendingIceCandidates = []
       /**
@@ -555,20 +564,15 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           config.media[type].scalabilityMode &&
           config.media[type].simulcast &&
           config.media[type].maxFramerate &&
-          config.media[type].bitrate.highBitrate &&
           browserName !== FIREFOX
 
         const simulcastEnabled =
-          config.media[type].simulcast &&
-          config.media[type].maxFramerate &&
-          config.media[type].bitrate.highBitrate &&
-          config.media[type].bitrate.midBitrate &&
-          config.media[type].bitrate.lowBitrate
+          config.media[type].simulcast && config.media[type].maxFramerate
 
         if (svcEnabled) {
           /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCEncodingParameters} */
           const scalableEncoding = {
-            maxBitrate: config.media[type].bitrate.highBitrate,
+            maxBitrate: this._highBitrate,
             scalabilityMode: config.media[type].scalabilityMode,
             maxFramerate: config.media[type].maxFramerate,
           }
@@ -580,21 +584,21 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             {
               rid: 'high',
               maxFramerate: config.media[type].maxFramerate,
-              maxBitrate: config.media[type].bitrate.highBitrate,
+              maxBitrate: this._highBitrate,
             },
             {
               rid: 'mid',
               // eslint-disable-next-line unicorn/no-zero-fractions
               scaleResolutionDownBy: 2.0,
               maxFramerate: config.media[type].maxFramerate,
-              maxBitrate: config.media[type].bitrate.midBitrate,
+              maxBitrate: this._midBitrate,
             },
             {
               rid: 'low',
               // eslint-disable-next-line unicorn/no-zero-fractions
               scaleResolutionDownBy: 4.0,
               maxFramerate: config.media[type].maxFramerate,
-              maxBitrate: config.media[type].bitrate.lowBitrate,
+              maxBitrate: this._lowBitrate,
             },
           ]
 

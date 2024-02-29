@@ -25,11 +25,6 @@ export const media = {
     videoCodecs: ['video/VP9'],
     simulcast: true,
     svc: true,
-    bitrate: {
-      highBitrate: 1200 * 1000,
-      midBitrate: 500 * 1000,
-      lowBitrate: 150 * 1000,
-    },
     scalabilityMode: 'L3T1',
   },
   screen: {
@@ -37,11 +32,6 @@ export const media = {
     videoCodecs: ['video/VP8'],
     simulcast: false,
     svc: false,
-    bitrate: {
-      highBitrate: 1200 * 1000,
-      midBitrate: 500 * 1000,
-      lowBitrate: 150 * 1000,
-    },
     scalabilityMode: 'L3T1',
   },
   microphone: {
