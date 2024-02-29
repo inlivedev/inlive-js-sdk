@@ -22,8 +22,8 @@ export const createFacade = ({
      * @param {import('../room-types.js').RoomType.UserConfig} userConfig
      */
     createInstance: (userConfig) => {
-      mergeWith(config, userConfig, (_, b) => {
-        return Array.isArray(b) ? b : undefined
+      mergeWith(config, userConfig, (_, userValue) => {
+        return Array.isArray(userValue) ? userValue : undefined
       })
 
       const baseUrl = `${config.api.baseUrl}/${config.api.version}`
