@@ -23,7 +23,7 @@ export const media = {
   webcam: {
     maxFramerate: 30,
     videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
-    simulcast: true,
+    simulcast: false,
     svc: true,
     scalabilityMode: 'L3T1',
   },
@@ -31,8 +31,8 @@ export const media = {
     maxFramerate: 30,
     videoCodecs: ['video/VP8', 'video/H264', 'video/VP9'],
     simulcast: false,
-    svc: false,
-    scalabilityMode: 'L3T1',
+    svc: true,
+    scalabilityMode: 'L1T2',
   },
   microphone: {
     audioCodecs: ['audio/red', 'audio/opus'],
