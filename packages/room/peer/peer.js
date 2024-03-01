@@ -559,15 +559,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           streams: [stream.mediaStream],
         }
 
-        const svcEnabled =
-          config.media[type].svc &&
-          config.media[type].scalabilityMode &&
-          config.media[type].simulcast &&
-          config.media[type].maxFramerate &&
-          browserName !== FIREFOX
-
-        const simulcastEnabled =
-          config.media[type].simulcast && config.media[type].maxFramerate
+        const svcEnabled = config.media[type].svc && browserName !== FIREFOX
+        const simulcastEnabled = config.media[type].simulcast
 
         if (svcEnabled) {
           /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCEncodingParameters} */
@@ -577,7 +570,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             maxFramerate: config.media[type].maxFramerate,
           }
           transceiverInit.sendEncodings = [scalableEncoding]
-        } else if (simulcastEnabled) {
+        }
+
+        if (simulcastEnabled) {
           /** @type {RTCRtpEncodingParameters[]} */
           const simulcastEncoding = [
             // for firefox order matters... first high resolution, then scaled resolutions...
@@ -602,7 +597,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             },
           ]
 
-          transceiverInit.sendEncodings = simulcastEncoding
+          const sendEncodings = Array.isArray(transceiverInit.sendEncodings)
+            ? [...transceiverInit.sendEncodings, ...simulcastEncoding]
+            : simulcastEncoding
+
+          transceiverInit.sendEncodings = sendEncodings
         }
 
         const videoTransceiver = this._peerConnection.addTransceiver(
