@@ -562,16 +562,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         const svcEnabled = config.media[type].svc && browserName !== FIREFOX
         const simulcastEnabled = config.media[type].simulcast
 
-        if (svcEnabled) {
-          /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCEncodingParameters} */
-          const svcEncoding = {
-            maxBitrate: this._highBitrate,
-            scalabilityMode: config.media[type].scalabilityMode,
-            maxFramerate: config.media[type].maxFramerate,
-          }
-          transceiverInit.sendEncodings = [svcEncoding]
-        }
-
         if (simulcastEnabled) {
           /** @type {RTCRtpEncodingParameters[]} */
           let simulcastEncoding = [
@@ -597,20 +587,34 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             },
           ]
 
-          if (svcEnabled) {
-            simulcastEncoding = simulcastEncoding.map((encoding) => {
-              return {
-                ...encoding,
-                scalabilityMode: config.media[type].scalabilityMode,
+          transceiverInit.sendEncodings = simulcastEncoding
+        }
+
+        if (svcEnabled) {
+          /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCEncodingParameters | undefined} */
+
+          if (
+            simulcastEnabled &&
+            Array.isArray(transceiverInit.sendEncodings)
+          ) {
+            const sendEncodings = transceiverInit.sendEncodings.map(
+              (encoding) => {
+                return {
+                  ...encoding,
+                  scalabilityMode: config.media[type].scalabilityMode,
+                }
               }
-            })
+            )
+            transceiverInit.sendEncodings = sendEncodings
+          } else {
+            /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCEncodingParameters} */
+            const sendEncodings = {
+              maxBitrate: this._highBitrate,
+              scalabilityMode: config.media[type].scalabilityMode,
+              maxFramerate: config.media[type].maxFramerate,
+            }
+            transceiverInit.sendEncodings = [sendEncodings]
           }
-
-          const sendEncodings = Array.isArray(transceiverInit.sendEncodings)
-            ? [...transceiverInit.sendEncodings, ...simulcastEncoding]
-            : simulcastEncoding
-
-          transceiverInit.sendEncodings = sendEncodings
         }
 
         const videoTransceiver = this._peerConnection.addTransceiver(
