@@ -1,9 +1,5 @@
 import {
   getBrowserName,
-  CHROME,
-  EDGE,
-  OPERA,
-  SAFARI,
   FIREFOX,
 } from '../../internal/utils/get-browser-name.js'
 import { VideoObserver } from '../observer/video-observer.js'
@@ -28,24 +24,16 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _bwController
     /** @type {VideoObserver | null} */
     _videoObserver
-    /** @type {Array<HTMLVideoElement>} */
-    _pendingObservedVideo
-    /** @type {Array<RTCIceCandidate>} */
-    _pendingIceCandidates
-    /** @type {string[]} */
-    _audioCodecPreferences
-    /** @type {string[]} */
-    _videoCodecPreferences
     /** @type {number} */
     _highBitrate
     /** @type {number} */
     _midBitrate
     /** @type {number} */
     _lowBitrate
-    /** @type {number} */
-    _maxFramerate
-    /** @type {string} */
-    _scalabilityMode
+    /** @type {Array<HTMLVideoElement>} */
+    _pendingObservedVideo
+    /** @type {Array<RTCIceCandidate>} */
+    _pendingIceCandidates
     /** @type {boolean} */
     pendingNegotiation
 
@@ -62,49 +50,35 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       })
 
       this._videoObserver = null
-      this._pendingObservedVideo = []
-      this._pendingIceCandidates = []
-      this.pendingNegotiation = false
-      this._audioCodecPreferences = []
-      this._videoCodecPreferences = []
       this._highBitrate = 1200 * 1000
       this._midBitrate = 500 * 1000
       this._lowBitrate = 150 * 1000
-      this._maxFramerate = 30
-      this._scalabilityMode = 'L3T1'
+      this._pendingObservedVideo = []
+      this._pendingIceCandidates = []
+      /**
+       * @type {{
+       * webcam: RTCRtpCodecCapability[],
+       * screen: RTCRtpCodecCapability[],
+       * audio: RTCRtpCodecCapability[]
+        }} */
+      this._pendingPreferredCodecs = {
+        webcam: [],
+        screen: [],
+        audio: [],
+      }
+      this.pendingNegotiation = false
     }
 
     /**
      * Initiate a peer connection
      * @param {string} roomId
      * @param {string} clientId
-     * @param {import('./peer-types.js').RoomPeerType.PeerConfig} [peerConfig]
      */
-    connect = async (roomId, clientId, peerConfig) => {
+    connect = async (roomId, clientId) => {
       if (this._peerConnection) return
-
-      const bitrateConfig = peerConfig?.bitrate || {}
 
       this._roomId = roomId
       this._clientId = clientId
-      this._highBitrate = bitrateConfig.highBitrate || this._highBitrate
-      this._midBitrate = bitrateConfig.midBitrate || this._midBitrate
-      this._lowBitrate = bitrateConfig.lowBitrate || this._lowBitrate
-      this._maxFramerate = peerConfig?.maxFramerate || this._maxFramerate
-      this._scalabilityMode =
-        peerConfig?.scalabilityMode || this._scalabilityMode
-
-      const codecPreferences = Array.isArray(peerConfig?.codecs)
-        ? peerConfig.codecs
-        : []
-
-      for (const codec of codecPreferences) {
-        if (codec.toLowerCase().includes('audio')) {
-          this._audioCodecPreferences.push(codec)
-        } else if (codec.toLowerCase().includes('video')) {
-          this._videoCodecPreferences.push(codec)
-        }
-      }
 
       this._peerConnection = new RTCPeerConnection({
         iceServers: config.webrtc.iceServers,
@@ -451,171 +425,219 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _addLocalMediaStream = (stream) => {
       if (!this._peerConnection) return
 
+      const supportsSetCodecPreferences =
+        window.RTCRtpTransceiver &&
+        'setCodecPreferences' in window.RTCRtpTransceiver.prototype
+
       /** @type {MediaStreamTrack | undefined} */
       const audioTrack = stream.mediaStream.getAudioTracks()[0]
 
       if (audioTrack) {
-        const audioTsvr = this._peerConnection.addTransceiver(audioTrack, {
-          direction: 'sendonly',
-          streams: [stream.mediaStream],
-          sendEncodings: [{ priority: 'high' }],
-        })
+        const audioTransceiver = this._peerConnection.addTransceiver(
+          audioTrack,
+          {
+            direction: 'sendonly',
+            streams: [stream.mediaStream],
+            sendEncodings: [{ priority: 'high' }],
+          }
+        )
 
-        let audioCodecs = RTCRtpReceiver.getCapabilities('audio')?.codecs
+        const systemAudioCodecs =
+          RTCRtpSender.getCapabilities('audio')?.codecs || []
+        const preferredAudioCodecs = []
 
-        if (
-          audioCodecs &&
-          config.media.audio.red &&
-          stream.source === 'media' &&
-          'setCodecPreferences' in audioTsvr
-        ) {
-          /** @type {RTCRtpCodecCapability[]} */
-          const audioPreferedCodecs = []
-
-          if (this._audioCodecPreferences.length > 0) {
-            for (const audioCodecPreference of this._audioCodecPreferences) {
-              for (const audioCodec of audioCodecs) {
-                if (audioCodec.mimeType === audioCodecPreference) {
-                  audioPreferedCodecs.push(audioCodec)
+        if (stream.source === 'media' && systemAudioCodecs.length > 0) {
+          if (config.media.microphone.audioCodecs.length > 0) {
+            for (const audioCodec of config.media.microphone.audioCodecs) {
+              for (const systemAudioCodec of systemAudioCodecs) {
+                if (
+                  systemAudioCodec.mimeType.toLowerCase() ===
+                  audioCodec.toLowerCase()
+                ) {
+                  preferredAudioCodecs.push(systemAudioCodec)
+                  systemAudioCodecs.splice(
+                    systemAudioCodecs.indexOf(systemAudioCodec),
+                    1
+                  )
                 }
               }
             }
           } else {
-            for (const audioCodec of audioCodecs) {
-              if (audioCodec.mimeType === 'audio/red') {
-                audioPreferedCodecs.push(audioCodec)
+            for (const systemAudioCodec of systemAudioCodecs) {
+              if (systemAudioCodec.mimeType === 'audio/red') {
+                preferredAudioCodecs.push(systemAudioCodec)
+                systemAudioCodecs.splice(
+                  systemAudioCodecs.indexOf(systemAudioCodec),
+                  1
+                )
               }
             }
-
-            for (const audioCodec of audioCodecs) {
-              if (audioCodec.mimeType === 'audio/opus') {
-                audioPreferedCodecs.push(audioCodec)
+            for (const systemAudioCodec of systemAudioCodecs) {
+              if (systemAudioCodec.mimeType === 'audio/opus') {
+                preferredAudioCodecs.push(systemAudioCodec)
+                systemAudioCodecs.splice(
+                  systemAudioCodecs.indexOf(systemAudioCodec),
+                  1
+                )
               }
             }
           }
-          audioTsvr.setCodecPreferences(audioPreferedCodecs)
+        }
+
+        // Add all remaining codecs
+        for (const audioCodec of systemAudioCodecs) {
+          preferredAudioCodecs.push(audioCodec)
+        }
+
+        if (supportsSetCodecPreferences) {
+          audioTransceiver.setCodecPreferences(preferredAudioCodecs)
+        } else {
+          // TODO: Set codec preferences by modifying the SDP
+          for (const audioCodec of preferredAudioCodecs) {
+            this._pendingPreferredCodecs.audio.push(audioCodec)
+          }
         }
 
         audioTrack.addEventListener('ended', () => {
-          if (!this._peerConnection || !audioTsvr.sender) return
-          this._peerConnection.removeTrack(audioTsvr.sender)
+          if (!this._peerConnection || !audioTransceiver.sender) return
+          this._peerConnection.removeTrack(audioTransceiver.sender)
           this.removeStream(stream.id)
         })
       }
 
+      if (stream.source === 'media') {
+        this._addVideoTransceiver(stream, config, 'webcam')
+      } else if (stream.source === 'screen') {
+        this._addVideoTransceiver(stream, config, 'screen')
+      }
+    }
+
+    /**
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     * @param {import('../room-types.js').RoomType.Config} config
+     * @param {'webcam' | 'screen'} type
+     */
+    _addVideoTransceiver = (stream, config, type) => {
+      if (!this._peerConnection) return
+
+      const supportsSetCodecPreferences =
+        window.RTCRtpTransceiver &&
+        'setCodecPreferences' in window.RTCRtpTransceiver.prototype
+      const browserName = getBrowserName() || ''
       /** @type {MediaStreamTrack | undefined} */
       const videoTrack = stream.mediaStream.getVideoTracks()[0]
-
-      const browserName = getBrowserName()
-      const simulcastBrowsers = [SAFARI, CHROME, EDGE, OPERA]
-
-      let svc = false
-
       /** @type {RTCRtpCodecCapability[]} */
-      const videoPreferedCodecs = []
-      const videoCodecs = RTCRtpReceiver.getCapabilities('video')?.codecs
+      const preferredCodecs = []
 
-      if (videoCodecs) {
-        if (this._videoCodecPreferences.length > 0) {
-          for (const videoCodecPreference of this._videoCodecPreferences) {
-            for (const videoCodec of videoCodecs) {
-              if (videoCodec.mimeType === videoCodecPreference) {
-                videoPreferedCodecs.push(videoCodec)
+      if (videoTrack) {
+        const systemVideoCodecs =
+          RTCRtpSender.getCapabilities('video')?.codecs || []
 
-                if (
-                  videoCodec.mimeType === 'video/VP9' &&
-                  browserName !== FIREFOX &&
-                  stream.source !== 'screen'
-                ) {
-                  svc = true
-                }
-              }
-            }
-          }
-
-          // push the rest of the codecs
-          for (const videoCodec of videoCodecs) {
-            if (!this._videoCodecPreferences.includes(videoCodec.mimeType)) {
-              videoPreferedCodecs.push(videoCodec)
-            }
-          }
-        } else {
-          for (const videoCodec of videoCodecs) {
-            if (videoCodec.mimeType === 'video/VP9') {
-              videoPreferedCodecs.push(videoCodec)
-
-              if (browserName !== FIREFOX && stream.source !== 'media') {
-                svc = true
-              }
-            }
-          }
-
-          // push the rest of the codecs
-          for (const videoCodec of videoCodecs) {
-            if (videoCodec.mimeType !== 'video/VP9') {
-              videoPreferedCodecs.push(videoCodec)
+        for (const videoCodec of config.media[type].videoCodecs) {
+          for (const systemVideoCodec of systemVideoCodecs) {
+            if (
+              systemVideoCodec.mimeType.toLowerCase() ===
+              videoCodec.toLowerCase()
+            ) {
+              preferredCodecs.push(systemVideoCodec)
+              systemVideoCodecs.splice(
+                systemVideoCodecs.indexOf(systemVideoCodec),
+                1
+              )
             }
           }
         }
+
+        // Add all remaining codecs
+        for (const videoCodec of systemVideoCodecs) {
+          preferredCodecs.push(videoCodec)
+        }
+
+        /** @type {RTCRtpTransceiverInit} */
+        const transceiverInit = {
+          direction: 'sendonly',
+          streams: [stream.mediaStream],
+        }
+
+        const svcEnabled = config.media[type].svc && browserName !== FIREFOX
+        const simulcastEnabled = config.media[type].simulcast
+
+        if (simulcastEnabled) {
+          /** @type {RTCRtpEncodingParameters[]} */
+          let simulcastEncoding = [
+            // for firefox order matters... first high resolution, then scaled resolutions...
+            {
+              rid: 'high',
+              maxFramerate: config.media[type].maxFramerate,
+              maxBitrate: this._highBitrate,
+            },
+            {
+              rid: 'mid',
+              // eslint-disable-next-line unicorn/no-zero-fractions
+              scaleResolutionDownBy: 2.0,
+              maxFramerate: config.media[type].maxFramerate,
+              maxBitrate: this._midBitrate,
+            },
+            {
+              rid: 'low',
+              // eslint-disable-next-line unicorn/no-zero-fractions
+              scaleResolutionDownBy: 4.0,
+              maxFramerate: config.media[type].maxFramerate,
+              maxBitrate: this._lowBitrate,
+            },
+          ]
+
+          transceiverInit.sendEncodings = simulcastEncoding
+        }
+
+        if (svcEnabled) {
+          if (
+            simulcastEnabled &&
+            Array.isArray(transceiverInit.sendEncodings)
+          ) {
+            const sendEncodings = transceiverInit.sendEncodings.map(
+              (encoding) => {
+                return {
+                  ...encoding,
+                  scalabilityMode: config.media[type].scalabilityMode,
+                }
+              }
+            )
+            transceiverInit.sendEncodings = sendEncodings
+          } else {
+            const sendEncodings = {
+              maxBitrate: this._highBitrate,
+              scalabilityMode: config.media[type].scalabilityMode,
+              maxFramerate: config.media[type].maxFramerate,
+            }
+            transceiverInit.sendEncodings = [sendEncodings]
+          }
+        }
+
+        const videoTransceiver = this._peerConnection.addTransceiver(
+          videoTrack,
+          transceiverInit
+        )
+
+        if (supportsSetCodecPreferences) {
+          videoTransceiver.setCodecPreferences(preferredCodecs)
+        } else {
+          // TODO: Set codec preferences by modifying the SDP
+          for (const preferredCodec of preferredCodecs) {
+            const pendingStore = this._pendingPreferredCodecs[type]
+
+            if (Array.isArray(pendingStore)) {
+              pendingStore.push(preferredCodec)
+            }
+          }
+        }
+
+        videoTrack.addEventListener('ended', () => {
+          if (!this._peerConnection || !videoTransceiver.sender) return
+          this._peerConnection.removeTrack(videoTransceiver.sender)
+          this.removeStream(stream.id)
+        })
       }
-
-      /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCTransceiverInit} */
-      const scaleableInit = {
-        direction: 'sendonly',
-        streams: [stream.mediaStream],
-        sendEncodings: [
-          {
-            maxBitrate: this._highBitrate,
-            scalabilityMode: this._scalabilityMode,
-            maxFramerate: this._maxFramerate,
-          },
-        ],
-      }
-
-      /** @type {RTCRtpTransceiverInit} */
-      const simulcastInit = {
-        direction: 'sendonly',
-        streams: [stream.mediaStream],
-      }
-
-      if (browserName !== null && simulcastBrowsers.includes(browserName)) {
-        simulcastInit['sendEncodings'] = [
-          // for firefox order matters... first high resolution, then scaled resolutions...
-          {
-            rid: 'high',
-            maxBitrate: this._highBitrate,
-            maxFramerate: this._maxFramerate,
-          },
-          {
-            rid: 'mid',
-            // eslint-disable-next-line unicorn/no-zero-fractions
-            scaleResolutionDownBy: 2.0,
-            maxFramerate: this._maxFramerate,
-            maxBitrate: this._midBitrate,
-          },
-          {
-            rid: 'low',
-            // eslint-disable-next-line unicorn/no-zero-fractions
-            scaleResolutionDownBy: 4.0,
-            maxBitrate: this._lowBitrate,
-            maxFramerate: this._maxFramerate,
-          },
-        ]
-      }
-
-      const tcvr = svc
-        ? this._peerConnection.addTransceiver(videoTrack, scaleableInit)
-        : this._peerConnection.addTransceiver(videoTrack, simulcastInit)
-
-      if ('setCodecPreferences' in tcvr) {
-        tcvr.setCodecPreferences(videoPreferedCodecs)
-      }
-
-      videoTrack.addEventListener('ended', () => {
-        if (!this._peerConnection || !tcvr.sender) return
-        this._peerConnection.removeTrack(tcvr.sender)
-        this.removeStream(stream.id)
-      })
     }
 
     _onIceConnectionStateChange = async () => {

@@ -104,7 +104,7 @@ await room.endRoom(roomData.data.roomId);
 
   A method to delete a specific room metadata based on metadata `key` provided. It expects the `roomId` and `key` as parameters. This method will return a promise.
 
-- `room.createPeer(roomId: string, clientId: string, config?: object)`
+- `room.createPeer(roomId: string, clientId: string)`
 
   A method to create a peer that manages the WebRTC peer to peer connection. It requires `roomId` and `clientId` parameters to be set. This method will return a promise.
 

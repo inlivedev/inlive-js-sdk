@@ -20,19 +20,21 @@ export const webrtc = {
 }
 
 export const media = {
-  video: {
-    width: 1280,
-    height: 720,
-    frameRate: 24,
-    facingMode: 'user',
-    aspectRatio: 1.777_777_777_8,
-    maxBitrate: 1_200_000,
-    codec: 'VP9',
+  webcam: {
+    maxFramerate: 30,
+    videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
+    simulcast: false,
+    svc: true,
+    scalabilityMode: 'L3T1',
   },
-  audio: {
-    echoCancellation: true,
-    noiseSuppression: true,
-    autoGainControl: true,
-    red: true,
+  screen: {
+    maxFramerate: 30,
+    videoCodecs: ['video/VP8', 'video/H264', 'video/VP9'],
+    simulcast: false,
+    svc: true,
+    scalabilityMode: 'L1T2',
+  },
+  microphone: {
+    audioCodecs: ['audio/red', 'audio/opus'],
   },
 }

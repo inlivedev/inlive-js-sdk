@@ -1,4 +1,4 @@
-import merge from 'lodash-es/merge.js'
+import mergeWith from 'lodash-es/mergeWith.js'
 import { createFetcher } from '../api/fetcher.js'
 import { createApi } from '../api/api.js'
 import { createEvent } from '../event/event.js'
@@ -6,13 +6,7 @@ import { createStreams } from '../stream/streams.js'
 import { createStream } from '../stream/stream.js'
 import { createPeer } from '../peer/peer.js'
 import { createChannel } from '../channel/channel.js'
-import * as defaultConfig from '../config/config.js'
-
-const config = {
-  api: defaultConfig.api,
-  webrtc: defaultConfig.webrtc,
-  media: defaultConfig.media,
-}
+import * as config from '../config/config.js'
 
 /** @param {import('./facade-types.js').RoomFacadeType.FacadeDependencies} facadeDependencies Dependencies for facade module */
 export const createFacade = ({
@@ -28,7 +22,9 @@ export const createFacade = ({
      * @param {import('../room-types.js').RoomType.UserConfig} userConfig
      */
     createInstance: (userConfig) => {
-      merge(config, userConfig)
+      mergeWith(config, userConfig, (_, userValue) => {
+        return Array.isArray(userValue) ? userValue : undefined
+      })
 
       const baseUrl = `${config.api.baseUrl}/${config.api.version}`
       const apiKey = config.api.apiKey
@@ -40,7 +36,7 @@ export const createFacade = ({
       const streams = createStreams().createInstance()
       const peer = createPeer({
         api,
-        config,
+        config: config,
         createStream,
         event,
         streams,
@@ -65,10 +61,9 @@ export const createFacade = ({
           /**
            * @param {string} roomId
            * @param {string} clientId
-           * @param {import('../peer/peer-types.js').RoomPeerType.PeerConfig} [config]
            */
-          async (roomId, clientId, config) => {
-            await peer.connect(roomId, clientId, config)
+          async (roomId, clientId) => {
+            await peer.connect(roomId, clientId)
             return peer
           },
         createDataChannel: api.createDataChannel,
@@ -81,7 +76,7 @@ export const createFacade = ({
 }
 
 export const facade = createFacade({
-  config,
+  config: config,
   api: { createFetcher, createApi },
   event: { createEvent },
   stream: { createStream, createStreams },
