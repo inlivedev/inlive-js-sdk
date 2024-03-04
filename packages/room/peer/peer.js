@@ -591,8 +591,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         }
 
         if (svcEnabled) {
-          /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCEncodingParameters | undefined} */
-
           if (
             simulcastEnabled &&
             Array.isArray(transceiverInit.sendEncodings)
@@ -607,7 +605,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             )
             transceiverInit.sendEncodings = sendEncodings
           } else {
-            /** @type {import('../peer/peer-types.js').RoomPeerType.RTCRtpSVCEncodingParameters} */
             const sendEncodings = {
               maxBitrate: this._highBitrate,
               scalabilityMode: config.media[type].scalabilityMode,
