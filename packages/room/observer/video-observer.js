@@ -1,6 +1,10 @@
+/**
+ * Video observer class.
+ */
 export class VideoObserver {
-  #lastReportTime
   #intervalGap
+  /** @type { import('./video-observer-types.js').VideoObserver.StringMap} lastReportTime - Last report time */
+  #lastReportTime
   #dataChannel
   #resizeObserver
   #intersectionObserver
@@ -11,7 +15,7 @@ export class VideoObserver {
    */
   constructor(dataChannel, intervalGap) {
     this.#intervalGap = typeof intervalGap !== 'number' ? 1000 : intervalGap
-    this.#lastReportTime = 0
+    this.#lastReportTime = {}
     this.#dataChannel = dataChannel
     this.#resizeObserver = new ResizeObserver(this.#onResize.bind(this))
     this.#intersectionObserver = new IntersectionObserver(
@@ -91,25 +95,25 @@ export class VideoObserver {
    */
   #onVideoSizeChanged(id, width, height) {
     if (
-      this.#lastReportTime !== null &&
-      Date.now() - this.#lastReportTime < this.#intervalGap
+      id in this.#lastReportTime &&
+      Date.now() - this.#lastReportTime[id] < this.#intervalGap
     ) {
       return
     }
 
-    this.#lastReportTime = Date.now()
+    this.#lastReportTime[id] = Date.now()
 
     if (this.#dataChannel.readyState === 'open') {
-      this.#dataChannel.send(
-        JSON.stringify({
-          type: 'video_size',
-          data: {
-            track_id: id,
-            width: Math.floor(width),
-            height: Math.floor(height),
-          },
-        })
-      )
+      const data = {
+        type: 'video_size',
+        data: {
+          track_id: id,
+          width: Math.floor(width),
+          height: Math.floor(height),
+        },
+      }
+
+      this.#dataChannel.send(JSON.stringify(data))
     } else {
       const listener = () => {
         const data = {
@@ -120,6 +124,7 @@ export class VideoObserver {
             height: Math.floor(height),
           },
         }
+
         this.#dataChannel.send(JSON.stringify(data))
         this.#dataChannel.removeEventListener('open', listener)
       }
