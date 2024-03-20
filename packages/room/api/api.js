@@ -46,13 +46,6 @@ export const createApi = ({ fetcher }) => {
         },
       }
 
-      this._room = {
-        id: room.data.roomId,
-        name: room.data.roomName,
-        bitrateConfigs: room.data.bitrates,
-        codecPreferences: room.data.codecPreferences,
-      }
-
       return room
     }
 
@@ -62,20 +55,6 @@ export const createApi = ({ fetcher }) => {
     getRoom = async (roomId) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string')
-      }
-
-      if (this._room && this._room.id === roomId) {
-        return {
-          code: 200,
-          ok: true,
-          message: 'OK',
-          data: {
-            roomId: this._room.id,
-            roomName: this._room.name,
-            bitrates: this._room.bitrateConfigs,
-            codecPreferences: this._room.codecPreferences,
-          },
-        }
       }
 
       /** @type {import('./api-types.js').RoomAPIType.GetRoomResponseBody} */
@@ -107,13 +86,6 @@ export const createApi = ({ fetcher }) => {
           },
           codecPreferences: data.codec_preferences || [],
         },
-      }
-
-      this._room = {
-        id: room.data.roomId,
-        name: room.data.roomName,
-        bitrateConfigs: room.data.bitrates,
-        codecPreferences: room.data.codecPreferences,
       }
 
       return room
