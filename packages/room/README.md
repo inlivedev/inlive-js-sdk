@@ -82,6 +82,8 @@ await room.endRoom(roomData.data.roomId);
 
 - `room.createClient(roomId: string, config?: object)`
 
+  > 🔐 Require ApiKey
+
   A method to create and register a new client to the room. It expects two parameters. The `roomId` is required. The second parameter is an optional config to set a custom client data. This method will return a promise.
 
 - `room.getClient(roomId: string, clientId: string)`
