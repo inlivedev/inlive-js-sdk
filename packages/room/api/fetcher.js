@@ -51,18 +51,19 @@ export const createFetcher = () => {
      * @param {RequestInit} [options]
      */
     _fetcher = (endpoint, options = {}) => {
-      const fetchOptions = typeof options === 'object' ? options : {}
-      const headersOptions =
-        typeof fetchOptions.headers === 'object' ? fetchOptions.headers : {}
+      options = typeof options === 'object' ? options : {}
+
+      /** @type {RequestInit} */
+      const init = {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(typeof options.headers === 'object' ? options.headers : {}),
+        },
+      }
 
       return globalThis
-        .fetch(`${this._baseUrl}${endpoint}`, {
-          headers: {
-            'Content-type': 'application/json; charset=utf-8',
-            ...headersOptions,
-          },
-          ...fetchOptions,
-        })
+        .fetch(`${this._baseUrl}${endpoint}`, init)
         .then(this._resolution)
         .catch(this._rejection)
     }
