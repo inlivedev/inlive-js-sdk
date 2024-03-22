@@ -115,8 +115,14 @@ export const createApi = ({ fetcher }) => {
         body.enable_vad = config.enableVAD
       }
 
-      const options =
-        body.uid || body.name ? { body: JSON.stringify(body) } : undefined
+      /** @type {RequestInit} */
+      const options = {
+        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
+      }
+
+      if (body.uid || body.name) {
+        options.body = JSON.stringify(body)
+      }
 
       /** @type {import('./api-types.js').RoomAPIType.RegisterClientResponseBody} */
       const response = await this._fetcher.post(
