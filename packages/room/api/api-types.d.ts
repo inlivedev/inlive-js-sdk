@@ -1,5 +1,6 @@
 import type { createFetcher } from './fetcher.js'
 import type { createApi } from './api.js'
+import { RoomType } from '../room-types.js'
 
 export declare namespace RoomAPIType {
   type CreateFetcher = typeof createFetcher
@@ -42,28 +43,43 @@ export declare namespace RoomAPIType {
     initial_bandwidth: number
   }
 
+  type Options = {
+    bitrates: Bitrates
+    codecs: string[]
+    // empty room timeout in nanoseconds before the room is closed
+    empty_Room_timeout_ns: number
+    pli_interval_ns: number
+    quality_presets: RoomType.QualityPresets
+  }
+
+  type RoomRequest = {
+    id: string
+    name: string
+    options?: Options
+  }
+
+  type RoomResponse = {
+    id: string
+    name: string
+    options: Options
+  }
+
   type BaseResponseBody = {
     code: number
     ok: boolean
     message: string
   }
 
-  type CreateRoomResponseBody = BaseResponseBody & {
-    data: {
-      room_id: string
-      name: string
-      bitrate_configs: Bitrates
-      codec_preferences: string[]
-    }
+  type RoomCreateBody = BaseResponseBody & {
+    data: RoomRequest
   }
 
-  type GetRoomResponseBody = BaseResponseBody & {
-    data: {
-      room_id: string
-      name: string
-      bitrate_configs: Bitrates
-      codec_preferences: string[]
-    }
+  type RoomRespBody = BaseResponseBody & {
+    data: RoomResponse
+  }
+
+  type RoomReturnBody = BaseResponseBody & {
+    data: RoomType.Room
   }
 
   type RegisterClientResponseBody = BaseResponseBody & {

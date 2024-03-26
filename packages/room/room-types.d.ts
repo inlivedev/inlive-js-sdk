@@ -14,7 +14,7 @@ export declare namespace RoomType {
     media?: SharedType.DeepPartial<typeof media>
   }
 
-  type BitrateConfigs = {
+  type Bitrates = {
     audioRed: number
     audio: number
     video: number
@@ -27,10 +27,29 @@ export declare namespace RoomType {
     initialBandwidth: number
   }
 
+  type QualityPreset = {
+    sid: number
+    tid: number
+  }
+
+  type QualityPresets = {
+    high: QualityPreset
+    low: QualityPreset
+    mid: QualityPreset
+  }
+
+  type Options = {
+    bitrates?: Bitrates
+    codecs?: string[]
+    // empty room timeout in nanoseconds before the room is closed
+    emptyRoomTimeoutMS?: number
+    pliIntervalMS?: number
+    qualityPresets?: QualityPresets
+  }
+
   type Room = {
     id: string
     name: string
-    codecPreferences: string[]
-    bitrateConfigs: BitrateConfigs
+    options: Options
   }
 }

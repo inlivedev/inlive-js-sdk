@@ -12,37 +12,83 @@ export const createApi = ({ fetcher }) => {
     /**
      * @param {string} [name]
      * @param {string} [id]
+     * @param {import('../room-types.js').RoomType.Options} [options]
+     * @returns {Promise<import('./api-types.js').RoomAPIType.RoomReturnBody>}
      */
-    createRoom = async (name = '', id = '') => {
-      /** @type {import('./api-types.js').RoomAPIType.CreateRoomResponseBody} */
+    createRoom = async (name = '', id = '', options) => {
+      const parameterOptions = {}
+      if (typeof options !== 'undefined') {
+        // map RoomType.Options to RoomAPIType.RoomOptions
+        if (typeof options.bitrates !== 'undefined') {
+          parameterOptions.bitrates = {
+            audio: options.bitrates.audio || 0,
+            audio_red: options.bitrates.audioRed || 0,
+            video: options.bitrates.video || 0,
+            video_high: options.bitrates.videoHigh || 0,
+            video_high_pixels: options.bitrates.videoHighPixels || 0,
+            video_mid: options.bitrates.videoMid || 0,
+            video_mid_pixels: options.bitrates.videoMidPixels || 0,
+            video_low: options.bitrates.videoLow || 0,
+            video_low_pixels: options.bitrates.videoLowPixels || 0,
+            initial_bandwidth: options.bitrates.initialBandwidth || 0,
+          }
+        }
+
+        if (typeof options.codecs !== 'undefined') {
+          parameterOptions.codecs = options.codecs || []
+        }
+
+        if (typeof options.pliIntervalMS !== 'undefined') {
+          parameterOptions.pli_interval_ns =
+            options.pliIntervalMS * 1_000_000 || 0
+        }
+
+        if (typeof options.emptyRoomTimeoutMS !== 'undefined') {
+          parameterOptions.empty_Room_timeout_ns =
+            options.emptyRoomTimeoutMS * 1_000_000 || 0
+        }
+
+        if (typeof options.qualityPresets !== 'undefined') {
+          parameterOptions.quality_presets = options.qualityPresets || {}
+        }
+      }
+
+      /** @type {import('./api-types.js').RoomAPIType.RoomRespBody} */
       const response = await this._fetcher.post(`/rooms/create`, {
         headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
-        body: JSON.stringify({ name, id }),
+        body: JSON.stringify({ name, id, parameterOptions }),
       })
 
       const data = response.data || {}
-      const bitrates = data.bitrate_configs || {}
+      const bitrates = data.options.bitrates || {}
 
+      /** @type {import('./api-types.js').RoomAPIType.RoomReturnBody} */
       const room = {
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
         data: {
-          roomId: data.room_id || '',
-          roomName: data.name || '',
-          bitrates: {
-            audio: bitrates.audio || 0,
-            audioRed: bitrates.audio_red || 0,
-            video: bitrates.video || 0,
-            videoHigh: bitrates.video_high || 0,
-            videoHighPixels: bitrates.video_high_pixels || 0,
-            videoMid: bitrates.video_mid || 0,
-            videoMidPixels: bitrates.video_mid_pixels || 0,
-            videoLow: bitrates.video_low || 0,
-            videoLowPixels: bitrates.video_low_pixels || 0,
-            initialBandwidth: bitrates.initial_bandwidth || 0,
+          id: data.id || '',
+          name: data.name || '',
+          options: {
+            bitrates: {
+              audio: bitrates.audio || 0,
+              audioRed: bitrates.audio_red || 0,
+              video: bitrates.video || 0,
+              videoHigh: bitrates.video_high || 0,
+              videoHighPixels: bitrates.video_high_pixels || 0,
+              videoMid: bitrates.video_mid || 0,
+              videoMidPixels: bitrates.video_mid_pixels || 0,
+              videoLow: bitrates.video_low || 0,
+              videoLowPixels: bitrates.video_low_pixels || 0,
+              initialBandwidth: bitrates.initial_bandwidth || 0,
+            },
+            codecs: data.options.codecs || [],
+            pliIntervalMS: data.options.pli_interval_ns / 1_000_000 || 0,
+            emptyRoomTimeoutMS:
+              data.options.empty_Room_timeout_ns / 1_000_000 || 0,
+            qualityPresets: data.options.quality_presets || {},
           },
-          codecPreferences: data.codec_preferences || [],
         },
       }
 
@@ -51,40 +97,49 @@ export const createApi = ({ fetcher }) => {
 
     /**
      * @param {string} roomId
+     * @returns {Promise<import('./api-types.js').RoomAPIType.RoomReturnBody>}
      */
     getRoom = async (roomId) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string')
       }
 
-      /** @type {import('./api-types.js').RoomAPIType.GetRoomResponseBody} */
+      /** @type {import('./api-types.js').RoomAPIType.RoomRespBody} */
       const response = await this._fetcher.get(`/rooms/${roomId}`, {
         headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
       })
 
       const data = response.data || {}
-      const bitrates = data.bitrate_configs || {}
+      const bitrates = data.options.bitrates || {}
 
+      /** @type {import('./api-types.js').RoomAPIType.RoomReturnBody} */
+      /** @type {import('./api-types.js').RoomAPIType.RoomReturnBody} */
       const room = {
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
         data: {
-          roomId: data.room_id || '',
-          roomName: data.name || '',
-          bitrates: {
-            audio: bitrates.audio || 0,
-            audioRed: bitrates.audio_red || 0,
-            video: bitrates.video || 0,
-            videoHigh: bitrates.video_high || 0,
-            videoHighPixels: bitrates.video_high_pixels || 0,
-            videoMid: bitrates.video_mid || 0,
-            videoMidPixels: bitrates.video_mid_pixels || 0,
-            videoLow: bitrates.video_low || 0,
-            videoLowPixels: bitrates.video_low_pixels || 0,
-            initialBandwidth: bitrates.initial_bandwidth || 0,
+          id: data.id || '',
+          name: data.name || '',
+          options: {
+            bitrates: {
+              audio: bitrates.audio || 0,
+              audioRed: bitrates.audio_red || 0,
+              video: bitrates.video || 0,
+              videoHigh: bitrates.video_high || 0,
+              videoHighPixels: bitrates.video_high_pixels || 0,
+              videoMid: bitrates.video_mid || 0,
+              videoMidPixels: bitrates.video_mid_pixels || 0,
+              videoLow: bitrates.video_low || 0,
+              videoLowPixels: bitrates.video_low_pixels || 0,
+              initialBandwidth: bitrates.initial_bandwidth || 0,
+            },
+            codecs: data.options.codecs || [],
+            pliIntervalMS: data.options.pli_interval_ns / 1_000_000 || 0,
+            emptyRoomTimeoutMS:
+              data.options.empty_Room_timeout_ns / 1_000_000 || 0,
+            qualityPresets: data.options.quality_presets || {},
           },
-          codecPreferences: data.codec_preferences || [],
         },
       }
 
