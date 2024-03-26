@@ -74,8 +74,9 @@ export const createApi = ({ fetcher }) => {
       })
 
       const data = response.data || {}
-      const bitrates = data.options?.bitrates || {}
-      const qualityPresets = data.options?.quality_presets || {}
+      const roomOptions = data.options || {}
+      const bitrates = roomOptions.bitrates || {}
+      const qualityPresets = roomOptions.quality_presets || {}
 
       /** @type {import('./api-types.js').RoomAPIType.RoomReturnBody} */
       const room = {
@@ -98,10 +99,10 @@ export const createApi = ({ fetcher }) => {
               videoLowPixels: bitrates.video_low_pixels || 0,
               initialBandwidth: bitrates.initial_bandwidth || 0,
             },
-            codecs: data.options.codecs || [],
-            pliIntervalMS: data.options.pli_interval_ns / 1_000_000 || 0,
+            codecs: roomOptions.codecs || [],
+            pliIntervalMS: roomOptions.pli_interval_ns / 1_000_000 || 0,
             emptyRoomTimeoutMS:
-              data.options.empty_room_timeout_ns / 1_000_000 || 0,
+              roomOptions.empty_room_timeout_ns / 1_000_000 || 0,
             qualityPresets: {
               high: {
                 sid: qualityPresets.high?.sid,
@@ -138,8 +139,9 @@ export const createApi = ({ fetcher }) => {
       })
 
       const data = response.data || {}
-      const bitrates = data.options?.bitrates || {}
-      const qualityPresets = data.options?.quality_presets || {}
+      const roomOptions = data.options || {}
+      const bitrates = roomOptions.bitrates || {}
+      const qualityPresets = roomOptions.quality_presets || {}
 
       /** @type {import('./api-types.js').RoomAPIType.RoomReturnBody} */
       const room = {
@@ -162,10 +164,10 @@ export const createApi = ({ fetcher }) => {
               videoLowPixels: bitrates.video_low_pixels || 0,
               initialBandwidth: bitrates.initial_bandwidth || 0,
             },
-            codecs: data.options.codecs || [],
-            pliIntervalMS: data.options.pli_interval_ns / 1_000_000 || 0,
+            codecs: roomOptions.codecs || [],
+            pliIntervalMS: roomOptions.pli_interval_ns / 1_000_000 || 0,
             emptyRoomTimeoutMS:
-              data.options.empty_room_timeout_ns / 1_000_000 || 0,
+              roomOptions.empty_room_timeout_ns / 1_000_000 || 0,
             qualityPresets: {
               high: {
                 sid: qualityPresets.high?.sid,
