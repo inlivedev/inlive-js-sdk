@@ -13,43 +13,4 @@ export declare namespace RoomType {
     webrtc?: SharedType.DeepPartial<typeof webrtc>
     media?: SharedType.DeepPartial<typeof media>
   }
-
-  type Bitrates = {
-    audioRed: number
-    audio: number
-    video: number
-    videoHigh: number
-    videoHighPixels: number
-    videoMid: number
-    videoMidPixels: number
-    videoLow: number
-    videoLowPixels: number
-    initialBandwidth: number
-  }
-
-  type QualityPreset = {
-    sid: number
-    tid: number
-  }
-
-  type QualityPresets = {
-    high: QualityPreset
-    low: QualityPreset
-    mid: QualityPreset
-  }
-
-  type Options = {
-    bitrates?: Bitrates
-    codecs?: string[]
-    // empty room timeout in nanoseconds before the room is closed
-    emptyRoomTimeoutMS?: number
-    pliIntervalMS?: number
-    qualityPresets?: QualityPresets
-  }
-
-  type Room = {
-    id: string
-    name: string
-    options: Options
-  }
 }
