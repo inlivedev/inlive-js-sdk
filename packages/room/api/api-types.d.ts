@@ -1,5 +1,6 @@
 import type { createFetcher } from './fetcher.js'
 import type { createApi } from './api.js'
+import type { SharedType } from '../../internal/types/types.js'
 
 export declare namespace RoomAPIType {
   type CreateFetcher = typeof createFetcher
@@ -29,7 +30,20 @@ export declare namespace RoomAPIType {
     enable_vad?: boolean
   }
 
-  type Bitrates = {
+  type BitratesCamelCase = {
+    audioRed: number
+    audio: number
+    video: number
+    videoHigh: number
+    videoHighPixels: number
+    videoMid: number
+    videoMidPixels: number
+    videoLow: number
+    videoLowPixels: number
+    initialBandwidth: number
+  }
+
+  type BitratesSnakeCase = {
     audio: number
     audio_red: number
     video: number
@@ -42,35 +56,64 @@ export declare namespace RoomAPIType {
     initial_bandwidth: number
   }
 
+  type QualityPreset = {
+    sid: number
+    tid: number
+  }
+
+  type QualityPresets = {
+    high: QualityPreset
+    low: QualityPreset
+    mid: QualityPreset
+  }
+
+  type RoomOptions = {
+    bitrates: BitratesCamelCase
+    codecs: string[]
+    emptyRoomTimeoutMS: number
+    pliIntervalMS: number
+    qualityPresets: QualityPresets
+  }
+
+  type RoomUserOptions = SharedType.DeepPartial<RoomOptions>
+
+  type RoomResponse = {
+    id: string
+    name: string
+    options: {
+      bitrates: BitratesSnakeCase
+      codecs: string[]
+      empty_room_timeout_ns: number
+      pli_interval_ns: number
+      quality_presets: QualityPresets
+    }
+  }
+
   type BaseResponseBody = {
     code: number
     ok: boolean
     message: string
   }
 
-  type CreateRoomResponseBody = BaseResponseBody & {
-    data: {
-      room_id: string
-      name: string
-      bitrate_configs: Bitrates
-      codec_preferences: string[]
-    }
+  type RoomResponseBody = BaseResponseBody & {
+    data: RoomResponse
   }
 
-  type GetRoomResponseBody = BaseResponseBody & {
-    data: {
-      room_id: string
-      name: string
-      bitrate_configs: Bitrates
-      codec_preferences: string[]
-    }
+  type Room = {
+    id: string
+    name: string
+    options: RoomOptions
+  }
+
+  type RoomReturnBody = BaseResponseBody & {
+    data: Room
   }
 
   type RegisterClientResponseBody = BaseResponseBody & {
     data: {
       client_id: string
       name: string
-      bitrates: Bitrates
+      bitrates: BitratesSnakeCase
     }
   }
 
@@ -94,7 +137,7 @@ export declare namespace RoomAPIType {
     data: {
       client_id: string
       name: string
-      bitrates: Bitrates
+      bitrates: BitratesSnakeCase
     }
   }
 

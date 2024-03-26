@@ -2,8 +2,6 @@
 export const createApi = ({ fetcher }) => {
   const Api = class {
     _fetcher
-    /** @type {import('../room-types.js').RoomType.Room | null} */
-    _room = null
 
     constructor() {
       this._fetcher = fetcher
@@ -12,37 +10,113 @@ export const createApi = ({ fetcher }) => {
     /**
      * @param {string} [name]
      * @param {string} [id]
+     * @param {import('./api-types.js').RoomAPIType.RoomUserOptions} [options]
+     * @returns {Promise<import('./api-types.js').RoomAPIType.RoomReturnBody>}
      */
-    createRoom = async (name = '', id = '') => {
-      /** @type {import('./api-types.js').RoomAPIType.CreateRoomResponseBody} */
+    createRoom = async (name = '', id = '', options) => {
+      const requestOptions = {}
+
+      if (typeof options !== 'undefined') {
+        requestOptions.bitrates =
+          typeof options.bitrates !== 'undefined'
+            ? {
+                audio: options.bitrates.audio || 0,
+                audio_red: options.bitrates.audioRed || 0,
+                video: options.bitrates.video || 0,
+                video_high: options.bitrates.videoHigh || 0,
+                video_high_pixels: options.bitrates.videoHighPixels || 0,
+                video_mid: options.bitrates.videoMid || 0,
+                video_mid_pixels: options.bitrates.videoMidPixels || 0,
+                video_low: options.bitrates.videoLow || 0,
+                video_low_pixels: options.bitrates.videoLowPixels || 0,
+                initial_bandwidth: options.bitrates.initialBandwidth || 0,
+              }
+            : {}
+
+        requestOptions.quality_presets =
+          typeof options.qualityPresets !== 'undefined'
+            ? {
+                high: {
+                  sid: options.qualityPresets.high?.sid || 2,
+                  tid: options.qualityPresets.high?.tid || 2,
+                },
+                mid: {
+                  sid: options.qualityPresets.mid?.sid || 1,
+                  tid: options.qualityPresets.mid?.tid || 1,
+                },
+                low: {
+                  sid: options.qualityPresets.low?.sid || 0,
+                  tid: options.qualityPresets.low?.tid || 0,
+                },
+              }
+            : {}
+
+        requestOptions.codecs = options.codecs || []
+        requestOptions.pli_interval_ns = options.pliIntervalMS
+          ? options.pliIntervalMS * 1_000_000
+          : 0
+
+        requestOptions.empty_room_timeout_ns = options.emptyRoomTimeoutMS
+          ? options.emptyRoomTimeoutMS * 1_000_000
+          : 0
+      }
+
+      const body = {
+        id,
+        name,
+        options: requestOptions,
+      }
+
+      /** @type {import('./api-types.js').RoomAPIType.RoomResponseBody} */
       const response = await this._fetcher.post(`/rooms/create`, {
         headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
-        body: JSON.stringify({ name, id }),
+        body: JSON.stringify(body),
       })
 
       const data = response.data || {}
-      const bitrates = data.bitrate_configs || {}
+      const bitrates = data.options?.bitrates || {}
+      const qualityPresets = data.options?.quality_presets || {}
 
+      /** @type {import('./api-types.js').RoomAPIType.RoomReturnBody} */
       const room = {
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
         data: {
-          roomId: data.room_id || '',
-          roomName: data.name || '',
-          bitrates: {
-            audio: bitrates.audio || 0,
-            audioRed: bitrates.audio_red || 0,
-            video: bitrates.video || 0,
-            videoHigh: bitrates.video_high || 0,
-            videoHighPixels: bitrates.video_high_pixels || 0,
-            videoMid: bitrates.video_mid || 0,
-            videoMidPixels: bitrates.video_mid_pixels || 0,
-            videoLow: bitrates.video_low || 0,
-            videoLowPixels: bitrates.video_low_pixels || 0,
-            initialBandwidth: bitrates.initial_bandwidth || 0,
+          id: data.id || '',
+          name: data.name || '',
+          options: {
+            bitrates: {
+              audio: bitrates.audio || 0,
+              audioRed: bitrates.audio_red || 0,
+              video: bitrates.video || 0,
+              videoHigh: bitrates.video_high || 0,
+              videoHighPixels: bitrates.video_high_pixels || 0,
+              videoMid: bitrates.video_mid || 0,
+              videoMidPixels: bitrates.video_mid_pixels || 0,
+              videoLow: bitrates.video_low || 0,
+              videoLowPixels: bitrates.video_low_pixels || 0,
+              initialBandwidth: bitrates.initial_bandwidth || 0,
+            },
+            codecs: data.options.codecs || [],
+            pliIntervalMS: data.options.pli_interval_ns / 1_000_000 || 0,
+            emptyRoomTimeoutMS:
+              data.options.empty_room_timeout_ns / 1_000_000 || 0,
+            qualityPresets: {
+              high: {
+                sid: qualityPresets.high?.sid,
+                tid: qualityPresets.high?.tid,
+              },
+              mid: {
+                sid: qualityPresets.mid?.sid,
+                tid: qualityPresets.mid?.tid,
+              },
+              low: {
+                sid: qualityPresets.low?.sid,
+                tid: qualityPresets.low?.tid,
+              },
+            },
           },
-          codecPreferences: data.codec_preferences || [],
         },
       }
 
@@ -51,40 +125,62 @@ export const createApi = ({ fetcher }) => {
 
     /**
      * @param {string} roomId
+     * @returns {Promise<import('./api-types.js').RoomAPIType.RoomReturnBody>}
      */
     getRoom = async (roomId) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
         throw new Error('Room ID must be a valid string')
       }
 
-      /** @type {import('./api-types.js').RoomAPIType.GetRoomResponseBody} */
+      /** @type {import('./api-types.js').RoomAPIType.RoomResponseBody} */
       const response = await this._fetcher.get(`/rooms/${roomId}`, {
         headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
       })
 
       const data = response.data || {}
-      const bitrates = data.bitrate_configs || {}
+      const bitrates = data.options?.bitrates || {}
+      const qualityPresets = data.options?.quality_presets || {}
 
+      /** @type {import('./api-types.js').RoomAPIType.RoomReturnBody} */
       const room = {
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
         data: {
-          roomId: data.room_id || '',
-          roomName: data.name || '',
-          bitrates: {
-            audio: bitrates.audio || 0,
-            audioRed: bitrates.audio_red || 0,
-            video: bitrates.video || 0,
-            videoHigh: bitrates.video_high || 0,
-            videoHighPixels: bitrates.video_high_pixels || 0,
-            videoMid: bitrates.video_mid || 0,
-            videoMidPixels: bitrates.video_mid_pixels || 0,
-            videoLow: bitrates.video_low || 0,
-            videoLowPixels: bitrates.video_low_pixels || 0,
-            initialBandwidth: bitrates.initial_bandwidth || 0,
+          id: data.id || '',
+          name: data.name || '',
+          options: {
+            bitrates: {
+              audio: bitrates.audio || 0,
+              audioRed: bitrates.audio_red || 0,
+              video: bitrates.video || 0,
+              videoHigh: bitrates.video_high || 0,
+              videoHighPixels: bitrates.video_high_pixels || 0,
+              videoMid: bitrates.video_mid || 0,
+              videoMidPixels: bitrates.video_mid_pixels || 0,
+              videoLow: bitrates.video_low || 0,
+              videoLowPixels: bitrates.video_low_pixels || 0,
+              initialBandwidth: bitrates.initial_bandwidth || 0,
+            },
+            codecs: data.options.codecs || [],
+            pliIntervalMS: data.options.pli_interval_ns / 1_000_000 || 0,
+            emptyRoomTimeoutMS:
+              data.options.empty_room_timeout_ns / 1_000_000 || 0,
+            qualityPresets: {
+              high: {
+                sid: qualityPresets.high?.sid,
+                tid: qualityPresets.high?.tid,
+              },
+              mid: {
+                sid: qualityPresets.mid?.sid,
+                tid: qualityPresets.mid?.tid,
+              },
+              low: {
+                sid: qualityPresets.low?.sid,
+                tid: qualityPresets.low?.tid,
+              },
+            },
           },
-          codecPreferences: data.codec_preferences || [],
         },
       }
 
