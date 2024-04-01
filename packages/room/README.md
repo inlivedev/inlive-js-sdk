@@ -13,10 +13,74 @@ import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk/dist/room.js';
 
 const room = Room({
   api : {
-    // Aditional parameter, required for some function
-    apiKey : YOUR_API_KEY
+    apiKey : 'YOUR_API_KEY'
   }
 })
+```
+
+### Configurations
+These are the available config options for initializing the `Room()` module. See the [default configuration](./config/config.js).
+
+```js
+{
+  // API server configurations
+  api: {
+    // This is the only required part when you want to use functions that require authentication.
+    apiKey: 'YOUR_API_KEY',
+
+    // The API server base URL
+    baseUrl: 'https://hub.inlive.app',
+
+    // The API server version
+    version: 'v1',
+  },
+
+  // WebRTC configurations
+  webrtc: {
+    // ICE servers used by the ICE agent
+    iceServers: []
+  },
+
+  // Media input configurations such as webcam, mic, and screenshare
+  media: {
+    webcam: {
+      // The maximum frame rate that can be used in frames per second
+      maxFramerate: 30,
+
+      // A list of preferred codecs for webcam in video MIME type format. Early codec in the list will be prioritized.
+      videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
+
+      // Specify whether the simulcast is enabled for the webcam
+      simulcast: false,
+
+      // Specify whether the scalable video coding (svc) is enabled for the webcam
+      svc: true,
+
+      // Specify the scalability mode for the webcam
+      scalabilityMode: 'L3T1',
+    },
+    screen: {
+      // The maximum frame rate that can be used in frames per second
+      maxFramerate: 30,
+
+      // A list of preferred codecs for screenshare in video MIME type format. Early codec in the list will be prioritized.
+      videoCodecs: ['video/VP8', 'video/H264', 'video/VP9'],
+
+      // Specify whether the simulcast is enabled for the screenshare
+      simulcast: false,
+
+      // Specify whether the scalable video coding (svc) is enabled for the screenshare
+      svc: true,
+
+      // Specify the scalability mode for the screenshare
+      scalabilityMode: 'L1T2',
+    },
+    microphone: {
+      // A list of preferred codecs for microphone in audio MIME type format. Early codec in the list will be prioritized.
+      audioCodecs: ['audio/red', 'audio/opus'],
+    },
+  }
+}
 ```
 
 ### Authentication
@@ -27,6 +91,7 @@ If the Library is used on the client side you might not need to pass the `apiKey
 The following function require apiKey to be defined :
 * `Room.createRoom()`
 * `Room.getRoom()`
+* `Room.createClient()`
 
 ### Room object
 
