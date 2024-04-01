@@ -4,7 +4,7 @@ This package is used to work with [inLive Hub and Room API services](https://hub
 
 ## Usage
 
-To use this package, you need to import a `Room()` module and initialize it in a global scope where you can export and import the room object returned everywhere in your application.
+To use this package, you need to import a `Room` module and initialize it in a global scope where you can export and import the room object returned everywhere in your application.
 
 ```js
 import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk';
@@ -19,7 +19,7 @@ const room = Room({
 ```
 
 ### Configurations
-These are the available config options for initializing the `Room()` module. See the [default configuration](./config/config.js).
+These are the available config options for initializing the `Room` module. See the [default configuration](./config/config.js).
 
 ```js
 {
@@ -95,7 +95,7 @@ The following function require apiKey to be defined :
 
 ### Room object
 
-The room object is the object created when the `Room()` module is initialized. It consists methods that relates to the room scope. Some methods that directly interact to the room API can run on both client and server sides.
+The room object is the object created when the `Room` module is initialized. It consists methods that relates to the room scope. Some methods that directly interact to the room API can run on both client and server sides.
 
 #### Sample Code
 
