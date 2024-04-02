@@ -86,7 +86,7 @@ Some webcam and screenshare configurations might not be always working the way t
 }
 ```
 
-**Examples**
+#### Examples
 1. Example of using VP9 codec for webcam video codec with H264 or VP8 codecs fallback, SVC is enabled, simulcast is disabled, and using L3T1 scalability mode.
 ```js
 Room({
