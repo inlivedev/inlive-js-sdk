@@ -91,11 +91,13 @@ Some webcam and screenshare configurations might not be always working the way t
 ```js
 Room({
   // ...other options
-  webcam: {
-    videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
-    simulcast: false,
-    svc: true,
-    scalabilityMode: 'L3T1',
+  media: {
+    webcam: {
+      videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
+      simulcast: false,
+      svc: true,
+      scalabilityMode: 'L3T1',
+    }
   }
 })
 ```
@@ -104,11 +106,13 @@ Room({
 ```js
 Room({
   // ...other options
-  webcam: {
-    videoCodecs: ['video/H264', 'video/VP8', 'video/VP9'],
-    simulcast: true,
-    svc: false,
-    scalabilityMode: 'L1T2',
+  media: {
+    webcam: {
+      videoCodecs: ['video/H264', 'video/VP8', 'video/VP9'],
+      simulcast: true,
+      svc: false,
+      scalabilityMode: 'L1T2',
+    }
   }
 })
 ```
