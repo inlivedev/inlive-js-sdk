@@ -100,12 +100,12 @@ Room({
 })
 ```
 
-2. Example of using H264 codec for webcam video codec with VP8 codec fallback, SVC is disabled, simulcast is enabled, and using L1T2 scalability mode.
+2. Example of using H264 codec for webcam video codec with VP8 or VP9 codecs fallback, SVC is disabled, simulcast is enabled, and using L1T2 scalability mode.
 ```js
 Room({
   // ...other options
   webcam: {
-    videoCodecs: ['video/H264', 'video/VP8'],
+    videoCodecs: ['video/H264', 'video/VP8', 'video/VP9'],
     simulcast: true,
     svc: false,
     scalabilityMode: 'L1T2',
