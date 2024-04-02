@@ -86,6 +86,33 @@ Some webcam and screenshare configurations might not be always working the way t
 }
 ```
 
+**Examples**
+1. Example of using VP9 codec for webcam video codec with H264 or VP8 codecs fallback, SVC is enabled, simulcast is disabled, and using L3T1 scalability mode.
+```js
+Room({
+  // ...other options
+  webcam: {
+    videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
+    simulcast: false,
+    svc: true,
+    scalabilityMode: 'L3T1',
+  }
+})
+```
+
+2. Example of using H264 codec for webcam video codec with VP8 codec fallback, SVC is disabled, simulcast is enabled, and using L1T2 scalability mode.
+```js
+Room({
+  // ...other options
+  webcam: {
+    videoCodecs: ['video/H264', 'video/VP8'],
+    simulcast: true,
+    svc: false,
+    scalabilityMode: 'L1T2',
+  },
+})
+```
+
 ### Authentication
 Some function in the Room Object require the apiKey parameter to be defined, since the SDK is designed to be used on Client and Server Side
 
