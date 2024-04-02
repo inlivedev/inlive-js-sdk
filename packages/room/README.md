@@ -109,7 +109,7 @@ Room({
     simulcast: true,
     svc: false,
     scalabilityMode: 'L1T2',
-  },
+  }
 })
 ```
 
