@@ -83,6 +83,9 @@ These are the available config options for initializing the `Room` module. See t
 }
 ```
 
+> [!NOTE]
+Some webcam and screenshare configurations might not be always working the way they configured on every browser because each browser has different support for simulcast, svc, and codec.
+
 ### Authentication
 Some function in the Room Object require the apiKey parameter to be defined, since the SDK is designed to be used on Client and Server Side
 
