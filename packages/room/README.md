@@ -61,6 +61,13 @@ Some webcam and screenshare configurations might not be always working the way t
 
       // Specify the scalability mode for the webcam
       scalabilityMode: 'L3T1',
+
+      // Specify the bitrate for the webcam. Mid and low bitrates are available only when simulcast is enabled.
+      bitrates: {
+        high: 700000,
+        mid: 300000,
+        low: 100000,
+      },
     },
     screen: {
       // The maximum frame rate that can be used in frames per second
@@ -77,6 +84,13 @@ Some webcam and screenshare configurations might not be always working the way t
 
       // Specify the scalability mode for the screenshare
       scalabilityMode: 'L1T2',
+
+      // Specify the bitrate for the screenshare. Mid and low bitrates are available only when simulcast is enabled.
+      bitrates: {
+        high: 1200000,
+        mid: 500000,
+        low: 150000,
+      },
     },
     microphone: {
       // A list of preferred codecs for microphone in audio MIME type format. Early codec in the list will be prioritized.
@@ -87,7 +101,7 @@ Some webcam and screenshare configurations might not be always working the way t
 ```
 
 #### Examples
-1. Example of using VP9 codec for webcam video codec with H264 or VP8 codecs fallback, SVC is enabled, simulcast is disabled, and using L3T1 scalability mode.
+1. Example of using VP9 codec for webcam video codec with H264 or VP8 codecs fallback, SVC is enabled, simulcast is disabled, using L3T1 scalability mode, and using custom bitrate.
 ```js
 Room({
   // ...other options
@@ -97,12 +111,15 @@ Room({
       simulcast: false,
       svc: true,
       scalabilityMode: 'L3T1',
+      bitrates: {
+        high: 600000,
+      },
     }
   }
 })
 ```
 
-2. Example of using H264 codec for webcam video codec with VP8 or VP9 codecs fallback, SVC is disabled, simulcast is enabled, and using L1T2 scalability mode.
+1. Example of using H264 codec for webcam video codec with VP8 or VP9 codecs fallback, SVC is disabled, simulcast is enabled, using L1T2 scalability mode and using custom bitrate.
 ```js
 Room({
   // ...other options
@@ -112,6 +129,9 @@ Room({
       simulcast: true,
       svc: false,
       scalabilityMode: 'L1T2',
+      bitrates: {
+        high: 600000,
+      },
     }
   }
 })
@@ -167,11 +187,64 @@ await room.endRoom(roomData.data.roomId);
 
 #### Methods
 
-- `room.createRoom(name?: string | undefined, id?: string | undefined)`
+- `room.createRoom(name?: string | undefined, id?: string | undefined, config?: object)`
 
   > 🔐 Require ApiKey
 
   A method to create a new room. If the optional `name` and `id` parameters are passed, the room will be created under those name and id. This method will return a promise.
+
+  **Custom room configurations**
+  These are the available config options when creating a room with custom configurations.
+  ```js
+  {
+    // Custom bitrates and bandwidth for a specific room
+    bitrates?: {
+      audioRed?: number | undefined
+      audio?: number | undefined
+      video?: number | undefined
+      videoHigh?: number | undefined
+      videoHighPixels?: number | undefined
+      videoMid?: number | undefined
+      videoMidPixels?: number | undefined
+      videoLow?: number | undefined
+      videoLowPixels?: number | undefined
+      initialBandwidth?: number | undefined
+    },
+
+    // Custom codecs for a specific room
+    codecs?: string[] | undefined
+
+    // Custom empty room timeout for a specific room in milliseconds
+    emptyRoomTimeoutMS?: number | undefined
+
+    // Custom PLI interval for a specific room in milliseconds
+    pliIntervalMS?: number | undefined
+
+    // Custom quality presets for a specific room
+    qualityPresets?: {
+      high?: {
+        sid?: number | undefined
+        tid?: number | undefined
+      },
+      low?: {
+        sid?: number | undefined
+        tid?: number | undefined
+      },
+      mid?: {
+        sid?: number | undefined
+        tid?: number | undefined
+      }
+    }
+  }
+  ```
+
+  **Using custom room configurations**
+  ```js
+  const newRoom = await room.createRoom('a new room', 'custom-id', {
+    codecs: ['video/H264', 'audio/opus'],
+    emptyRoomTimeoutMS: 300000
+  })
+  ```
 
 - `room.getRoom(roomId: string)`
 
