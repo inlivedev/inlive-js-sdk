@@ -5,6 +5,7 @@ import {
 import { VideoObserver } from '../observer/video-observer.js'
 import { BandwidthController } from '../bandwidth-controller/bandwidth-controller.js'
 import { RoomEvent } from '../index.js'
+
 export const InternalPeerEvents = {
   INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
 }
