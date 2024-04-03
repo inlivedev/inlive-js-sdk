@@ -256,7 +256,26 @@ await room.endRoom(roomData.data.roomId);
 
   > 🔐 Require ApiKey
 
-  A method to create and register a new client to the room. It expects two parameters. The `roomId` is required. The second parameter is an optional config to set a custom client data. This method will return a promise.
+  A method to create and register a new client to the room. It expects two parameters. The `roomId` is required. The second parameter is an optional config to set a custom client config. This method will return a promise.
+
+  **Custom client configurations** \
+  These are the available config options when creating a client with custom configurations.
+  ```js
+  {
+    clientId?: string | undefined,
+    clientName?: string | undefined,
+    enableVAD?: boolean | undefined,
+  }
+  ```
+
+    **Using custom client configurations**
+  ```js
+  const client = await room.createClient('room-id', {
+    clientId: 'custom client id',
+    clientName: 'client name',
+    enableVAD: true,
+  })
+  ```
 
 - `room.getClient(roomId: string, clientId: string)`
 
