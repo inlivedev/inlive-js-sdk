@@ -199,40 +199,40 @@ await room.endRoom(roomData.data.roomId);
   {
     // Custom bitrates and bandwidth for a specific room
     bitrates?: {
-      audioRed?: number | undefined
-      audio?: number | undefined
-      video?: number | undefined
-      videoHigh?: number | undefined
-      videoHighPixels?: number | undefined
-      videoMid?: number | undefined
-      videoMidPixels?: number | undefined
-      videoLow?: number | undefined
-      videoLowPixels?: number | undefined
-      initialBandwidth?: number | undefined
+      audioRed?: number | undefined,
+      audio?: number | undefined,
+      video?: number | undefined,
+      videoHigh?: number | undefined,
+      videoHighPixels?: number | undefined,
+      videoMid?: number | undefined,
+      videoMidPixels?: number | undefined,
+      videoLow?: number | undefined,
+      videoLowPixels?: number | undefined,
+      initialBandwidth?: number | undefined,
     },
 
     // Custom codecs for a specific room
-    codecs?: string[] | undefined
+    codecs?: string[] | undefined,
 
     // Custom empty room timeout for a specific room in milliseconds
-    emptyRoomTimeoutMS?: number | undefined
+    emptyRoomTimeoutMS?: number | undefined,
 
     // Custom PLI interval for a specific room in milliseconds
-    pliIntervalMS?: number | undefined
+    pliIntervalMS?: number | undefined,
 
     // Custom quality presets for a specific room
     qualityPresets?: {
       high?: {
-        sid?: number | undefined
-        tid?: number | undefined
+        sid?: number | undefined,
+        tid?: number | undefined,
       },
       low?: {
-        sid?: number | undefined
-        tid?: number | undefined
+        sid?: number | undefined,
+        tid?: number | undefined,
       },
       mid?: {
-        sid?: number | undefined
-        tid?: number | undefined
+        sid?: number | undefined,
+        tid?: number | undefined,
       }
     }
   }
@@ -262,9 +262,9 @@ await room.endRoom(roomData.data.roomId);
   These are the available config options when creating a client with custom configurations.
   ```js
   {
-    clientId?: string | undefined
-    clientName?: string | undefined
-    enableVAD?: boolean | undefined
+    clientId?: string | undefined,
+    clientName?: string | undefined,
+    enableVAD?: boolean | undefined,
   }
   ```
 
