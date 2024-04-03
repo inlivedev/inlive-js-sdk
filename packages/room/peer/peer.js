@@ -23,12 +23,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     _bwController
     /** @type {VideoObserver | null} */
     _videoObserver
-    /** @type {number} */
-    _highBitrate
-    /** @type {number} */
-    _midBitrate
-    /** @type {number} */
-    _lowBitrate
     /** @type {Array<HTMLVideoElement>} */
     _pendingObservedVideo
     /** @type {Array<RTCIceCandidate>} */
@@ -49,9 +43,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       })
 
       this._videoObserver = null
-      this._highBitrate = config.media.webcam.bitrates.high
-      this._midBitrate = config.media.webcam.bitrates.mid
-      this._lowBitrate = config.media.webcam.bitrates.low
       this._pendingObservedVideo = []
       this._pendingIceCandidates = []
       /**
@@ -552,16 +543,16 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           preferredCodecs.push(videoCodec)
         }
 
-        const defaultBitrate =
-          type === 'webcam'
-            ? config.media.webcam.bitrates.high
-            : config.media.screen.bitrates.high
-
         /** @type {RTCRtpTransceiverInit} */
         const transceiverInit = {
           direction: 'sendonly',
           streams: [stream.mediaStream],
-          sendEncodings: [{ maxBitrate: defaultBitrate }],
+          sendEncodings: [
+            {
+              maxBitrate: config.media[type].bitrates.high,
+              maxFramerate: config.media[type].maxFramerate,
+            },
+          ],
         }
 
         const svcEnabled = config.media[type].svc && browserName !== FIREFOX
@@ -574,21 +565,21 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             {
               rid: 'high',
               maxFramerate: config.media[type].maxFramerate,
-              maxBitrate: this._highBitrate,
+              maxBitrate: config.media[type].bitrates.high,
             },
             {
               rid: 'mid',
               // eslint-disable-next-line unicorn/no-zero-fractions
               scaleResolutionDownBy: 2.0,
               maxFramerate: config.media[type].maxFramerate,
-              maxBitrate: this._midBitrate,
+              maxBitrate: config.media[type].bitrates.mid,
             },
             {
               rid: 'low',
               // eslint-disable-next-line unicorn/no-zero-fractions
               scaleResolutionDownBy: 4.0,
               maxFramerate: config.media[type].maxFramerate,
-              maxBitrate: this._lowBitrate,
+              maxBitrate: config.media[type].bitrates.low,
             },
           ]
 
@@ -611,7 +602,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             transceiverInit.sendEncodings = sendEncodings
           } else {
             const sendEncodings = {
-              maxBitrate: this._highBitrate,
+              maxBitrate: config.media[type].bitrates.high,
               scalabilityMode: config.media[type].scalabilityMode,
               maxFramerate: config.media[type].maxFramerate,
             }
