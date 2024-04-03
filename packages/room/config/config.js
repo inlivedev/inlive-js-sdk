@@ -26,6 +26,11 @@ export const media = {
     simulcast: false,
     svc: true,
     scalabilityMode: 'L3T1',
+    bitrates: {
+      high: 700 * 1000,
+      mid: 300 * 1000,
+      low: 100 * 1000,
+    },
   },
   screen: {
     maxFramerate: 30,
@@ -33,6 +38,11 @@ export const media = {
     simulcast: false,
     svc: true,
     scalabilityMode: 'L1T2',
+    bitrates: {
+      high: 1200 * 1000,
+      mid: 500 * 1000,
+      low: 150 * 1000,
+    },
   },
   microphone: {
     audioCodecs: ['audio/red', 'audio/opus'],
