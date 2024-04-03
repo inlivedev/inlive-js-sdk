@@ -193,7 +193,7 @@ await room.endRoom(roomData.data.roomId);
 
   A method to create a new room. If the optional `name` and `id` parameters are passed, the room will be created under those name and id. This method will return a promise.
 
-  **Custom room configurations**
+  **Custom room configurations** \
   These are the available config options when creating a room with custom configurations.
   ```js
   {
