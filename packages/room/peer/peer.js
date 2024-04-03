@@ -5,7 +5,6 @@ import {
 import { VideoObserver } from '../observer/video-observer.js'
 import { BandwidthController } from '../bandwidth-controller/bandwidth-controller.js'
 import { RoomEvent } from '../index.js'
-
 export const InternalPeerEvents = {
   INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
 }
@@ -50,9 +49,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       })
 
       this._videoObserver = null
-      this._highBitrate = 1200 * 1000
-      this._midBitrate = 500 * 1000
-      this._lowBitrate = 150 * 1000
+      this._highBitrate = config.media.webcam.bitrates.high
+      this._midBitrate = config.media.webcam.bitrates.mid
+      this._lowBitrate = config.media.webcam.bitrates.low
       this._pendingObservedVideo = []
       this._pendingIceCandidates = []
       /**
@@ -553,10 +552,16 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           preferredCodecs.push(videoCodec)
         }
 
+        const defaultBitrate =
+          type === 'webcam'
+            ? config.media.webcam.bitrates.high
+            : config.media.screen.bitrates.high
+
         /** @type {RTCRtpTransceiverInit} */
         const transceiverInit = {
           direction: 'sendonly',
           streams: [stream.mediaStream],
+          sendEncodings: [{ maxBitrate: defaultBitrate }],
         }
 
         const svcEnabled = config.media[type].svc && browserName !== FIREFOX
