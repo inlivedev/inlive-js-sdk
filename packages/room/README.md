@@ -187,7 +187,7 @@ await room.endRoom(roomData.data.roomId);
 
 #### Methods
 
-- `room.createRoom(name?: string | undefined, id?: string | undefined, config?: object)`
+- `room.createRoom(name?: string | undefined, id?: string | undefined, config?: object | undefined)`
 
   > 🔐 Require ApiKey
 
@@ -252,7 +252,7 @@ await room.endRoom(roomData.data.roomId);
 
   A method to get the room data. It expects a `roomId` as a parameter. This method will return a promise.
 
-- `room.createClient(roomId: string, config?: object)`
+- `room.createClient(roomId: string, config?: object | undefined)`
 
   > 🔐 Require ApiKey
 
