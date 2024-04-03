@@ -262,9 +262,9 @@ await room.endRoom(roomData.data.roomId);
   These are the available config options when creating a client with custom configurations.
   ```js
   {
-    clientId?: string | undefined,
-    clientName?: string | undefined,
-    enableVAD?: boolean | undefined,
+    clientId?: string | undefined
+    clientName?: string | undefined
+    enableVAD?: boolean | undefined
   }
   ```
 
