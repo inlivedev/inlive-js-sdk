@@ -25,9 +25,9 @@ export const media = {
     videoCodecs: ['video/VP9', 'video/H264', 'video/VP8'],
     simulcast: false,
     svc: true,
-    scalabilityMode: 'L3T1',
+    scalabilityMode: 'L3T2',
     bitrates: {
-      high: 700 * 1000,
+      high: 900 * 1000,
       mid: 300 * 1000,
       low: 100 * 1000,
     },
@@ -37,7 +37,7 @@ export const media = {
     videoCodecs: ['video/VP8', 'video/H264', 'video/VP9'],
     simulcast: false,
     svc: true,
-    scalabilityMode: 'L1T2',
+    scalabilityMode: 'L1T1',
     bitrates: {
       high: 1200 * 1000,
       mid: 500 * 1000,
