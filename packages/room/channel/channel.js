@@ -1,4 +1,5 @@
 import { RoomEvent } from '../index.js'
+import { InternalPeerEvents } from '../peer/peer.js'
 
 export const REASONS = {
   PEER_CLOSED: 'peerClosed',
@@ -268,29 +269,24 @@ export const createChannel = ({ api, event, peer, streams }) => {
       const data = JSON.parse(event.data)
       /** @type {import('./channel-types.js').RoomChannelType.SubscribingTrack[]} */
       const subscribingTracks = []
+      const streams = []
 
       for (const id of Object.keys(data.tracks)) {
         const track = data.tracks[id]
-        const streamId = track.stream_id
-        const clientId = track.client_id
-        const clientName = track.client_name
-        const trackId = track.track_id
-        const source = track.source
 
         subscribingTracks.push({
-          client_id: clientId,
-          stream_id: streamId,
-          track_id: trackId,
+          client_id: track.client_id,
+          stream_id: track.stream_id,
+          track_id: track.track_id,
         })
 
-        if (!this._streams.getDraft(streamId)) {
-          this._streams.addDraft(streamId, {
-            clientId: clientId,
-            name: clientName,
-            origin: 'remote',
-            source: source,
-          })
-        }
+        streams.push({
+          streamId: track.stream_id,
+          clientId: track.client_id,
+          name: track.client_name,
+          origin: 'remote',
+          source: track.source,
+        })
       }
 
       await this._api.subscribeTracks(
@@ -298,6 +294,32 @@ export const createChannel = ({ api, event, peer, streams }) => {
         this._clientId,
         subscribingTracks
       )
+
+      for (const stream of streams) {
+        const draftStream = this._streams.getDraft(stream.streamId)
+
+        if (draftStream) {
+          const newStream = {
+            ...draftStream,
+            clientId: stream.clientId,
+            name: stream.name,
+            source: stream.source,
+            origin: stream.origin,
+          }
+
+          this._event.emit(
+            InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
+            newStream
+          )
+        } else {
+          this._streams.addDraft(stream.streamId, {
+            clientId: stream.clientId,
+            name: stream.name,
+            source: stream.source,
+            origin: stream.origin,
+          })
+        }
+      }
     }
 
     /**
