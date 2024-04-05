@@ -8,7 +8,7 @@ import { RoomEvent } from '../index.js'
 
 export const InternalPeerEvents = {
   INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
-  REMOTE_STREAM_READY: 'remoteStreamReady',
+  REMOTE_STREAM_READY_TO_ADD: 'remoteStreamReadyToAdd',
 }
 
 /** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
@@ -322,7 +322,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       )
 
       this._event.on(
-        InternalPeerEvents.REMOTE_STREAM_READY,
+        InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
         /** @param {import('../stream/stream-types.js').RoomStreamType.AddStreamParameters} stream */
         (stream) => {
           if (this.hasStream(stream.mediaStream.id)) return
@@ -787,7 +787,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         const isValidStream = this._streams.validateStream(stream)
 
         if (isValidStream) {
-          this._event.emit(InternalPeerEvents.REMOTE_STREAM_READY, stream)
+          this._event.emit(
+            InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
+            stream
+          )
         } else {
           this._streams.addDraft(streamId, stream)
         }

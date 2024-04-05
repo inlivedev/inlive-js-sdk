@@ -315,7 +315,10 @@ export const createChannel = ({ api, event, peer, streams }) => {
           const isValidStream = this._streams.validateStream(newStream)
 
           if (isValidStream) {
-            this._event.emit(InternalPeerEvents.REMOTE_STREAM_READY, newStream)
+            this._event.emit(
+              InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
+              newStream
+            )
           } else {
             this._streams.addDraft(stream.streamId, newStream)
           }
