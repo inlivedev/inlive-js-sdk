@@ -273,24 +273,19 @@ export const createChannel = ({ api, event, peer, streams }) => {
 
       for (const id of Object.keys(data.tracks)) {
         const track = data.tracks[id]
-        const streamId = track.stream_id
-        const clientId = track.client_id
-        const clientName = track.client_name
-        const trackId = track.track_id
-        const source = track.source
 
         subscribingTracks.push({
-          client_id: clientId,
-          stream_id: streamId,
-          track_id: trackId,
+          client_id: track.client_id,
+          stream_id: track.stream_id,
+          track_id: track.track_id,
         })
 
         streams.push({
-          streamId: streamId,
-          clientId: clientId,
-          name: clientName,
+          streamId: track.stream_id,
+          clientId: track.client_id,
+          name: track.client_name,
           origin: 'remote',
-          source: source,
+          source: track.source,
         })
       }
 
@@ -312,16 +307,10 @@ export const createChannel = ({ api, event, peer, streams }) => {
             origin: stream.origin,
           }
 
-          const isValidStream = this._streams.validateStream(newStream)
-
-          if (isValidStream) {
-            this._event.emit(
-              InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
-              newStream
-            )
-          } else {
-            this._streams.addDraft(stream.streamId, newStream)
-          }
+          this._event.emit(
+            InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
+            newStream
+          )
         } else {
           this._streams.addDraft(stream.streamId, {
             clientId: stream.clientId,

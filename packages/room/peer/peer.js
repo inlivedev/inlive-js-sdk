@@ -325,7 +325,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
         /** @param {import('../stream/stream-types.js').RoomStreamType.AddStreamParameters} stream */
         (stream) => {
-          if (this.hasStream(stream.mediaStream.id)) return
+          const isValidStream = this._streams.validateStream(stream)
+          if (!isValidStream || this.hasStream(stream.mediaStream.id)) return
 
           stream.mediaStream.addEventListener('removetrack', (event) => {
             const target = event.target
@@ -772,32 +773,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      */
     _onTrack = async (event) => {
       const mediaStream = event.streams.find((stream) => stream.active === true)
-
-      if (!(mediaStream instanceof MediaStream)) return
-
-      const streamId = mediaStream.id
-      const draftStream = this._streams.getDraft(streamId)
+      const draftStream = this._streams.getDraft(mediaStream.id)
 
       if (draftStream) {
-        const stream = {
-          ...draftStream,
-          mediaStream,
-        }
-
-        const isValidStream = this._streams.validateStream(stream)
-
-        if (isValidStream) {
-          this._event.emit(
-            InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
-            stream
-          )
-        } else {
-          this._streams.addDraft(streamId, stream)
-        }
+        const stream = { ...draftStream, mediaStream }
+        this._event.emit(InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD, stream)
       } else {
-        this._streams.addDraft(streamId, {
-          mediaStream,
-        })
+        this._streams.addDraft(mediaStream.id, { mediaStream })
       }
     }
 
