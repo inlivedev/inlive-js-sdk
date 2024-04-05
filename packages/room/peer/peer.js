@@ -8,6 +8,7 @@ import { RoomEvent } from '../index.js'
 
 export const InternalPeerEvents = {
   INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
+  REMOTE_STREAM_READY: 'remoteStreamReady',
 }
 
 /** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
@@ -125,7 +126,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      */
     addStream = (key, data) => {
       this._streams.validateKey(key)
-      this._streams.validateStream(data)
+      const isValidStream = this._streams.validateStream(data)
+
+      if (!isValidStream) {
+        throw new Error(
+          'Please provide valid stream data (clientId, name, origin, source, MediaStream)'
+        )
+      }
 
       const stream = this._stream.createInstance({
         id: key,
@@ -311,6 +318,32 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           if (stream.origin === 'local') {
             await this.negotiate()
           }
+        }
+      )
+
+      this._event.on(
+        InternalPeerEvents.REMOTE_STREAM_READY,
+        /** @param {import('../stream/stream-types.js').RoomStreamType.AddStreamParameters} stream */
+        (stream) => {
+          if (this.hasStream(stream.mediaStream.id)) return
+
+          stream.mediaStream.addEventListener('removetrack', (event) => {
+            const target = event.target
+
+            if (!(target instanceof MediaStream)) return
+
+            if (this.hasStream(target.id) && target.getTracks().length === 0) {
+              this.removeStream(target.id)
+            }
+          })
+
+          for (const track of stream.mediaStream.getTracks()) {
+            track.addEventListener('ended', () => {
+              this.removeStream(stream.mediaStream.id)
+            })
+          }
+
+          this.addStream(stream.mediaStream.id, stream)
         }
       )
 
@@ -741,35 +774,28 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const mediaStream = event.streams.find((stream) => stream.active === true)
 
       if (!(mediaStream instanceof MediaStream)) return
-      if (this.hasStream(mediaStream.id)) return
 
-      mediaStream.addEventListener('removetrack', (event) => {
-        const target = event.target
+      const streamId = mediaStream.id
+      const draftStream = this._streams.getDraft(streamId)
 
-        if (!(target instanceof MediaStream)) return
-
-        if (this.hasStream(target.id) && target.getTracks().length === 0) {
-          this.removeStream(target.id)
+      if (draftStream) {
+        const stream = {
+          ...draftStream,
+          mediaStream,
         }
-      })
 
-      for (const track of mediaStream.getTracks()) {
-        track.addEventListener('ended', () => {
-          this.removeStream(mediaStream.id)
+        const isValidStream = this._streams.validateStream(stream)
+
+        if (isValidStream) {
+          this._event.emit(InternalPeerEvents.REMOTE_STREAM_READY, stream)
+        } else {
+          this._streams.addDraft(streamId, stream)
+        }
+      } else {
+        this._streams.addDraft(streamId, {
+          mediaStream,
         })
       }
-
-      const draftStream = this._streams.getDraft(mediaStream.id) || {}
-
-      this.addStream(mediaStream.id, {
-        clientId: draftStream.clientId || '',
-        name: draftStream.name || '',
-        origin: draftStream.origin || 'remote',
-        source: draftStream.source || 'media',
-        mediaStream: mediaStream,
-      })
-
-      this._streams.removeDraft(mediaStream.id)
     }
 
     /**

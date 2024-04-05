@@ -142,7 +142,6 @@ export const createStreams = () => {
     /**
      * Validate the streams data
      * @param {import('./stream-types.js').RoomStreamType.AddStreamParameters} data
-     * @throws {Error}
      * @returns {boolean}
      */
     validateStream = (data) => {
@@ -154,9 +153,7 @@ export const createStreams = () => {
         typeof data.clientId !== 'string' ||
         typeof data.name !== 'string'
       ) {
-        throw new Error(
-          'Please provide valid stream data (clientId, name, origin, source, MediaStream)'
-        )
+        return false
       }
 
       return true

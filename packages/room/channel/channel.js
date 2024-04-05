@@ -1,4 +1,5 @@
 import { RoomEvent } from '../index.js'
+import { InternalPeerEvents } from '../peer/peer.js'
 
 export const REASONS = {
   PEER_CLOSED: 'peerClosed',
@@ -268,6 +269,7 @@ export const createChannel = ({ api, event, peer, streams }) => {
       const data = JSON.parse(event.data)
       /** @type {import('./channel-types.js').RoomChannelType.SubscribingTrack[]} */
       const subscribingTracks = []
+      const streams = []
 
       for (const id of Object.keys(data.tracks)) {
         const track = data.tracks[id]
@@ -283,14 +285,13 @@ export const createChannel = ({ api, event, peer, streams }) => {
           track_id: trackId,
         })
 
-        if (!this._streams.getDraft(streamId)) {
-          this._streams.addDraft(streamId, {
-            clientId: clientId,
-            name: clientName,
-            origin: 'remote',
-            source: source,
-          })
-        }
+        streams.push({
+          streamId: streamId,
+          clientId: clientId,
+          name: clientName,
+          origin: 'remote',
+          source: source,
+        })
       }
 
       await this._api.subscribeTracks(
@@ -298,6 +299,35 @@ export const createChannel = ({ api, event, peer, streams }) => {
         this._clientId,
         subscribingTracks
       )
+
+      for (const stream of streams) {
+        const draftStream = this._streams.getDraft(stream.streamId)
+
+        if (draftStream) {
+          const newStream = {
+            ...draftStream,
+            clientId: stream.clientId,
+            name: stream.name,
+            source: stream.source,
+            origin: stream.origin,
+          }
+
+          const isValidStream = this._streams.validateStream(newStream)
+
+          if (isValidStream) {
+            this._event.emit(InternalPeerEvents.REMOTE_STREAM_READY, newStream)
+          } else {
+            this._streams.addDraft(stream.streamId, newStream)
+          }
+        } else {
+          this._streams.addDraft(stream.streamId, {
+            clientId: stream.clientId,
+            name: stream.name,
+            source: stream.source,
+            origin: stream.origin,
+          })
+        }
+      }
     }
 
     /**
