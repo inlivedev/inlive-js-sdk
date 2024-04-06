@@ -99,8 +99,8 @@ export const createStreams = () => {
       this._drafts.set(key, {
         clientId: value.clientId || draft.clientId || '',
         name: value.name || draft.name || '',
-        origin: value.origin || draft.origin || undefined,
-        source: value.source || draft.source || undefined,
+        origin: value.origin || draft.origin || '',
+        source: value.source || draft.source || '',
         mediaStream: value.mediaStream || draft.mediaStream || undefined,
       })
     }
