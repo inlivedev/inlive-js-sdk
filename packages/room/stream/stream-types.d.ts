@@ -24,10 +24,10 @@ export declare namespace RoomStreamType {
   export type AddStreamParameters = Omit<StreamParameters, 'id'>
 
   export type DraftStream = {
-    clientId: string
-    name: string
-    origin: 'local' | 'remote' | string
-    source: 'media' | 'screen' | string
-    mediaStream?: MediaStream
+    clientId?: string
+    name?: string
+    origin?: 'local' | 'remote' | string
+    source?: 'media' | 'screen' | string
+    mediaStream?: MediaStream | undefined
   }
 }
