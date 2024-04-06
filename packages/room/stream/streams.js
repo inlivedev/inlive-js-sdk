@@ -141,7 +141,7 @@ export const createStreams = () => {
 
     /**
      * Validate the streams data
-     * @param {import('./stream-types.js').RoomStreamType.AddStreamParameters} data
+     * @param {import('./stream-types.js').RoomStreamType.DraftStream} data
      * @returns {boolean}
      */
     validateStream = (data) => {
