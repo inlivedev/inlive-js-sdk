@@ -149,8 +149,14 @@ export const createStreams = () => {
         return false
       }
 
-      if (typeof data.clientId !== 'string') return false
       if (typeof data.name !== 'string') return false
+
+      if (
+        typeof data.clientId !== 'string' ||
+        data.clientId.trim().length === 0
+      ) {
+        return false
+      }
 
       if (typeof data.origin !== 'string' || data.origin.trim().length === 0) {
         return false
