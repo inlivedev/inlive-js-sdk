@@ -199,18 +199,34 @@ export const createApi = ({ fetcher }) => {
       }
 
       /** @type {import('./api-types.js').RoomAPIType.RegisterClientRequestBody} */
-      const body = {
-        uid: typeof config?.clientId === 'string' ? config.clientId : '',
-        name: typeof config?.clientName === 'string' ? config.clientName : '',
-        enable_vad:
-          typeof config?.enableVAD === 'boolean' ? config.enableVAD : false,
+      const body = {}
+
+      if (config.clientId && config.clientId.trim().length > 0) {
+        body.uid = config.clientId
+      }
+
+      if (config.clientName && config.clientName.trim().length > 0) {
+        body.name = config.clientName
+      }
+
+      if (typeof config.enableVAD === 'boolean') {
+        body.enable_vad = config.enableVAD
+      }
+
+      /** @type {RequestInit} */
+      const options = {
+        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
+      }
+
+      if (body.uid || body.name) {
+        options.body = JSON.stringify(body)
       }
 
       /** @type {import('./api-types.js').RoomAPIType.RegisterClientResponseBody} */
-      const response = await this._fetcher.post(`/rooms/${roomId}/register`, {
-        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
-        body: JSON.stringify(body),
-      })
+      const response = await this._fetcher.post(
+        `/rooms/${roomId}/register`,
+        options
+      )
 
       const data = response.data || {}
       const bitrates = data.bitrates || {}
