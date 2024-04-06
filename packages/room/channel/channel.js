@@ -300,23 +300,26 @@ export const createChannel = ({ api, event, peer, streams }) => {
 
         if (draftStream) {
           const newStream = {
-            ...draftStream,
             clientId: stream.clientId,
             name: stream.name,
             source: stream.source,
             origin: stream.origin,
+            mediaStream: draftStream.mediaStream,
           }
 
-          this._event.emit(
-            InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
-            newStream
-          )
+          if (this._streams.validateStream(newStream)) {
+            this._event.emit(
+              InternalPeerEvents.REMOTE_STREAM_READY_TO_ADD,
+              newStream
+            )
+          }
         } else {
           this._streams.addDraft(stream.streamId, {
             clientId: stream.clientId,
             name: stream.name,
             source: stream.source,
             origin: stream.origin,
+            mediaStream: undefined,
           })
         }
       }
