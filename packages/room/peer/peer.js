@@ -773,6 +773,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      */
     _onTrack = async (event) => {
       const mediaStream = event.streams.find((stream) => stream.active === true)
+      if (!(mediaStream instanceof MediaStream)) return
       const draftStream = this._streams.getDraft(mediaStream.id)
 
       if (draftStream) {
