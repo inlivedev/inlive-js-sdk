@@ -25,9 +25,9 @@ export declare namespace RoomAPIType {
   }
 
   type RegisterClientRequestBody = {
-    uid?: string
-    name?: string
-    enable_vad?: boolean
+    uid: string
+    name: string
+    enable_vad: boolean
   }
 
   type BitratesCamelCase = {
