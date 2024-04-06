@@ -97,10 +97,10 @@ export const createStreams = () => {
       const draft = this._drafts.get(key) || {}
 
       this._drafts.set(key, {
-        clientId: value.clientId || draft.clientId || undefined,
-        name: value.name || draft.name || undefined,
-        origin: value.origin || draft.origin || undefined,
-        source: value.source || draft.source || undefined,
+        clientId: value.clientId || draft.clientId || '',
+        name: value.name || draft.name || '',
+        origin: value.origin || draft.origin || '',
+        source: value.source || draft.source || '',
         mediaStream: value.mediaStream || draft.mediaStream || undefined,
       })
     }
@@ -141,18 +141,30 @@ export const createStreams = () => {
 
     /**
      * Validate the streams data
-     * @param {import('./stream-types.js').RoomStreamType.AddStreamParameters} data
+     * @param {import('./stream-types.js').RoomStreamType.DraftStream} data
      * @returns {boolean}
      */
     validateStream = (data) => {
+      if (!data || !(data.mediaStream instanceof MediaStream)) {
+        return false
+      }
+
       if (
-        !data ||
-        !(data.mediaStream instanceof MediaStream) ||
-        typeof data.origin !== 'string' ||
-        typeof data.source !== 'string' ||
         typeof data.clientId !== 'string' ||
-        typeof data.name !== 'string'
+        data.clientId.trim().length === 0
       ) {
+        return false
+      }
+
+      if (typeof data.name !== 'string') {
+        return false
+      }
+
+      if (typeof data.origin !== 'string' || data.origin.trim().length === 0) {
+        return false
+      }
+
+      if (typeof data.source !== 'string' || data.source.trim().length === 0) {
         return false
       }
 
