@@ -99,8 +99,8 @@ export const createStreams = () => {
       this._drafts.set(key, {
         clientId: value.clientId || draft.clientId || '',
         name: value.name || draft.name || '',
-        origin: value.origin || draft.origin || '',
-        source: value.source || draft.source || '',
+        origin: value.origin || draft.origin || undefined,
+        source: value.source || draft.source || undefined,
         mediaStream: value.mediaStream || draft.mediaStream || undefined,
       })
     }
@@ -145,14 +145,18 @@ export const createStreams = () => {
      * @returns {boolean}
      */
     validateStream = (data) => {
-      if (
-        !data ||
-        !(data.mediaStream instanceof MediaStream) ||
-        typeof data.origin !== 'string' ||
-        typeof data.source !== 'string' ||
-        typeof data.clientId !== 'string' ||
-        typeof data.name !== 'string'
-      ) {
+      if (!data || !(data.mediaStream instanceof MediaStream)) {
+        return false
+      }
+
+      if (typeof data.clientId !== 'string') return false
+      if (typeof data.name !== 'string') return false
+
+      if (typeof data.origin !== 'string' || data.origin.trim().length === 0) {
+        return false
+      }
+
+      if (typeof data.source !== 'string' || data.source.trim().length === 0) {
         return false
       }
 
