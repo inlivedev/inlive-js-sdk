@@ -277,46 +277,16 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {MediaStreamTrack} [videoTrack] sender video track
      */
     turnOffCamera = (videoTrack) => {
-      if (!this._peerConnection) return
-
       if (videoTrack?.kind === 'video') {
-        for (const transceiver of this._peerConnection.getTransceivers()) {
-          const track = transceiver.sender.track
-          if (!track) return
-
-          if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
-            track.stop()
-            this._event.emit(RoomEvent.TRACK_MUTE, {
-              track: track,
-              source: 'media',
-              origin: 'local',
-            })
-          }
-        }
+        this.stopTrack(videoTrack)
       } else {
         const stream = this._streams.getAllStreams().find((stream) => {
           return stream.origin === 'local' && stream.source === 'media'
         })
-
-        if (!stream) return
-
-        const videoTrack = stream.mediaStream.getVideoTracks()[0]
+        const videoTrack = stream?.mediaStream.getVideoTracks()[0]
 
         if (!videoTrack) return
-
-        for (const transceiver of this._peerConnection.getTransceivers()) {
-          const track = transceiver.sender.track
-          if (!track) return
-
-          if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
-            track.stop()
-            this._event.emit(RoomEvent.TRACK_MUTE, {
-              track: track,
-              source: 'media',
-              origin: 'local',
-            })
-          }
-        }
+        this.stopTrack(videoTrack)
       }
     }
 
@@ -326,6 +296,31 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     turnOffMic = () => {
       if (!this._peerConnection) return
       this._setTrackEnabled(this._peerConnection, 'audio', false)
+    }
+
+    /**
+     * @param {MediaStreamTrack} track
+     */
+    stopTrack = (track) => {
+      if (!this._peerConnection) return
+
+      if (!(track instanceof MediaStreamTrack)) {
+        throw new TypeError('The track must be an instance of MediaStreamTrack')
+      }
+
+      for (const transceiver of this._peerConnection.getTransceivers()) {
+        const senderTrack = transceiver.sender.track
+        if (!senderTrack) return
+
+        if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
+          senderTrack.stop()
+          this._event.emit(RoomEvent.TRACK_MUTE, {
+            track: senderTrack,
+            source: 'media',
+            origin: 'local',
+          })
+        }
+      }
     }
 
     /**
@@ -980,6 +975,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
         // addTrack: peer.addTrack,
+        stopTrack: peer.stopTrack,
         replaceTrack: peer.replaceTrack,
         observeVideo: peer.observeVideo,
         unobserveVideo: peer.unobserveVideo,
