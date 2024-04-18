@@ -7,6 +7,10 @@ export const RoomEvent = Object.freeze({
   PEER_CLOSED: 'peerClosed',
   STREAM_AVAILABLE: 'streamAvailable',
   STREAM_REMOVED: 'streamRemoved',
+  CAMERA_ON: 'cameraOn',
+  CAMERA_OFF: 'cameraOff',
+  MIC_ON: 'micOn',
+  MIC_OFF: 'micOff',
   META_CHANGED: 'metaChanged',
 })
 

@@ -231,6 +231,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         if (localVideoTrack) {
           localStream.replaceTrack(newTrack)
           await this.replaceTrack(newTrack)
+          this._event.emit(RoomEvent.CAMERA_ON)
           return
         }
 
@@ -246,6 +247,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         if (localVideoTrack) {
           localStream.replaceTrack(newTrack)
           await this.replaceTrack(newTrack)
+          this._event.emit(RoomEvent.CAMERA_ON)
           return
         }
 
@@ -276,6 +278,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
           if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
             track.stop()
+            this._event.emit(RoomEvent.CAMERA_OFF)
           }
         }
       } else {
@@ -295,6 +298,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
           if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
             track.stop()
+            this._event.emit(RoomEvent.CAMERA_OFF)
           }
         }
       }
