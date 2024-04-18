@@ -292,10 +292,20 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
     /**
      * Turn off the local microphone
+     * @param {MediaStreamTrack} [audioTrack] sender audio track
      */
-    turnOffMic = () => {
-      if (!this._peerConnection) return
-      this._setTrackEnabled(this._peerConnection, 'audio', false)
+    turnOffMic = (audioTrack) => {
+      if (audioTrack?.kind === 'audio') {
+        this.stopTrack(audioTrack)
+      } else {
+        const stream = this._streams.getAllStreams().find((stream) => {
+          return stream.origin === 'local' && stream.source === 'media'
+        })
+        const audioTrack = stream?.mediaStream.getAudioTracks()[0]
+
+        if (!audioTrack) return
+        this.stopTrack(audioTrack)
+      }
     }
 
     /**
