@@ -226,10 +226,47 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
     /**
      * Turn off the local camera
+     * @param {MediaStreamTrack} [videoTrack] sender video track
      */
-    turnOffCamera = () => {
+    turnOffCamera = (videoTrack) => {
       if (!this._peerConnection) return
-      this._setTrackEnabled(this._peerConnection, 'video', false)
+
+      if (videoTrack?.kind === 'video') {
+        for (const transceiver of this._peerConnection.getTransceivers()) {
+          const track = transceiver.sender.track
+          if (!track) return
+
+          if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
+            track.stop()
+            this._peerConnection.removeTrack(transceiver.sender)
+            transceiver.stop()
+          }
+        }
+      } else {
+        const stream = this._streams.getAllStreams().find((stream) => {
+          return stream.origin === 'local' && stream.source === 'media'
+        })
+
+        if (!stream) return
+
+        const videoTrack = stream.mediaStream.getVideoTracks()[0]
+
+        if (!videoTrack) return
+
+        for (const transceiver of this._peerConnection.getTransceivers()) {
+          const track = transceiver.sender.track
+          if (!track) return
+
+          if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
+            track.enabled = false
+
+            // short time to send empty frame before stopping the track
+            setTimeout(() => {
+              track.stop()
+            }, 40)
+          }
+        }
+      }
     }
 
     /**
@@ -872,6 +909,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         turnOnMic: peer.turnOnMic,
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
+        // addTrack: peer.addTrack,
         replaceTrack: peer.replaceTrack,
         observeVideo: peer.observeVideo,
         unobserveVideo: peer.unobserveVideo,
