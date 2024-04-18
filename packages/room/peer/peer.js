@@ -141,8 +141,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._streams.addStream(key, stream)
 
       if (stream.origin === 'local') {
-        this._addAudioTransceiver(stream)
-        this._addVideoTransceiver(stream)
+        for (const track of stream.mediaStream.getTracks()) {
+          this.addTrack(track, stream)
+        }
       }
 
       this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
@@ -366,23 +367,39 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       if (newTrack.kind === 'video') {
         const videoTrack = stream.mediaStream.getVideoTracks()[0]
 
-        if (videoTrack) {
-          stream.replaceTrack(newTrack)
-        } else {
+        if (!videoTrack) {
           stream.mediaStream.addTrack(newTrack)
+        } else if (newTrack.id !== videoTrack.id) {
+          stream.replaceTrack(newTrack)
         }
 
-        this._addVideoTransceiver(stream)
+        const transceiver = this._addVideoTransceiver(stream)
+
+        if (transceiver) {
+          newTrack.addEventListener('ended', () => {
+            if (!this._peerConnection || !transceiver.sender) return
+            this.removeTrack(newTrack)
+            this.removeStream(stream.id)
+          })
+        }
       } else if (newTrack.kind === 'audio') {
         const audioTrack = stream.mediaStream.getAudioTracks()[0]
 
-        if (audioTrack) {
-          stream.replaceTrack(newTrack)
-        } else {
+        if (!audioTrack) {
           stream.mediaStream.addTrack(newTrack)
+        } else if (newTrack.id !== audioTrack.id) {
+          stream.replaceTrack(newTrack)
         }
 
-        this._addAudioTransceiver(stream)
+        const transceiver = this._addAudioTransceiver(stream)
+
+        if (transceiver) {
+          newTrack.addEventListener('ended', () => {
+            if (!this._peerConnection || !transceiver.sender) return
+            this.removeTrack(newTrack)
+            this.removeStream(stream.id)
+          })
+        }
       }
     }
 
@@ -751,11 +768,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         }
 
-        videoTrack.addEventListener('ended', () => {
-          if (!this._peerConnection || !videoTransceiver.sender) return
-          this._peerConnection.removeTrack(videoTransceiver.sender)
-          this.removeStream(stream.id)
-        })
+        return videoTransceiver
       }
     }
 
@@ -838,11 +851,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         }
 
-        audioTrack.addEventListener('ended', () => {
-          if (!this._peerConnection || !audioTransceiver.sender) return
-          this._peerConnection.removeTrack(audioTransceiver.sender)
-          this.removeStream(stream.id)
-        })
+        return audioTransceiver
       }
     }
 
