@@ -88,8 +88,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       for (const transceiver of this._peerConnection.getTransceivers()) {
         if (transceiver.sender.track) {
-          transceiver.sender.track.stop()
-          this._peerConnection.removeTrack(transceiver.sender)
+          this.removeTrack(transceiver.sender.track)
         }
 
         transceiver.stop()
@@ -394,7 +393,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       if (!this._peerConnection) return
 
       if (!(track instanceof MediaStreamTrack)) {
-        throw new TypeError('The track must be an instance of MediaStreamTrack')
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
       }
 
       for (const transceiver of this._peerConnection.getTransceivers()) {
@@ -413,13 +412,39 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     }
 
     /**
+     * @param {MediaStreamTrack} track
+     */
+    removeTrack = (track) => {
+      if (!this._peerConnection) return
+
+      if (!(track instanceof MediaStreamTrack)) {
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
+      }
+
+      for (const transceiver of this._peerConnection.getTransceivers()) {
+        const senderTrack = transceiver.sender.track
+        if (!senderTrack) return
+
+        if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
+          senderTrack.stop()
+          this._peerConnection.removeTrack(transceiver.sender)
+          const stream = this.getStreamByTrackId(track.id)
+
+          if (stream) {
+            stream.mediaStream.removeTrack(track)
+          }
+        }
+      }
+    }
+
+    /**
      * @param {MediaStreamTrack} newTrack
      */
     replaceTrack = async (newTrack) => {
       if (!this._peerConnection) return
 
       if (!(newTrack instanceof MediaStreamTrack)) {
-        throw new TypeError('The track must be an instance of MediaStreamTrack')
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
       }
 
       for (const transceiver of this._peerConnection.getTransceivers()) {
@@ -1024,6 +1049,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
         addTrack: peer.addTrack,
+        removeTrack: peer.removeTrack,
         stopTrack: peer.stopTrack,
         replaceTrack: peer.replaceTrack,
         observeVideo: peer.observeVideo,
