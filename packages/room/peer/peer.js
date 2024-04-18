@@ -266,10 +266,58 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
     /**
      * Turn on the local microphone
+     * @param {MediaStreamTrack} [newTrack] sender audio track
      */
-    turnOnMic = () => {
+    turnOnMic = async (newTrack) => {
       if (!this._peerConnection) return
-      this._setTrackEnabled(this._peerConnection, 'audio', true)
+
+      const localStream = this.getAllStreams().find((stream) => {
+        return stream.origin === 'local' && stream.source === 'media'
+      })
+
+      if (!localStream || !(localStream.mediaStream instanceof MediaStream)) {
+        throw new Error(
+          'Add local media stream with addStream() before calling this method'
+        )
+      }
+
+      const localAudioTrack = localStream.mediaStream.getAudioTracks()[0]
+
+      if (newTrack?.kind === 'audio') {
+        if (localAudioTrack) {
+          localStream.replaceTrack(newTrack)
+          await this.replaceTrack(newTrack)
+          this._event.emit(RoomEvent.TRACK_UNMUTE, {
+            track: newTrack,
+            source: 'media',
+            origin: 'local',
+          })
+          return
+        }
+
+        // TODO: add audio track
+        // this.addTrack(newTrack)
+      } else {
+        const newTrack = await navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then((stream) => stream.getAudioTracks()[0])
+
+        if (!newTrack) return
+
+        if (localAudioTrack) {
+          localStream.replaceTrack(newTrack)
+          await this.replaceTrack(newTrack)
+          this._event.emit(RoomEvent.TRACK_UNMUTE, {
+            track: newTrack,
+            source: 'media',
+            origin: 'local',
+          })
+          return
+        }
+
+        // TODO: add audio track
+        // this.addTrack(newTrack)
+      }
     }
 
     /**
@@ -277,6 +325,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {MediaStreamTrack} [videoTrack] sender video track
      */
     turnOffCamera = (videoTrack) => {
+      if (!this._peerConnection) return
+
       if (videoTrack?.kind === 'video') {
         this.stopTrack(videoTrack)
       } else {
