@@ -142,7 +142,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._streams.addStream(key, stream)
 
       if (stream.origin === 'local') {
-        this._addLocalMediaStream(stream)
+        this._addAudioTransceiver(stream)
+        this._addVideoTransceiver(stream)
       }
 
       this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
@@ -236,11 +237,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             source: 'media',
             origin: 'local',
           })
-          return
+        } else {
+          this.addTrack(newTrack, localStream)
         }
-
-        // TODO: add video track
-        // this.addTrack(newTrack)
       } else {
         const newTrack = await navigator.mediaDevices
           .getUserMedia({ video: true })
@@ -256,11 +255,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             source: 'media',
             origin: 'local',
           })
-          return
+        } else {
+          this.addTrack(newTrack, localStream)
         }
-
-        // TODO: add video track
-        // this.addTrack(newTrack)
       }
     }
 
@@ -292,11 +289,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             source: 'media',
             origin: 'local',
           })
-          return
+        } else {
+          this.addTrack(newTrack, localStream)
         }
-
-        // TODO: add audio track
-        // this.addTrack(newTrack)
       } else {
         const newTrack = await navigator.mediaDevices
           .getUserMedia({ audio: true })
@@ -312,11 +307,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             source: 'media',
             origin: 'local',
           })
-          return
+        } else {
+          this.addTrack(newTrack, localStream)
         }
-
-        // TODO: add audio track
-        // this.addTrack(newTrack)
       }
     }
 
@@ -355,6 +348,42 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
         if (!audioTrack) return
         this.stopTrack(audioTrack)
+      }
+    }
+
+    /**
+     * @param {MediaStreamTrack} newTrack
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     */
+    addTrack = (newTrack, stream) => {
+      if (!(newTrack instanceof MediaStreamTrack)) {
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
+      }
+
+      if (!stream || !(stream.mediaStream instanceof MediaStream)) {
+        throw new Error('Provide stream instance for track destination')
+      }
+
+      if (newTrack.kind === 'video') {
+        const videoTrack = stream.mediaStream.getVideoTracks()[0]
+
+        if (videoTrack) {
+          stream.replaceTrack(newTrack)
+        } else {
+          stream.mediaStream.addTrack(newTrack)
+        }
+
+        this._addVideoTransceiver(stream)
+      } else if (newTrack.kind === 'audio') {
+        const audioTrack = stream.mediaStream.getAudioTracks()[0]
+
+        if (audioTrack) {
+          stream.replaceTrack(newTrack)
+        } else {
+          stream.mediaStream.addTrack(newTrack)
+        }
+
+        this._addAudioTransceiver(stream)
       }
     }
 
@@ -535,40 +564,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       window.removeEventListener('beforeunload', this._onBeforeUnload)
     }
 
-    /**
-     * @param {RTCPeerConnection} peerConnection
-     * @param {'video' | 'audio'} kind
-     * @param {boolean} enabled
-     */
-    _setTrackEnabled = (peerConnection, kind, enabled) => {
-      const stream = this._streams.getAllStreams().find((stream) => {
-        return stream.origin === 'local' && stream.source === 'media'
-      })
-
-      if (!stream) {
-        throw new Error(
-          'You must add a user MediaStream in order to proceed this operation'
-        )
-      }
-
-      const mediaTrack = stream.mediaStream.getTracks().find((track) => {
-        return track.kind === kind
-      })
-
-      if (!mediaTrack) return
-
-      const transceivers = peerConnection.getTransceivers()
-
-      for (const transceiver of transceivers) {
-        const track = transceiver.sender.track
-        if (!track) return
-
-        if (track.kind === mediaTrack.kind && track.id === mediaTrack.id) {
-          track.enabled = enabled
-        }
-      }
-    }
-
     _restartNegotiation = async () => {
       if (!this._peerConnection) return
 
@@ -608,103 +603,10 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /**
      * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
      */
-    _addLocalMediaStream = (stream) => {
+    _addVideoTransceiver = (stream) => {
       if (!this._peerConnection) return
-
-      const supportsSetCodecPreferences =
-        window.RTCRtpTransceiver &&
-        'setCodecPreferences' in window.RTCRtpTransceiver.prototype
-
-      /** @type {MediaStreamTrack | undefined} */
-      const audioTrack = stream.mediaStream.getAudioTracks()[0]
-
-      if (audioTrack) {
-        const audioTransceiver = this._peerConnection.addTransceiver(
-          audioTrack,
-          {
-            direction: 'sendonly',
-            streams: [stream.mediaStream],
-            sendEncodings: [{ priority: 'high' }],
-          }
-        )
-
-        const systemAudioCodecs =
-          RTCRtpSender.getCapabilities('audio')?.codecs || []
-        const preferredAudioCodecs = []
-
-        if (stream.source === 'media' && systemAudioCodecs.length > 0) {
-          if (config.media.microphone.audioCodecs.length > 0) {
-            for (const audioCodec of config.media.microphone.audioCodecs) {
-              for (const systemAudioCodec of systemAudioCodecs) {
-                if (
-                  systemAudioCodec.mimeType.toLowerCase() ===
-                  audioCodec.toLowerCase()
-                ) {
-                  preferredAudioCodecs.push(systemAudioCodec)
-                  systemAudioCodecs.splice(
-                    systemAudioCodecs.indexOf(systemAudioCodec),
-                    1
-                  )
-                }
-              }
-            }
-          } else {
-            for (const systemAudioCodec of systemAudioCodecs) {
-              if (systemAudioCodec.mimeType === 'audio/red') {
-                preferredAudioCodecs.push(systemAudioCodec)
-                systemAudioCodecs.splice(
-                  systemAudioCodecs.indexOf(systemAudioCodec),
-                  1
-                )
-              }
-            }
-            for (const systemAudioCodec of systemAudioCodecs) {
-              if (systemAudioCodec.mimeType === 'audio/opus') {
-                preferredAudioCodecs.push(systemAudioCodec)
-                systemAudioCodecs.splice(
-                  systemAudioCodecs.indexOf(systemAudioCodec),
-                  1
-                )
-              }
-            }
-          }
-        }
-
-        // Add all remaining codecs
-        for (const audioCodec of systemAudioCodecs) {
-          preferredAudioCodecs.push(audioCodec)
-        }
-
-        if (supportsSetCodecPreferences) {
-          audioTransceiver.setCodecPreferences(preferredAudioCodecs)
-        } else {
-          // TODO: Set codec preferences by modifying the SDP
-          for (const audioCodec of preferredAudioCodecs) {
-            this._pendingPreferredCodecs.audio.push(audioCodec)
-          }
-        }
-
-        audioTrack.addEventListener('ended', () => {
-          if (!this._peerConnection || !audioTransceiver.sender) return
-          this._peerConnection.removeTrack(audioTransceiver.sender)
-          this.removeStream(stream.id)
-        })
-      }
-
-      if (stream.source === 'media') {
-        this._addVideoTransceiver(stream, config, 'webcam')
-      } else if (stream.source === 'screen') {
-        this._addVideoTransceiver(stream, config, 'screen')
-      }
-    }
-
-    /**
-     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
-     * @param {import('../room-types.js').RoomType.Config} config
-     * @param {'webcam' | 'screen'} type
-     */
-    _addVideoTransceiver = (stream, config, type) => {
-      if (!this._peerConnection) return
+      /** @type {'webcam' | 'screen'} */
+      const type = stream.source === 'media' ? 'webcam' : 'screen'
 
       const supportsSetCodecPreferences =
         window.RTCRtpTransceiver &&
@@ -827,6 +729,93 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         videoTrack.addEventListener('ended', () => {
           if (!this._peerConnection || !videoTransceiver.sender) return
           this._peerConnection.removeTrack(videoTransceiver.sender)
+          this.removeStream(stream.id)
+        })
+      }
+    }
+
+    /**
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     */
+    _addAudioTransceiver = (stream) => {
+      if (!this._peerConnection) return
+
+      const supportsSetCodecPreferences =
+        window.RTCRtpTransceiver &&
+        'setCodecPreferences' in window.RTCRtpTransceiver.prototype
+
+      /** @type {MediaStreamTrack | undefined} */
+      const audioTrack = stream.mediaStream.getAudioTracks()[0]
+
+      if (audioTrack) {
+        const audioTransceiver = this._peerConnection.addTransceiver(
+          audioTrack,
+          {
+            direction: 'sendonly',
+            streams: [stream.mediaStream],
+            sendEncodings: [{ priority: 'high' }],
+          }
+        )
+
+        const systemAudioCodecs =
+          RTCRtpSender.getCapabilities('audio')?.codecs || []
+        const preferredAudioCodecs = []
+
+        if (stream.source === 'media' && systemAudioCodecs.length > 0) {
+          if (config.media.microphone.audioCodecs.length > 0) {
+            for (const audioCodec of config.media.microphone.audioCodecs) {
+              for (const systemAudioCodec of systemAudioCodecs) {
+                if (
+                  systemAudioCodec.mimeType.toLowerCase() ===
+                  audioCodec.toLowerCase()
+                ) {
+                  preferredAudioCodecs.push(systemAudioCodec)
+                  systemAudioCodecs.splice(
+                    systemAudioCodecs.indexOf(systemAudioCodec),
+                    1
+                  )
+                }
+              }
+            }
+          } else {
+            for (const systemAudioCodec of systemAudioCodecs) {
+              if (systemAudioCodec.mimeType === 'audio/red') {
+                preferredAudioCodecs.push(systemAudioCodec)
+                systemAudioCodecs.splice(
+                  systemAudioCodecs.indexOf(systemAudioCodec),
+                  1
+                )
+              }
+            }
+            for (const systemAudioCodec of systemAudioCodecs) {
+              if (systemAudioCodec.mimeType === 'audio/opus') {
+                preferredAudioCodecs.push(systemAudioCodec)
+                systemAudioCodecs.splice(
+                  systemAudioCodecs.indexOf(systemAudioCodec),
+                  1
+                )
+              }
+            }
+          }
+        }
+
+        // Add all remaining codecs
+        for (const audioCodec of systemAudioCodecs) {
+          preferredAudioCodecs.push(audioCodec)
+        }
+
+        if (supportsSetCodecPreferences) {
+          audioTransceiver.setCodecPreferences(preferredAudioCodecs)
+        } else {
+          // TODO: Set codec preferences by modifying the SDP
+          for (const audioCodec of preferredAudioCodecs) {
+            this._pendingPreferredCodecs.audio.push(audioCodec)
+          }
+        }
+
+        audioTrack.addEventListener('ended', () => {
+          if (!this._peerConnection || !audioTransceiver.sender) return
+          this._peerConnection.removeTrack(audioTransceiver.sender)
           this.removeStream(stream.id)
         })
       }
@@ -1034,7 +1023,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         turnOnMic: peer.turnOnMic,
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
-        // addTrack: peer.addTrack,
+        addTrack: peer.addTrack,
         stopTrack: peer.stopTrack,
         replaceTrack: peer.replaceTrack,
         observeVideo: peer.observeVideo,
