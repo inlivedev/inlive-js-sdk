@@ -210,10 +210,48 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
     /**
      * Turn on the local camera
+     * @param {MediaStreamTrack} [newTrack] sender video track
      */
-    turnOnCamera = () => {
+    turnOnCamera = async (newTrack) => {
       if (!this._peerConnection) return
-      this._setTrackEnabled(this._peerConnection, 'video', true)
+
+      const localStream = this.getAllStreams().find((stream) => {
+        return stream.origin === 'local' && stream.source === 'media'
+      })
+
+      if (!localStream || !(localStream.mediaStream instanceof MediaStream)) {
+        throw new Error(
+          'Add local media stream with addStream() before calling this method'
+        )
+      }
+
+      const localVideoTrack = localStream.mediaStream.getVideoTracks()[0]
+
+      if (newTrack?.kind === 'video') {
+        if (localVideoTrack) {
+          localStream.replaceTrack(newTrack)
+          await this.replaceTrack(newTrack)
+          return
+        }
+
+        // TODO: add video track
+        // this.addTrack(newTrack)
+      } else {
+        const newTrack = await navigator.mediaDevices
+          .getUserMedia({ video: true })
+          .then((stream) => stream.getVideoTracks()[0])
+
+        if (!newTrack) return
+
+        if (localVideoTrack) {
+          localStream.replaceTrack(newTrack)
+          await this.replaceTrack(newTrack)
+          return
+        }
+
+        // TODO: add video track
+        // this.addTrack(newTrack)
+      }
     }
 
     /**
@@ -238,8 +276,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
           if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
             track.stop()
-            this._peerConnection.removeTrack(transceiver.sender)
-            transceiver.stop()
           }
         }
       } else {
@@ -258,12 +294,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           if (!track) return
 
           if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
-            track.enabled = false
-
-            // short time to send empty frame before stopping the track
-            setTimeout(() => {
-              track.stop()
-            }, 40)
+            track.stop()
           }
         }
       }
@@ -293,7 +324,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           transceiver.sender.track.kind === newTrack.kind
         ) {
           await transceiver.sender.replaceTrack(newTrack)
-          await this.negotiate()
         }
       }
     }
