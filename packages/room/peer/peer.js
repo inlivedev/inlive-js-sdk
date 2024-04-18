@@ -231,7 +231,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         if (localVideoTrack) {
           localStream.replaceTrack(newTrack)
           await this.replaceTrack(newTrack)
-          this._event.emit(RoomEvent.CAMERA_ON)
+          this._event.emit(RoomEvent.TRACK_UNMUTE, {
+            track: newTrack,
+            source: 'media',
+            origin: 'local',
+          })
           return
         }
 
@@ -247,7 +251,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         if (localVideoTrack) {
           localStream.replaceTrack(newTrack)
           await this.replaceTrack(newTrack)
-          this._event.emit(RoomEvent.CAMERA_ON)
+          this._event.emit(RoomEvent.TRACK_UNMUTE, {
+            track: newTrack,
+            source: 'media',
+            origin: 'local',
+          })
           return
         }
 
@@ -278,7 +286,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
           if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
             track.stop()
-            this._event.emit(RoomEvent.CAMERA_OFF)
+            this._event.emit(RoomEvent.TRACK_MUTE, {
+              track: track,
+              source: 'media',
+              origin: 'local',
+            })
           }
         }
       } else {
@@ -298,7 +310,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
           if (track.kind === videoTrack.kind && track.id === videoTrack.id) {
             track.stop()
-            this._event.emit(RoomEvent.CAMERA_OFF)
+            this._event.emit(RoomEvent.TRACK_MUTE, {
+              track: track,
+              source: 'media',
+              origin: 'local',
+            })
           }
         }
       }
@@ -409,6 +425,26 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           })
 
           for (const track of stream.mediaStream.getTracks()) {
+            track.addEventListener('mute', (event) => {
+              const target = event.target
+              if (!(target instanceof MediaStreamTrack)) return
+              this._event.emit(RoomEvent.TRACK_MUTE, {
+                track: target,
+                source: stream.source,
+                origin: stream.origin,
+              })
+            })
+
+            track.addEventListener('unmute', (event) => {
+              const target = event.target
+              if (!(target instanceof MediaStreamTrack)) return
+              this._event.emit(RoomEvent.TRACK_UNMUTE, {
+                track: target,
+                source: stream.source,
+                origin: stream.origin,
+              })
+            })
+
             track.addEventListener('ended', () => {
               this.removeStream(stream.mediaStream.id)
             })
