@@ -622,6 +622,89 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     /**
      * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
      */
+    _addAudioTransceiver = (stream) => {
+      if (!this._peerConnection) return
+
+      const supportsSetCodecPreferences =
+        window.RTCRtpTransceiver &&
+        'setCodecPreferences' in window.RTCRtpTransceiver.prototype
+
+      /** @type {MediaStreamTrack | undefined} */
+      const audioTrack = stream.mediaStream.getAudioTracks()[0]
+
+      if (audioTrack) {
+        const audioTransceiver = this._peerConnection.addTransceiver(
+          audioTrack,
+          {
+            direction: 'sendonly',
+            streams: [stream.mediaStream],
+            sendEncodings: [{ priority: 'high' }],
+          }
+        )
+
+        const systemAudioCodecs =
+          RTCRtpSender.getCapabilities('audio')?.codecs || []
+        const preferredAudioCodecs = []
+
+        if (stream.source === 'media' && systemAudioCodecs.length > 0) {
+          if (config.media.microphone.audioCodecs.length > 0) {
+            for (const audioCodec of config.media.microphone.audioCodecs) {
+              for (const systemAudioCodec of systemAudioCodecs) {
+                if (
+                  systemAudioCodec.mimeType.toLowerCase() ===
+                  audioCodec.toLowerCase()
+                ) {
+                  preferredAudioCodecs.push(systemAudioCodec)
+                  systemAudioCodecs.splice(
+                    systemAudioCodecs.indexOf(systemAudioCodec),
+                    1
+                  )
+                }
+              }
+            }
+          } else {
+            for (const systemAudioCodec of systemAudioCodecs) {
+              if (systemAudioCodec.mimeType === 'audio/red') {
+                preferredAudioCodecs.push(systemAudioCodec)
+                systemAudioCodecs.splice(
+                  systemAudioCodecs.indexOf(systemAudioCodec),
+                  1
+                )
+              }
+            }
+            for (const systemAudioCodec of systemAudioCodecs) {
+              if (systemAudioCodec.mimeType === 'audio/opus') {
+                preferredAudioCodecs.push(systemAudioCodec)
+                systemAudioCodecs.splice(
+                  systemAudioCodecs.indexOf(systemAudioCodec),
+                  1
+                )
+              }
+            }
+          }
+        }
+
+        // Add all remaining codecs
+        for (const audioCodec of systemAudioCodecs) {
+          preferredAudioCodecs.push(audioCodec)
+        }
+
+        if (supportsSetCodecPreferences) {
+          audioTransceiver.setCodecPreferences(preferredAudioCodecs)
+        } else {
+          // TODO: Set codec preferences by modifying the SDP
+          for (const audioCodec of preferredAudioCodecs) {
+            this._pendingPreferredCodecs.audio.push(audioCodec)
+          }
+        }
+
+        return audioTransceiver
+      }
+    }
+
+    /**
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     */
     _addVideoTransceiver = (stream) => {
       if (!this._peerConnection) return
       /** @type {'webcam' | 'screen'} */
@@ -746,89 +829,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         }
 
         return videoTransceiver
-      }
-    }
-
-    /**
-     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
-     */
-    _addAudioTransceiver = (stream) => {
-      if (!this._peerConnection) return
-
-      const supportsSetCodecPreferences =
-        window.RTCRtpTransceiver &&
-        'setCodecPreferences' in window.RTCRtpTransceiver.prototype
-
-      /** @type {MediaStreamTrack | undefined} */
-      const audioTrack = stream.mediaStream.getAudioTracks()[0]
-
-      if (audioTrack) {
-        const audioTransceiver = this._peerConnection.addTransceiver(
-          audioTrack,
-          {
-            direction: 'sendonly',
-            streams: [stream.mediaStream],
-            sendEncodings: [{ priority: 'high' }],
-          }
-        )
-
-        const systemAudioCodecs =
-          RTCRtpSender.getCapabilities('audio')?.codecs || []
-        const preferredAudioCodecs = []
-
-        if (stream.source === 'media' && systemAudioCodecs.length > 0) {
-          if (config.media.microphone.audioCodecs.length > 0) {
-            for (const audioCodec of config.media.microphone.audioCodecs) {
-              for (const systemAudioCodec of systemAudioCodecs) {
-                if (
-                  systemAudioCodec.mimeType.toLowerCase() ===
-                  audioCodec.toLowerCase()
-                ) {
-                  preferredAudioCodecs.push(systemAudioCodec)
-                  systemAudioCodecs.splice(
-                    systemAudioCodecs.indexOf(systemAudioCodec),
-                    1
-                  )
-                }
-              }
-            }
-          } else {
-            for (const systemAudioCodec of systemAudioCodecs) {
-              if (systemAudioCodec.mimeType === 'audio/red') {
-                preferredAudioCodecs.push(systemAudioCodec)
-                systemAudioCodecs.splice(
-                  systemAudioCodecs.indexOf(systemAudioCodec),
-                  1
-                )
-              }
-            }
-            for (const systemAudioCodec of systemAudioCodecs) {
-              if (systemAudioCodec.mimeType === 'audio/opus') {
-                preferredAudioCodecs.push(systemAudioCodec)
-                systemAudioCodecs.splice(
-                  systemAudioCodecs.indexOf(systemAudioCodec),
-                  1
-                )
-              }
-            }
-          }
-        }
-
-        // Add all remaining codecs
-        for (const audioCodec of systemAudioCodecs) {
-          preferredAudioCodecs.push(audioCodec)
-        }
-
-        if (supportsSetCodecPreferences) {
-          audioTransceiver.setCodecPreferences(preferredAudioCodecs)
-        } else {
-          // TODO: Set codec preferences by modifying the SDP
-          for (const audioCodec of preferredAudioCodecs) {
-            this._pendingPreferredCodecs.audio.push(audioCodec)
-          }
-        }
-
-        return audioTransceiver
       }
     }
 
