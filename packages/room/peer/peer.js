@@ -88,7 +88,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       for (const transceiver of this._peerConnection.getTransceivers()) {
         if (transceiver.sender.track) {
-          this.removeTrack(transceiver.sender.track)
+          transceiver.sender.track.stop()
+          this._peerConnection.removeTrack(transceiver.sender)
         }
 
         transceiver.stop()
@@ -377,8 +378,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
         if (transceiver) {
           newTrack.addEventListener('ended', () => {
-            if (!this._peerConnection || !transceiver.sender) return
-            this.removeTrack(newTrack)
+            if (!this._peerConnection || !transceiver.sender.track) return
+            transceiver.sender.track.stop()
+            this._peerConnection.removeTrack(transceiver.sender)
             this.removeStream(stream.id)
           })
         }
@@ -395,8 +397,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
         if (transceiver) {
           newTrack.addEventListener('ended', () => {
-            if (!this._peerConnection || !transceiver.sender) return
-            this.removeTrack(newTrack)
+            if (!this._peerConnection || !transceiver.sender.track) return
+            transceiver.sender.track.stop()
+            this._peerConnection.removeTrack(transceiver.sender)
             this.removeStream(stream.id)
           })
         }
@@ -424,32 +427,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             source: 'media',
             origin: 'local',
           })
-        }
-      }
-    }
-
-    /**
-     * @param {MediaStreamTrack} track
-     */
-    removeTrack = (track) => {
-      if (!this._peerConnection) return
-
-      if (!(track instanceof MediaStreamTrack)) {
-        throw new TypeError('Track must be an instance of MediaStreamTrack')
-      }
-
-      for (const transceiver of this._peerConnection.getTransceivers()) {
-        const senderTrack = transceiver.sender.track
-        if (!senderTrack) return
-
-        if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
-          senderTrack.stop()
-          this._peerConnection.removeTrack(transceiver.sender)
-          const stream = this.getStreamByTrackId(track.id)
-
-          if (stream) {
-            stream.mediaStream.removeTrack(track)
-          }
         }
       }
     }
@@ -1058,7 +1035,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
         addTrack: peer.addTrack,
-        removeTrack: peer.removeTrack,
         stopTrack: peer.stopTrack,
         replaceTrack: peer.replaceTrack,
         observeVideo: peer.observeVideo,
