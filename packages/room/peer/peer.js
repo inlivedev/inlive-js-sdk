@@ -225,39 +225,30 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         )
       }
 
-      const localVideoTrack = localStream.mediaStream.getVideoTracks()[0]
+      let track =
+        newTrack?.kind === 'video'
+          ? newTrack
+          : await navigator.mediaDevices
+              .getUserMedia({ video: true })
+              .then((stream) => stream.getVideoTracks()[0])
+              .catch((error) => {
+                throw error
+              })
 
-      if (newTrack?.kind === 'video') {
-        if (localVideoTrack) {
-          localStream.replaceTrack(newTrack)
-          await this.replaceTrack(newTrack)
-          this._event.emit(RoomEvent.TRACK_UNMUTE, {
-            track: newTrack,
-            source: 'media',
-            origin: 'local',
-          })
-        } else {
-          this.addTrack(newTrack, localStream)
-        }
-      } else {
-        const newTrack = await navigator.mediaDevices
-          .getUserMedia({ video: true })
-          .then((stream) => stream.getVideoTracks()[0])
+      if (!track) return
 
-        if (!newTrack) return
-
-        if (localVideoTrack) {
-          localStream.replaceTrack(newTrack)
-          await this.replaceTrack(newTrack)
-          this._event.emit(RoomEvent.TRACK_UNMUTE, {
-            track: newTrack,
-            source: 'media',
-            origin: 'local',
-          })
-        } else {
-          this.addTrack(newTrack, localStream)
-        }
+      if (localStream.mediaStream.getVideoTracks()[0]) {
+        localStream.replaceTrack(track)
+        await this.replaceTrack(track)
+        this._event.emit(RoomEvent.TRACK_UNMUTE, {
+          track: track,
+          source: 'media',
+          origin: 'local',
+        })
+        return
       }
+
+      this.addTrack(track, localStream)
     }
 
     /**
@@ -275,39 +266,30 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         )
       }
 
-      const localAudioTrack = localStream.mediaStream.getAudioTracks()[0]
+      let track =
+        newTrack?.kind === 'audio'
+          ? newTrack
+          : await navigator.mediaDevices
+              .getUserMedia({ audio: true })
+              .then((stream) => stream.getAudioTracks()[0])
+              .catch((error) => {
+                throw error
+              })
 
-      if (newTrack?.kind === 'audio') {
-        if (localAudioTrack) {
-          localStream.replaceTrack(newTrack)
-          await this.replaceTrack(newTrack)
-          this._event.emit(RoomEvent.TRACK_UNMUTE, {
-            track: newTrack,
-            source: 'media',
-            origin: 'local',
-          })
-        } else {
-          this.addTrack(newTrack, localStream)
-        }
-      } else {
-        const newTrack = await navigator.mediaDevices
-          .getUserMedia({ audio: true })
-          .then((stream) => stream.getAudioTracks()[0])
+      if (!track) return
 
-        if (!newTrack) return
-
-        if (localAudioTrack) {
-          localStream.replaceTrack(newTrack)
-          await this.replaceTrack(newTrack)
-          this._event.emit(RoomEvent.TRACK_UNMUTE, {
-            track: newTrack,
-            source: 'media',
-            origin: 'local',
-          })
-        } else {
-          this.addTrack(newTrack, localStream)
-        }
+      if (localStream.mediaStream.getAudioTracks()[0]) {
+        localStream.replaceTrack(track)
+        await this.replaceTrack(track)
+        this._event.emit(RoomEvent.TRACK_UNMUTE, {
+          track: track,
+          source: 'media',
+          origin: 'local',
+        })
+        return
       }
+
+      this.addTrack(track, localStream)
     }
 
     /**
