@@ -341,6 +341,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         throw new Error('Provide stream instance for track destination')
       }
 
+      /** @type {RTCRtpTransceiver | undefined} */
+      let transceiver
+
       if (newTrack.kind === 'video') {
         const videoTrack = stream.mediaStream.getVideoTracks()[0]
 
@@ -350,16 +353,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           stream.replaceTrack(newTrack)
         }
 
-        const transceiver = this._addVideoTransceiver(stream)
-
-        if (transceiver) {
-          newTrack.addEventListener('ended', () => {
-            if (!this._peerConnection || !transceiver.sender.track) return
-            transceiver.sender.track.stop()
-            this._peerConnection.removeTrack(transceiver.sender)
-            this.removeStream(stream.id)
-          })
-        }
+        transceiver = this._addVideoTransceiver(stream)
       } else if (newTrack.kind === 'audio') {
         const audioTrack = stream.mediaStream.getAudioTracks()[0]
 
@@ -369,17 +363,15 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           stream.replaceTrack(newTrack)
         }
 
-        const transceiver = this._addAudioTransceiver(stream)
-
-        if (transceiver) {
-          newTrack.addEventListener('ended', () => {
-            if (!this._peerConnection || !transceiver.sender.track) return
-            transceiver.sender.track.stop()
-            this._peerConnection.removeTrack(transceiver.sender)
-            this.removeStream(stream.id)
-          })
-        }
+        transceiver = this._addAudioTransceiver(stream)
       }
+
+      newTrack.addEventListener('ended', () => {
+        if (!this._peerConnection || !transceiver?.sender.track) return
+        transceiver.sender.track.stop()
+        this._peerConnection.removeTrack(transceiver.sender)
+        this.removeStream(stream.id)
+      })
     }
 
     /**
