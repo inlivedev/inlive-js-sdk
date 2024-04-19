@@ -339,6 +339,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {MediaStreamTrack} [audioTrack] sender audio track
      */
     turnOffMic = (audioTrack) => {
+      if (!this._peerConnection) return
+
       if (audioTrack?.kind === 'audio') {
         this.stopTrack(audioTrack)
       } else {
@@ -1034,8 +1036,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         turnOnMic: peer.turnOnMic,
         turnOffCamera: peer.turnOffCamera,
         turnOffMic: peer.turnOffMic,
-        addTrack: peer.addTrack,
-        stopTrack: peer.stopTrack,
         replaceTrack: peer.replaceTrack,
         observeVideo: peer.observeVideo,
         unobserveVideo: peer.unobserveVideo,
