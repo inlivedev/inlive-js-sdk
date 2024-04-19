@@ -215,8 +215,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {MediaStreamTrack} [newTrack] sender video track
      */
     turnOnCamera = async (newTrack) => {
-      if (!this._peerConnection) return
-
       const localStream = this.getAllStreams().find((stream) => {
         return stream.origin === 'local' && stream.source === 'media'
       })
@@ -267,8 +265,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {MediaStreamTrack} [newTrack] sender audio track
      */
     turnOnMic = async (newTrack) => {
-      if (!this._peerConnection) return
-
       const localStream = this.getAllStreams().find((stream) => {
         return stream.origin === 'local' && stream.source === 'media'
       })
@@ -319,8 +315,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {MediaStreamTrack} [videoTrack] sender video track
      */
     turnOffCamera = (videoTrack) => {
-      if (!this._peerConnection) return
-
       if (videoTrack?.kind === 'video') {
         this.stopTrack(videoTrack)
       } else {
@@ -339,8 +333,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {MediaStreamTrack} [audioTrack] sender audio track
      */
     turnOffMic = (audioTrack) => {
-      if (!this._peerConnection) return
-
       if (audioTrack?.kind === 'audio') {
         this.stopTrack(audioTrack)
       } else {
