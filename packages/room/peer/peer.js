@@ -253,6 +253,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       this._addVideoTrack(track, localStream)
+      await this.negotiate()
     }
 
     /**
@@ -294,6 +295,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       this._addAudioTrack(track, localStream)
+      await this.negotiate()
     }
 
     /**
