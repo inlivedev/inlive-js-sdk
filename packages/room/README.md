@@ -433,21 +433,21 @@ peer.disconnect();
 
 - `peer.turnOnCamera(videoTrack?: MediaStreamTrack | undefined)`
 
-  A method to start sending video capture using local camera to other connected peers. You can provide a specific video track as parameter when calling this method. By default, when the video track parameter is empty, this method will use default local video setting to start sending video capture. This method will return a promise.
+  A method to start sending video capture using local camera to other connected peers. You can provide a specific video track as parameter when calling this method. By default, when the video track parameter is empty, this method will use default local video setting to start sending video capture. Upon completion, this method will trigger `RoomEvent.TRACK_UNMUTE` event. This method will return a promise.
 
 - `peer.turnOffCamera(videoTrack?: MediaStreamTrack | undefined)`
 
-  A method to stop sending the local video capture and stop the video capture track. You can provide which video capture track to stop as parameter. By default, when the video track parameter is empty, this method will find the video track added to SDK.
+  A method to stop sending the local video capture and stop the video capture track. You can provide which video capture track to stop as parameter. By default, when the video track parameter is empty, this method will find the video track added to SDK. Upon completion, this method will trigger `RoomEvent.TRACK_MUTE` event.
 
   When the video capture track is stopped, the track becomes unusable. You can get a new one with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
 
 - `peer.turnOnMic(audioTrack?: MediaStreamTrack | undefined)`
 
-  A method to start sending audio capture using local microphone to other connected peers. You can provide a specific audio track as parameter when calling this method. By default, when the audio track parameter is empty, this method will use default local audio setting to start sending audio capture. This method will return a promise.
+  A method to start sending audio capture using local microphone to other connected peers. You can provide a specific audio track as parameter when calling this method. By default, when the audio track parameter is empty, this method will use default local audio setting to start sending audio capture. Upon completion, this method will trigger `RoomEvent.TRACK_UNMUTE` event. This method will return a promise.
 
 - `peer.turnOffMic(audioTrack?: MediaStreamTrack | undefined)`
 
-  A method to stop sending the local audio capture and stop the audio capture track. You can provide which audio capture track to stop as parameter. By default, when the audio track parameter is empty, this method will find the audio track added to SDK.
+  A method to stop sending the local audio capture and stop the audio capture track. You can provide which audio capture track to stop as parameter. By default, when the audio track parameter is empty, this method will find the audio track added to SDK. Upon completion, this method will trigger `RoomEvent.TRACK_MUTE` event.
 
   When the audio capture track is stopped, the track becomes unusable. You can get a new one with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
 
@@ -505,3 +505,6 @@ The stream object holds read-only properties based on the provided client's data
 - `stream.addEventListener('voiceactivity', callback:function(ev:CustomEvent))`
 
   A custom event to listen for voice activity level changes. The callback function will receive a CustomEvent object with `detail` property that contains the the `audioLevel` value.
+
+
+### Guides
