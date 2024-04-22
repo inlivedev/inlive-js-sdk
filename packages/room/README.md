@@ -455,6 +455,10 @@ peer.disconnect();
 
   A method to replace the track currently being sent by sender with a new MediaStreamTrack.
 
+- `peer.negotiate()`
+
+  A method to trigger and start the manual negotiation process. This method will return a promise.
+
 
 #### Events
 
@@ -505,6 +509,3 @@ The stream object holds read-only properties based on the provided client's data
 - `stream.addEventListener('voiceactivity', callback:function(ev:CustomEvent))`
 
   A custom event to listen for voice activity level changes. The callback function will receive a CustomEvent object with `detail` property that contains the the `audioLevel` value.
-
-
-### Guides
