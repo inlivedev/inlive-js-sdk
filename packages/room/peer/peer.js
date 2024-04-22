@@ -143,7 +143,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       if (stream.origin === 'local') {
         for (const track of stream.mediaStream.getTracks()) {
-          this.addTrack(track, stream)
+          if (track.kind === 'video') {
+            this._addVideoTrack(track, stream)
+          } else if (track.kind === 'audio') {
+            this._addAudioTrack(track, stream)
+          }
         }
       }
 
@@ -248,7 +252,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         return
       }
 
-      this.addTrack(track, localStream)
+      this._addVideoTrack(track, localStream)
     }
 
     /**
@@ -289,7 +293,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         return
       }
 
-      this.addTrack(track, localStream)
+      this._addAudioTrack(track, localStream)
     }
 
     /**
@@ -326,52 +330,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         if (!audioTrack) return
         this.stopTrack(audioTrack)
       }
-    }
-
-    /**
-     * @param {MediaStreamTrack} newTrack
-     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
-     */
-    addTrack = (newTrack, stream) => {
-      if (!(newTrack instanceof MediaStreamTrack)) {
-        throw new TypeError('Track must be an instance of MediaStreamTrack')
-      }
-
-      if (!stream || !(stream.mediaStream instanceof MediaStream)) {
-        throw new Error('Provide stream instance for track destination')
-      }
-
-      /** @type {RTCRtpTransceiver | undefined} */
-      let transceiver
-
-      if (newTrack.kind === 'video') {
-        const videoTrack = stream.mediaStream.getVideoTracks()[0]
-
-        if (!videoTrack) {
-          stream.mediaStream.addTrack(newTrack)
-        } else if (newTrack.id !== videoTrack.id) {
-          stream.replaceTrack(newTrack)
-        }
-
-        transceiver = this._addVideoTransceiver(stream)
-      } else if (newTrack.kind === 'audio') {
-        const audioTrack = stream.mediaStream.getAudioTracks()[0]
-
-        if (!audioTrack) {
-          stream.mediaStream.addTrack(newTrack)
-        } else if (newTrack.id !== audioTrack.id) {
-          stream.replaceTrack(newTrack)
-        }
-
-        transceiver = this._addAudioTransceiver(stream)
-      }
-
-      newTrack.addEventListener('ended', () => {
-        if (!this._peerConnection || !transceiver?.sender.track) return
-        transceiver.sender.track.stop()
-        this._peerConnection.removeTrack(transceiver.sender)
-        this.removeStream(stream.id)
-      })
     }
 
     /**
@@ -584,6 +542,72 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         )
       } catch (error) {
         console.error(error)
+      }
+    }
+
+    /**
+     * @param {MediaStreamTrack} track
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     */
+    _addAudioTrack = (track, stream) => {
+      if (!(track instanceof MediaStreamTrack)) {
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
+      }
+
+      if (!stream || !(stream.mediaStream instanceof MediaStream)) {
+        throw new Error('Provide stream instance for track destination')
+      }
+
+      if (track.kind === 'audio') {
+        const audioTrack = stream.mediaStream.getAudioTracks()[0]
+
+        if (!audioTrack) {
+          stream.mediaStream.addTrack(track)
+        } else if (track.id !== audioTrack.id) {
+          stream.replaceTrack(track)
+        }
+
+        const transceiver = this._addAudioTransceiver(stream)
+
+        track.addEventListener('ended', () => {
+          if (!this._peerConnection || !transceiver?.sender.track) return
+          transceiver.sender.track.stop()
+          this._peerConnection.removeTrack(transceiver.sender)
+          this.removeStream(stream.id)
+        })
+      }
+    }
+
+    /**
+     * @param {MediaStreamTrack} track
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     */
+    _addVideoTrack = (track, stream) => {
+      if (!(track instanceof MediaStreamTrack)) {
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
+      }
+
+      if (!stream || !(stream.mediaStream instanceof MediaStream)) {
+        throw new Error('Provide stream instance for track destination')
+      }
+
+      if (track.kind === 'video') {
+        const videoTrack = stream.mediaStream.getVideoTracks()[0]
+
+        if (!videoTrack) {
+          stream.mediaStream.addTrack(track)
+        } else if (track.id !== videoTrack.id) {
+          stream.replaceTrack(track)
+        }
+
+        const transceiver = this._addVideoTransceiver(stream)
+
+        track.addEventListener('ended', () => {
+          if (!this._peerConnection || !transceiver?.sender.track) return
+          transceiver.sender.track.stop()
+          this._peerConnection.removeTrack(transceiver.sender)
+          this.removeStream(stream.id)
+        })
       }
     }
 
