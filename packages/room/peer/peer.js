@@ -244,16 +244,16 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       if (localStream.mediaStream.getVideoTracks()[0]) {
         localStream.replaceTrack(track)
         await this.replaceTrack(track)
-        this._event.emit(RoomEvent.TRACK_UNMUTE, {
-          track: track,
-          source: 'media',
-          origin: 'local',
-        })
-        return
+      } else {
+        this._addVideoTrack(track, localStream)
+        await this.negotiate()
       }
 
-      this._addVideoTrack(track, localStream)
-      await this.negotiate()
+      this._event.emit(RoomEvent.TRACK_UNMUTE, {
+        track: track,
+        source: 'media',
+        origin: 'local',
+      })
     }
 
     /**
@@ -286,16 +286,16 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       if (localStream.mediaStream.getAudioTracks()[0]) {
         localStream.replaceTrack(track)
         await this.replaceTrack(track)
-        this._event.emit(RoomEvent.TRACK_UNMUTE, {
-          track: track,
-          source: 'media',
-          origin: 'local',
-        })
-        return
+      } else {
+        this._addAudioTrack(track, localStream)
+        await this.negotiate()
       }
 
-      this._addAudioTrack(track, localStream)
-      await this.negotiate()
+      this._event.emit(RoomEvent.TRACK_UNMUTE, {
+        track: track,
+        source: 'media',
+        origin: 'local',
+      })
     }
 
     /**
