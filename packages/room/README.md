@@ -360,9 +360,9 @@ const streams = peer.getAllStreams();
 
 // After user media input is added, you can call these methods to turn on/off camera and mic
 peer.turnOffCamera();
-peer.turnOnCamera();
+await peer.turnOnCamera();
 peer.turnOffMic();
-peer.turnOnMic();
+await peer.turnOnMic();
 
 const peerConnection = peer.getPeerConnection();
 
@@ -431,21 +431,25 @@ peer.disconnect();
 
   A method to check if a specified stream object available and stored in the peer. It requires a key to find the data.
 
-- `peer.turnOnCamera()`
+- `peer.turnOnCamera(videoTrack?: MediaStreamTrack | undefined)`
 
-  A method to turn on the current local camera (video) track.
+  A method to start sending video capture using local camera to other connected peers. You can provide a specific video track as parameter when calling this method. By default, when the video track parameter is empty, this method will use default local video setting to start sending video capture. This method will return a promise.
 
-- `peer.turnOffCamera()`
+- `peer.turnOffCamera(videoTrack?: MediaStreamTrack | undefined)`
 
-  A method to turn off the current local camera (video) track.
+  A method to stop sending the local video capture and stop the video capture track. You can provide which video capture track to stop as parameter. By default, when the video track parameter is empty, this method will find the video track added to SDK.
 
-- `peer.turnOnMic()`
+  When the video capture track is stopped, the track becomes unusable. You can get a new one with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
 
-  A method to turn on the current local microphone (audio) track.
+- `peer.turnOnMic(audioTrack?: MediaStreamTrack | undefined)`
 
-- `peer.turnOffMic()`
+  A method to start sending audio capture using local microphone to other connected peers. You can provide a specific audio track as parameter when calling this method. By default, when the audio track parameter is empty, this method will use default local audio setting to start sending audio capture. This method will return a promise.
 
-  A method to turn off the current local microphone (audio) track.
+- `peer.turnOffMic(audioTrack?: MediaStreamTrack | undefined)`
+
+  A method to stop sending the local audio capture and stop the audio capture track. You can provide which audio capture track to stop as parameter. By default, when the audio track parameter is empty, this method will find the audio track added to SDK.
+
+  When the audio capture track is stopped, the track becomes unusable. You can get a new one with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
 
 - `peer.replaceTrack(track: MediaStreamTrack)`
 
