@@ -806,10 +806,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         }
 
         internalChannel.addEventListener('message', (event) => {
-          const data = JSON.parse(event.data)
+          const jsonData = JSON.parse(event.data)
 
-          if (data.type === 'vad_started' || data.type === 'vad_ended') {
-            this._onVoiceActivity(data)
+          if (
+            jsonData.type === 'vad_started' ||
+            jsonData.type === 'vad_ended'
+          ) {
+            this._onVoiceActivity(jsonData.data)
           }
         })
       }
