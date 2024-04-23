@@ -248,12 +248,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         this._addVideoTrack(track, localStream)
         await this.negotiate()
       }
-
-      this._event.emit(RoomEvent.TRACK_UNMUTE, {
-        track: track,
-        source: 'media',
-        origin: 'local',
-      })
     }
 
     /**
@@ -290,12 +284,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         this._addAudioTrack(track, localStream)
         await this.negotiate()
       }
-
-      this._event.emit(RoomEvent.TRACK_UNMUTE, {
-        track: track,
-        source: 'media',
-        origin: 'local',
-      })
     }
 
     /**
@@ -439,26 +427,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           })
 
           for (const track of stream.mediaStream.getTracks()) {
-            track.addEventListener('mute', (event) => {
-              const target = event.target
-              if (!(target instanceof MediaStreamTrack)) return
-              this._event.emit(RoomEvent.TRACK_MUTE, {
-                track: target,
-                source: stream.source,
-                origin: stream.origin,
-              })
-            })
-
-            track.addEventListener('unmute', (event) => {
-              const target = event.target
-              if (!(target instanceof MediaStreamTrack)) return
-              this._event.emit(RoomEvent.TRACK_UNMUTE, {
-                track: target,
-                source: stream.source,
-                origin: stream.origin,
-              })
-            })
-
             track.addEventListener('ended', () => {
               this.removeStream(stream.mediaStream.id)
             })
