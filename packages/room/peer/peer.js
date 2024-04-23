@@ -300,38 +300,46 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
     /**
      * Turn off the local camera
-     * @param {MediaStreamTrack} [videoTrack] sender video track
+     * @param {MediaStreamTrack} [stop] Completely stop the camera track
      */
-    turnOffCamera = (videoTrack) => {
-      if (videoTrack?.kind === 'video') {
-        this._stopTrack(videoTrack)
-      } else {
-        const stream = this._streams.getAllStreams().find((stream) => {
-          return stream.origin === 'local' && stream.source === 'media'
-        })
-        const videoTrack = stream?.mediaStream.getVideoTracks()[0]
+    turnOffCamera = (stop) => {
+      const stream = this._streams.getAllStreams().find((stream) => {
+        return stream.origin === 'local' && stream.source === 'media'
+      })
 
-        if (!videoTrack) return
-        this._stopTrack(videoTrack)
+      const videoTrack = stream?.mediaStream.getVideoTracks()[0]
+      if (!videoTrack) return
+
+      if (stop) {
+        if (videoTrack.readyState === 'live') {
+          this._stopTrack(videoTrack)
+        }
+        return
       }
+
+      this._setTrackEnabled(videoTrack, false)
     }
 
     /**
      * Turn off the local microphone
-     * @param {MediaStreamTrack} [audioTrack] sender audio track
+     * @param {MediaStreamTrack} [stop] Completely stop the camera track
      */
-    turnOffMic = (audioTrack) => {
-      if (audioTrack?.kind === 'audio') {
-        this._stopTrack(audioTrack)
-      } else {
-        const stream = this._streams.getAllStreams().find((stream) => {
-          return stream.origin === 'local' && stream.source === 'media'
-        })
-        const audioTrack = stream?.mediaStream.getAudioTracks()[0]
+    turnOffMic = (stop) => {
+      const stream = this._streams.getAllStreams().find((stream) => {
+        return stream.origin === 'local' && stream.source === 'media'
+      })
 
-        if (!audioTrack) return
-        this._stopTrack(audioTrack)
+      const audioTrack = stream?.mediaStream.getAudioTracks()[0]
+      if (!audioTrack) return
+
+      if (stop) {
+        if (audioTrack.readyState === 'live') {
+          this._stopTrack(audioTrack)
+        }
+        return
       }
+
+      this._setTrackEnabled(audioTrack, false)
     }
 
     /**
