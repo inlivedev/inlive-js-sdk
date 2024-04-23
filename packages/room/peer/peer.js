@@ -723,8 +723,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         const systemVideoCodecs =
           RTCRtpReceiver.getCapabilities('video')?.codecs || []
 
-        console.log('systemVideoCodecs', systemVideoCodecs)
-
         for (const videoCodec of config.media[type].videoCodecs) {
           for (const systemVideoCodec of systemVideoCodecs) {
             if (
@@ -736,12 +734,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         }
 
-        console.log('preferredCodecs', preferredCodecs)
-
         // Add all remaining codecs
         for (const videoCodec of systemVideoCodecs) {
           if (!config.media[type].videoCodecs.includes(videoCodec.mimeType)) {
-            console.log('videoCodec', videoCodec)
             preferredCodecs.push(videoCodec)
           }
         }
