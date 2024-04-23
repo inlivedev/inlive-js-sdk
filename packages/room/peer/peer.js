@@ -653,7 +653,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         )
 
         const systemAudioCodecs =
-          RTCRtpSender.getCapabilities('audio')?.codecs || []
+          RTCRtpReceiver.getCapabilities('audio')?.codecs || []
         const preferredAudioCodecs = []
 
         if (stream.source === 'media' && systemAudioCodecs.length > 0) {
@@ -665,10 +665,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
                   audioCodec.toLowerCase()
                 ) {
                   preferredAudioCodecs.push(systemAudioCodec)
-                  systemAudioCodecs.splice(
-                    systemAudioCodecs.indexOf(systemAudioCodec),
-                    1
-                  )
                 }
               }
             }
@@ -676,19 +672,11 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
             for (const systemAudioCodec of systemAudioCodecs) {
               if (systemAudioCodec.mimeType === 'audio/red') {
                 preferredAudioCodecs.push(systemAudioCodec)
-                systemAudioCodecs.splice(
-                  systemAudioCodecs.indexOf(systemAudioCodec),
-                  1
-                )
               }
             }
             for (const systemAudioCodec of systemAudioCodecs) {
               if (systemAudioCodec.mimeType === 'audio/opus') {
                 preferredAudioCodecs.push(systemAudioCodec)
-                systemAudioCodecs.splice(
-                  systemAudioCodecs.indexOf(systemAudioCodec),
-                  1
-                )
               }
             }
           }
@@ -696,7 +684,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
         // Add all remaining codecs
         for (const audioCodec of systemAudioCodecs) {
-          preferredAudioCodecs.push(audioCodec)
+          if (!['audio/red', 'audio/opus'].includes(audioCodec.mimeType)) {
+            preferredAudioCodecs.push(audioCodec)
+          }
         }
 
         if (supportsSetCodecPreferences) {
@@ -731,7 +721,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       if (videoTrack) {
         const systemVideoCodecs =
-          RTCRtpSender.getCapabilities('video')?.codecs || []
+          RTCRtpReceiver.getCapabilities('video')?.codecs || []
+
+        console.log('systemVideoCodecs', systemVideoCodecs)
 
         for (const videoCodec of config.media[type].videoCodecs) {
           for (const systemVideoCodec of systemVideoCodecs) {
@@ -740,17 +732,18 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
               videoCodec.toLowerCase()
             ) {
               preferredCodecs.push(systemVideoCodec)
-              systemVideoCodecs.splice(
-                systemVideoCodecs.indexOf(systemVideoCodec),
-                1
-              )
             }
           }
         }
 
+        console.log('preferredCodecs', preferredCodecs)
+
         // Add all remaining codecs
         for (const videoCodec of systemVideoCodecs) {
-          preferredCodecs.push(videoCodec)
+          if (!config.media[type].videoCodecs.includes(videoCodec.mimeType)) {
+            console.log('videoCodec', videoCodec)
+            preferredCodecs.push(videoCodec)
+          }
         }
 
         /** @type {RTCRtpTransceiverInit} */
