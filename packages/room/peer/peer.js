@@ -229,24 +229,22 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         )
       }
 
-      let track =
-        newTrack?.kind === 'video'
-          ? newTrack
-          : await navigator.mediaDevices
-              .getUserMedia({ video: true })
-              .then((stream) => stream.getVideoTracks()[0])
-              .catch((error) => {
-                throw error
-              })
+      const videoTrack = localStream.mediaStream.getVideoTracks()[0]
 
-      if (!track) return
+      if (newTrack) {
+        if (videoTrack) {
+          localStream.replaceTrack(newTrack)
+          await this.replaceTrack(newTrack)
+          return
+        }
 
-      if (localStream.mediaStream.getVideoTracks()[0]) {
-        localStream.replaceTrack(track)
-        await this.replaceTrack(track)
-      } else {
-        this._addVideoTrack(track, localStream)
+        this._addVideoTrack(newTrack, localStream)
         await this.negotiate()
+        return
+      }
+
+      if (videoTrack) {
+        this._setTrackEnabled(videoTrack, true)
       }
     }
 
@@ -265,24 +263,22 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         )
       }
 
-      let track =
-        newTrack?.kind === 'audio'
-          ? newTrack
-          : await navigator.mediaDevices
-              .getUserMedia({ audio: true })
-              .then((stream) => stream.getAudioTracks()[0])
-              .catch((error) => {
-                throw error
-              })
+      const audioTrack = localStream.mediaStream.getAudioTracks()[0]
 
-      if (!track) return
+      if (newTrack) {
+        if (audioTrack) {
+          localStream.replaceTrack(newTrack)
+          await this.replaceTrack(newTrack)
+          return
+        }
 
-      if (localStream.mediaStream.getAudioTracks()[0]) {
-        localStream.replaceTrack(track)
-        await this.replaceTrack(track)
-      } else {
-        this._addAudioTrack(track, localStream)
+        this._addAudioTrack(newTrack, localStream)
         await this.negotiate()
+        return
+      }
+
+      if (audioTrack) {
+        this._setTrackEnabled(audioTrack, true)
       }
     }
 
