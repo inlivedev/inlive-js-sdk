@@ -488,26 +488,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
     /**
      * @param {MediaStreamTrack} track
-     */
-    _stopTrack = (track) => {
-      if (!this._peerConnection) return
-
-      if (!(track instanceof MediaStreamTrack)) {
-        throw new TypeError('Track must be an instance of MediaStreamTrack')
-      }
-
-      for (const transceiver of this._peerConnection.getTransceivers()) {
-        const senderTrack = transceiver.sender.track
-        if (!senderTrack) return
-
-        if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
-          senderTrack.stop()
-        }
-      }
-    }
-
-    /**
-     * @param {MediaStreamTrack} track
      * @param {boolean} enabled
      */
     _setTrackEnabled = (track, enabled = true) => {
@@ -523,6 +503,26 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
         if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
           senderTrack.enabled = enabled
+        }
+      }
+    }
+
+    /**
+     * @param {MediaStreamTrack} track
+     */
+    _stopTrack = (track) => {
+      if (!this._peerConnection) return
+
+      if (!(track instanceof MediaStreamTrack)) {
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
+      }
+
+      for (const transceiver of this._peerConnection.getTransceivers()) {
+        const senderTrack = transceiver.sender.track
+        if (!senderTrack) return
+
+        if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
+          senderTrack.stop()
         }
       }
     }
