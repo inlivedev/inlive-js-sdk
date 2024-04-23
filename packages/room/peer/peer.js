@@ -322,7 +322,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
     /**
      * Turn off the local microphone
-     * @param {MediaStreamTrack} [stop] Completely stop the camera track
+     * @param {MediaStreamTrack} [stop] Completely stop the microphone track
      */
     turnOffMic = (stop) => {
       const stream = this._streams.getAllStreams().find((stream) => {
