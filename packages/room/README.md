@@ -443,7 +443,7 @@ peer.disconnect();
 
   A method to stop sending local camera video capture to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method.
 
-  By default when the `stop` track parameter is empty, this method will only disable the local video track added with `peer.addStream()`. The peer still sends empty blank frame to other connected peers. The device camera indicator may stay turning on.
+  By default when the `stop` track parameter is empty, this method will only disable the local video track added with `peer.addStream()`. The peer still sends empty blank frame to other connected peers. The device camera indicator may stay turning on. To reenable the video track, call `peer.turnOnCamera()`.
 
   When the `stop` track parameter is provided, this method will completely stop sending the video track. After the track is stopped, the track becomes unusable. To start sending the video track again, call the `peer.turnOnCamera(newTrack)` method. You can get a new track again with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
 
@@ -461,7 +461,7 @@ peer.disconnect();
 
   A method to stop sending local mic audio capture to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method.
 
-  By default when the `stop` track parameter is empty, this method will only disable the local audio track added with `peer.addStream()`. The peer still sends silence frame to other connected peers.
+  By default when the `stop` track parameter is empty, this method will only disable the local audio track added with `peer.addStream()`. The peer still sends silence frame to other connected peers. To reenable the audio track, call `peer.turnOnMic()`.
 
   When the `stop` track parameter is provided, this method will completely stop sending the audio track. After the track is stopped, the track becomes unusable. To start sending the audio track again, call the `peer.turnOnMic(newTrack)` method. You can get a new track again with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
 
