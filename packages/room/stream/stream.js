@@ -7,6 +7,7 @@ export const createStream = () => {
     source
     mediaStream
     audioLevel
+    lastVoiceActivity
 
     /**
      * @param {import('./stream-types.js').RoomStreamType.StreamParameters} streamParameters
@@ -20,6 +21,7 @@ export const createStream = () => {
       this.source = source
       this.mediaStream = mediaStream
       this.audioLevel = 0
+      this.lastVoiceActivity = 0
     }
 
     /**
@@ -49,6 +51,7 @@ export const createStream = () => {
         for (const level of activity.audioLevels) {
           this.audioLevel = level.audioLevel
           this.#triggerVoiceActivityEvent(this.audioLevel)
+          this.lastVoiceActivity = Date.now()
         }
       } else {
         this.audioLevel = 0
@@ -79,19 +82,7 @@ export const createStream = () => {
     createInstance: (data) => {
       const stream = new Stream(data)
 
-      return Object.freeze({
-        id: stream.id,
-        clientId: stream.clientId,
-        name: stream.name,
-        origin: stream.origin,
-        source: stream.source,
-        mediaStream: stream.mediaStream,
-        audioLevel: 0,
-        replaceTrack: stream.replaceTrack,
-        addVoiceActivity: stream.addVoiceActivity,
-        addEventListener: stream.addEventListener,
-        removeEventListener: stream.removeEventListener,
-      })
+      return stream
     },
   }
 }
