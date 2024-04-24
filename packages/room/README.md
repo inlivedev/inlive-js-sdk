@@ -435,29 +435,33 @@ peer.disconnect();
 
   A method to start sending video capture using local camera to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method. This method will return a promise.
 
-  By default when the video track parameter is empty, the method will enable the local video track added with `peer.addStream()`. When the video track parameter is provided, SDK will try to use it as sender video track which sends the track to other connected peers.
+  By default when the video track parameter is empty, the method will enable the local video track added with `peer.addStream()`. When the video track parameter is provided, this method will try to use it as sender video track which sends the track to other connected peers.
 
-- `peer.turnOffCamera(videoTrack?: MediaStreamTrack | undefined)`
+- `peer.turnOffCamera(stop?: boolean | undefined)`
 
-  A method to stop sending the local video capture and stop the video capture track. You can provide which video capture track to stop as parameter. By default, when the video track parameter is empty, this method will find the video track added to SDK. Upon completion, this method will trigger `RoomEvent.TRACK_MUTE` event.
+  A method to stop sending local camera video capture to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method.
 
-  When the video capture track is stopped, the track becomes unusable. You can get a new one with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
+  By default when the `stop` track parameter is empty, the method will only disable the local video track added with `peer.addStream()`. The peer still sends empty blank frame to other connected peers. The device camera indicator may stay turning on.
 
-  After this method is called, the video of the peer which turns off the camera will become freeze on other peers side. The video freezes because the track's source is stopped and unable to provide data. Listen for `RoomEvent.TRACK_MUTE` to listen whether a video freezes when camera is turned off. You can provide an overlay UI which informs the user when a video freezes because the camera is turned off.
+  When the `stop` track parameter is provided, the method will completely stop sending the video track. After the track is stopped, the track becomes unusable. To start sending the video track again, call the `peer.turnOnCamera(newTrack)` method. You can get a new track again with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
+
+  When the `stop` track parameter is provided, the video camera will become freeze on remote peers side because the track's source is stopped and unable to provide data. Listen for [track mute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/mute_event) to listen when the video freezes because its track is stopped.
 
 - `peer.turnOnMic(audioTrack?: MediaStreamTrack | undefined)`
 
   A method to start sending audio capture using local microphone to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method. This method will return a promise.
 
-  By default when the audio track parameter is empty, the method will enable the local audio track added with `peer.addStream()`. When the audio track parameter is provided, SDK will try to use it as sender audio track which sends the track to other connected peers.
+  By default when the audio track parameter is empty, the method will enable the local audio track added with `peer.addStream()`. When the audio track parameter is provided, this method will try to use it as sender audio track which sends the track to other connected peers.
 
-- `peer.turnOffMic(audioTrack?: MediaStreamTrack | undefined)`
+- `peer.turnOffMic(stop?: boolean | undefined)`
 
-  A method to stop sending the local audio capture and stop the audio capture track. You can provide which audio capture track to stop as parameter. By default, when the audio track parameter is empty, this method will find the audio track added to SDK. Upon completion, this method will trigger `RoomEvent.TRACK_MUTE` event.
+  A method to stop sending local mic audio capture to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method.
 
-  When the audio capture track is stopped, the track becomes unusable. You can get a new one with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
+  By default when the `stop` track parameter is empty, the method will only disable the local audio track added with `peer.addStream()`. The peer still sends silence frame to other connected peers.
 
-  Listen for `RoomEvent.TRACK_MUTE` to listen whether a local or remote peer audio is mute/off.
+  When the `stop` track parameter is provided, the method will completely stop sending the audio track. After the track is stopped, the track becomes unusable. To start sending the audio track again, call the `peer.turnOnMic(newTrack)` method. You can get a new track again with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
+
+  When the `stop` track parameter is provided, the audio track's source is stopped. Listen for [track mute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/mute_event) to listen when the audio track is stopped.
 
 - `peer.replaceTrack(track: MediaStreamTrack)`
 
