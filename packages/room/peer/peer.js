@@ -483,7 +483,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       for (const transceiver of this._peerConnection.getTransceivers()) {
         const senderTrack = transceiver.sender.track
-        if (!senderTrack) return
+        if (!senderTrack) continue
 
         if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
           senderTrack.enabled = enabled
@@ -503,7 +503,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       for (const transceiver of this._peerConnection.getTransceivers()) {
         const senderTrack = transceiver.sender.track
-        if (!senderTrack) return
+        if (!senderTrack) continue
 
         if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
           senderTrack.stop()
