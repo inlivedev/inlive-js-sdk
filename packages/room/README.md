@@ -439,6 +439,8 @@ peer.disconnect();
 
   Listen for [track unmute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/unmute_event) to listen when a new remote video track is used.
 
+  > When the video track parameter is provided and there is an existing sender video track, this method will replace the existing sender video track with the new track using [RTCRTPSender.replaceTrack()](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack). There is a chance the track replacement will fail when the new track constraint is not the same with the existing track or this method is called in the wrong state of peer connection which will cause [exceptions](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack#exceptions) to be thrown.
+
 - `peer.turnOffCamera(stop?: boolean | undefined)`
 
   A method to stop sending local camera video capture to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method.
@@ -456,6 +458,8 @@ peer.disconnect();
   By default when the audio track parameter is empty, this method will enable the local audio track added with `peer.addStream()`. When the audio track parameter is provided, this method will use it as sender audio track which sends the track to other connected peers.
 
   Listen for [track unmute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/unmute_event) to listen when a new remote audio track is used.
+
+    > When the audio track parameter is provided and there is an existing sender audio track, this method will replace the existing sender audio track with the new track using [RTCRTPSender.replaceTrack()](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack). There is a chance the track replacement will fail when the new track constraint is not the same with the existing track or this method is called in the wrong state of peer connection which will cause [exceptions](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack#exceptions) to be thrown.
 
 - `peer.turnOffMic(stop?: boolean | undefined)`
 

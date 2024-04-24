@@ -243,14 +243,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         }
 
         if (videoTrack) {
-          try {
-            await this.replaceTrack(newTrack)
-            localStream.replaceTrack(newTrack)
-            return
-          } catch (error) {
-            console.error(error)
-            throw error
-          }
+          await this.replaceTrack(newTrack)
+          localStream.replaceTrack(newTrack)
+          return
         }
 
         this._addVideoTrack(newTrack, localStream)
@@ -299,14 +294,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         }
 
         if (audioTrack) {
-          try {
-            await this.replaceTrack(newTrack)
-            localStream.replaceTrack(newTrack)
-            return
-          } catch (error) {
-            console.error(error)
-            throw error
-          }
+          await this.replaceTrack(newTrack)
+          localStream.replaceTrack(newTrack)
+          return
         }
 
         this._addAudioTrack(newTrack, localStream)
@@ -399,7 +389,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           transceiver.sender.track &&
           transceiver.sender.track.kind === newTrack.kind
         ) {
-          await transceiver.sender.replaceTrack(newTrack)
+          try {
+            await transceiver.sender.replaceTrack(newTrack)
+          } catch (error) {
+            console.error(error)
+            throw error
+          }
         }
       }
     }
