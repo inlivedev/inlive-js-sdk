@@ -439,7 +439,7 @@ peer.disconnect();
 
   Listen for [track unmute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/unmute_event) to listen when a new remote video track is used.
 
-  > When the video track parameter is provided and there is an existing sender video track, this method will replace the existing sender video track with the new track using [RTCRTPSender.replaceTrack()](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack). There is a chance the track replacement will fail when the new track constraint is not the same with the existing track or this method is called in the wrong state of peer connection which will cause [exceptions](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack#exceptions) to be thrown.
+  > When the video track parameter is provided and there is an existing sender video track, this method will replace the existing sender video track with the new track using [RTCRTPSender.replaceTrack()](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack). There is a chance the track replacement may fail when the new track constraint is not the same with the existing track or this method is called in the wrong state of peer connection which will cause [exceptions](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack#exceptions) to be thrown.
 
 - `peer.turnOffCamera(stop?: boolean | undefined)`
 
@@ -459,7 +459,7 @@ peer.disconnect();
 
   Listen for [track unmute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/unmute_event) to listen when a new remote audio track is used.
 
-    > When the audio track parameter is provided and there is an existing sender audio track, this method will replace the existing sender audio track with the new track using [RTCRTPSender.replaceTrack()](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack). There is a chance the track replacement will fail when the new track constraint is not the same with the existing track or this method is called in the wrong state of peer connection which will cause [exceptions](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack#exceptions) to be thrown.
+    > When the audio track parameter is provided and there is an existing sender audio track, this method will replace the existing sender audio track with the new track using [RTCRTPSender.replaceTrack()](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack). There is a chance the track replacement may fail when the new track constraint is not the same with the existing track or this method is called in the wrong state of peer connection which will cause [exceptions](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack#exceptions) to be thrown.
 
 - `peer.turnOffMic(stop?: boolean | undefined)`
 
