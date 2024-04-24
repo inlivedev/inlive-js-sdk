@@ -287,11 +287,17 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {MediaStreamTrack} [stop] Completely stop the camera track
      */
     turnOffCamera = (stop) => {
-      const stream = this._streams.getAllStreams().find((stream) => {
+      const localStream = this._streams.getAllStreams().find((stream) => {
         return stream.origin === 'local' && stream.source === 'media'
       })
 
-      const videoTrack = stream?.mediaStream.getVideoTracks()[0]
+      if (!localStream || !(localStream.mediaStream instanceof MediaStream)) {
+        throw new Error(
+          'Add local media stream with addStream() before calling this method'
+        )
+      }
+
+      const videoTrack = localStream?.mediaStream.getVideoTracks()[0]
       if (!videoTrack) return
 
       if (stop) {
@@ -309,11 +315,17 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
      * @param {MediaStreamTrack} [stop] Completely stop the microphone track
      */
     turnOffMic = (stop) => {
-      const stream = this._streams.getAllStreams().find((stream) => {
+      const localStream = this._streams.getAllStreams().find((stream) => {
         return stream.origin === 'local' && stream.source === 'media'
       })
 
-      const audioTrack = stream?.mediaStream.getAudioTracks()[0]
+      if (!localStream || !(localStream.mediaStream instanceof MediaStream)) {
+        throw new Error(
+          'Add local media stream with addStream() before calling this method'
+        )
+      }
+
+      const audioTrack = localStream?.mediaStream.getAudioTracks()[0]
       if (!audioTrack) return
 
       if (stop) {
