@@ -231,11 +231,26 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       const videoTrack = localStream.mediaStream.getVideoTracks()[0]
 
+      if (!newTrack && !videoTrack) {
+        throw new Error('Cannot find any video track which can be processed')
+      }
+
       if (newTrack) {
+        if (newTrack.kind !== 'video') {
+          throw new TypeError(`Track must be a video track`)
+        } else if (newTrack.readyState === 'ended') {
+          throw new Error(`Cannot use a video track which is not running.`)
+        }
+
         if (videoTrack) {
-          localStream.replaceTrack(newTrack)
-          await this.replaceTrack(newTrack)
-          return
+          try {
+            await this.replaceTrack(newTrack)
+            localStream.replaceTrack(newTrack)
+            return
+          } catch (error) {
+            console.error(error)
+            throw error
+          }
         }
 
         this._addVideoTrack(newTrack, localStream)
@@ -244,7 +259,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       if (videoTrack) {
+        if (videoTrack.readyState === 'ended') {
+          throw new Error(
+            `Video capture track has been ended. Use turnOnCamera(newTrack) to replace the ended track with a running one.`
+          )
+        }
+
         this._setTrackEnabled(videoTrack, true)
+        return
       }
     }
 
@@ -265,11 +287,26 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       const audioTrack = localStream.mediaStream.getAudioTracks()[0]
 
+      if (!newTrack && !audioTrack) {
+        throw new Error('Cannot find any audio track which can be processed')
+      }
+
       if (newTrack) {
+        if (newTrack.kind !== 'audio') {
+          throw new TypeError(`Track must be an audio track`)
+        } else if (newTrack.readyState === 'ended') {
+          throw new Error(`Cannot use an audio track which is not running.`)
+        }
+
         if (audioTrack) {
-          localStream.replaceTrack(newTrack)
-          await this.replaceTrack(newTrack)
-          return
+          try {
+            await this.replaceTrack(newTrack)
+            localStream.replaceTrack(newTrack)
+            return
+          } catch (error) {
+            console.error(error)
+            throw error
+          }
         }
 
         this._addAudioTrack(newTrack, localStream)
@@ -278,7 +315,14 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       if (audioTrack) {
+        if (audioTrack.readyState === 'ended') {
+          throw new Error(
+            `Audio capture track has been ended. Use turnOnMic(newTrack) to replace the ended track with a running one.`
+          )
+        }
+
         this._setTrackEnabled(audioTrack, true)
+        return
       }
     }
 
@@ -298,12 +342,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       const videoTrack = localStream?.mediaStream.getVideoTracks()[0]
-      if (!videoTrack) return
+
+      if (!videoTrack || videoTrack.readyState === 'ended') {
+        throw new Error(`No running video track available to be processed.`)
+      }
 
       if (stop) {
-        if (videoTrack.readyState === 'live') {
-          this._stopTrack(videoTrack)
-        }
+        this._stopTrack(videoTrack)
         return
       }
 
@@ -326,12 +371,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       }
 
       const audioTrack = localStream?.mediaStream.getAudioTracks()[0]
-      if (!audioTrack) return
+
+      if (!audioTrack || audioTrack.readyState === 'ended') {
+        throw new Error(`No running audio track available to be processed.`)
+      }
 
       if (stop) {
-        if (audioTrack.readyState === 'live') {
-          this._stopTrack(audioTrack)
-        }
+        this._stopTrack(audioTrack)
         return
       }
 
