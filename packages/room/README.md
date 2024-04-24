@@ -433,9 +433,9 @@ peer.disconnect();
 
 - `peer.turnOnCamera(videoTrack?: MediaStreamTrack | undefined)`
 
-  A method to start sending video capture using local camera to other connected peers. You can provide a specific video track as parameter when calling this method. By default, when the video track parameter is empty, this method will use default local video setting to start sending video capture. Upon completion, this method will trigger `RoomEvent.TRACK_UNMUTE` event. This method will return a promise.
+  A method to start sending video capture using local camera to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method. This method will return a promise.
 
-  Listen for `RoomEvent.TRACK_UNMUTE` to listen whether a local or remote peer video is unmute/on.
+  By default when the video track parameter is empty, the method will enable the local video track added with `peer.addStream()`. When the video track parameter is provided, SDK will try to use it as sender video track which sends the track to other connected peers.
 
 - `peer.turnOffCamera(videoTrack?: MediaStreamTrack | undefined)`
 
@@ -447,9 +447,9 @@ peer.disconnect();
 
 - `peer.turnOnMic(audioTrack?: MediaStreamTrack | undefined)`
 
-  A method to start sending audio capture using local microphone to other connected peers. You can provide a specific audio track as parameter when calling this method. By default, when the audio track parameter is empty, this method will use default local audio setting to start sending audio capture. Upon completion, this method will trigger `RoomEvent.TRACK_UNMUTE` event. This method will return a promise.
+  A method to start sending audio capture using local microphone to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method. This method will return a promise.
 
-  Listen for `RoomEvent.TRACK_UNMUTE` to listen whether a local or remote peer audio is unmute/on.
+  By default when the audio track parameter is empty, the method will enable the local audio track added with `peer.addStream()`. When the audio track parameter is provided, SDK will try to use it as sender audio track which sends the track to other connected peers.
 
 - `peer.turnOffMic(audioTrack?: MediaStreamTrack | undefined)`
 
