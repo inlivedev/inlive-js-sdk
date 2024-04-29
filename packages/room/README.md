@@ -360,9 +360,9 @@ const streams = peer.getAllStreams();
 
 // After user media input is added, you can call these methods to turn on/off camera and mic
 peer.turnOffCamera();
-peer.turnOnCamera();
+await peer.turnOnCamera();
 peer.turnOffMic();
-peer.turnOnMic();
+await peer.turnOnMic();
 
 const peerConnection = peer.getPeerConnection();
 
@@ -431,25 +431,53 @@ peer.disconnect();
 
   A method to check if a specified stream object available and stored in the peer. It requires a key to find the data.
 
-- `peer.turnOnCamera()`
+- `peer.turnOnCamera(videoTrack?: MediaStreamTrack | undefined)`
 
-  A method to turn on the current local camera (video) track.
+  A method to start sending video capture using local camera to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method. This method will return a promise.
 
-- `peer.turnOffCamera()`
+  By default when the video track parameter is empty, this method will enable the local video track added with `peer.addStream()`. When the video track parameter is provided, this method will use it as sender video track which sends the track to other connected peers.
 
-  A method to turn off the current local camera (video) track.
+  Listen for [track unmute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/unmute_event) to listen when a new remote video track is used.
 
-- `peer.turnOnMic()`
+  > When the video track parameter is provided and there is an existing sender video track, this method will replace the existing sender video track with the new track using [RTCRTPSender.replaceTrack()](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack). There is a chance the track replacement may fail when the new track constraint is not the same with the existing track or this method is called in the wrong state of peer connection which will cause [exceptions](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack#exceptions) to be thrown.
 
-  A method to turn on the current local microphone (audio) track.
+- `peer.turnOffCamera(stop?: boolean | undefined)`
 
-- `peer.turnOffMic()`
+  A method to stop sending local camera video capture to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method.
 
-  A method to turn off the current local microphone (audio) track.
+  By default when the `stop` track parameter is empty, this method will only disable the local video track added with `peer.addStream()`. The peer still sends empty blank frame to other connected peers. The device camera indicator may stay turning on. To reenable the video track, call `peer.turnOnCamera()`.
+
+  When the `stop` track parameter is provided, this method will completely stop sending the video track. After the track is stopped, the track becomes unusable. To start sending the video track again, call the `peer.turnOnCamera(newTrack)` method. You can get a new track again with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
+
+  When the `stop` track parameter is provided, the video camera will become freeze on remote peers side because the track's source is stopped and unable to provide data. Listen for [track mute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/mute_event) to listen when the remote video freezes because its track is stopped.
+
+- `peer.turnOnMic(audioTrack?: MediaStreamTrack | undefined)`
+
+  A method to start sending audio capture using local microphone to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method. This method will return a promise.
+
+  By default when the audio track parameter is empty, this method will enable the local audio track added with `peer.addStream()`. When the audio track parameter is provided, this method will use it as sender audio track which sends the track to other connected peers.
+
+  Listen for [track unmute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/unmute_event) to listen when a new remote audio track is used.
+
+    > When the audio track parameter is provided and there is an existing sender audio track, this method will replace the existing sender audio track with the new track using [RTCRTPSender.replaceTrack()](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack). There is a chance the track replacement may fail when the new track constraint is not the same with the existing track or this method is called in the wrong state of peer connection which will cause [exceptions](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack#exceptions) to be thrown.
+
+- `peer.turnOffMic(stop?: boolean | undefined)`
+
+  A method to stop sending local mic audio capture to other connected peers. A local stream object needs to be added with `peer.addStream()` before calling this method.
+
+  By default when the `stop` track parameter is empty, this method will only disable the local audio track added with `peer.addStream()`. The peer still sends silence frame to other connected peers. To reenable the audio track, call `peer.turnOnMic()`.
+
+  When the `stop` track parameter is provided, this method will completely stop sending the audio track. After the track is stopped, the track becomes unusable. To start sending the audio track again, call the `peer.turnOnMic(newTrack)` method. You can get a new track again with [getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia).
+
+  When the `stop` track parameter is provided, the audio track's source is stopped. Listen for [track mute event](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/mute_event) to listen when the remote audio track is stopped.
 
 - `peer.replaceTrack(track: MediaStreamTrack)`
 
   A method to replace the track currently being sent by sender with a new MediaStreamTrack.
+
+- `peer.negotiate()`
+
+  A method to trigger and start the manual negotiation process. This method will return a promise.
 
 
 #### Events

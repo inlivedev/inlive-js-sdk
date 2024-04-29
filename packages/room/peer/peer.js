@@ -142,7 +142,13 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       this._streams.addStream(key, stream)
 
       if (stream.origin === 'local') {
-        this._addLocalMediaStream(stream)
+        for (const track of stream.mediaStream.getTracks()) {
+          if (track.kind === 'video') {
+            this._addVideoTrack(track, stream)
+          } else if (track.kind === 'audio') {
+            this._addAudioTrack(track, stream)
+          }
+        }
       }
 
       this._event.emit(RoomEvent.STREAM_AVAILABLE, { stream })
@@ -210,34 +216,162 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
     /**
      * Turn on the local camera
+     * @param {MediaStreamTrack} [newTrack] sender video track
      */
-    turnOnCamera = () => {
-      if (!this._peerConnection) return
-      this._setTrackEnabled(this._peerConnection, 'video', true)
+    turnOnCamera = async (newTrack) => {
+      const localStream = this.getAllStreams().find((stream) => {
+        return stream.origin === 'local' && stream.source === 'media'
+      })
+
+      if (!localStream || !(localStream.mediaStream instanceof MediaStream)) {
+        throw new Error(
+          'Add local media stream with addStream() before calling this method'
+        )
+      }
+
+      const videoTrack = localStream.mediaStream.getVideoTracks()[0]
+
+      if (!newTrack && !videoTrack) {
+        throw new Error('Cannot find any video track which can be processed')
+      }
+
+      if (newTrack) {
+        if (newTrack.kind !== 'video') {
+          throw new TypeError(`Track must be a video track`)
+        } else if (newTrack.readyState === 'ended') {
+          throw new Error(`Cannot use a video track which is not running.`)
+        }
+
+        if (videoTrack) {
+          await this.replaceTrack(newTrack)
+          localStream.replaceTrack(newTrack)
+          return
+        }
+
+        this._addVideoTrack(newTrack, localStream)
+        await this.negotiate()
+        return
+      }
+
+      if (videoTrack) {
+        if (videoTrack.readyState === 'ended') {
+          throw new Error(
+            `Video capture track has been ended. Use turnOnCamera(newTrack) to replace the ended track with a running one.`
+          )
+        }
+
+        this._setTrackEnabled(videoTrack, true)
+        return
+      }
     }
 
     /**
      * Turn on the local microphone
+     * @param {MediaStreamTrack} [newTrack] sender audio track
      */
-    turnOnMic = () => {
-      if (!this._peerConnection) return
-      this._setTrackEnabled(this._peerConnection, 'audio', true)
+    turnOnMic = async (newTrack) => {
+      const localStream = this.getAllStreams().find((stream) => {
+        return stream.origin === 'local' && stream.source === 'media'
+      })
+
+      if (!localStream || !(localStream.mediaStream instanceof MediaStream)) {
+        throw new Error(
+          'Add local media stream with addStream() before calling this method'
+        )
+      }
+
+      const audioTrack = localStream.mediaStream.getAudioTracks()[0]
+
+      if (!newTrack && !audioTrack) {
+        throw new Error('Cannot find any audio track which can be processed')
+      }
+
+      if (newTrack) {
+        if (newTrack.kind !== 'audio') {
+          throw new TypeError(`Track must be an audio track`)
+        } else if (newTrack.readyState === 'ended') {
+          throw new Error(`Cannot use an audio track which is not running.`)
+        }
+
+        if (audioTrack) {
+          await this.replaceTrack(newTrack)
+          localStream.replaceTrack(newTrack)
+          return
+        }
+
+        this._addAudioTrack(newTrack, localStream)
+        await this.negotiate()
+        return
+      }
+
+      if (audioTrack) {
+        if (audioTrack.readyState === 'ended') {
+          throw new Error(
+            `Audio capture track has been ended. Use turnOnMic(newTrack) to replace the ended track with a running one.`
+          )
+        }
+
+        this._setTrackEnabled(audioTrack, true)
+        return
+      }
     }
 
     /**
      * Turn off the local camera
+     * @param {boolean} [stop] Completely stop the camera track
      */
-    turnOffCamera = () => {
-      if (!this._peerConnection) return
-      this._setTrackEnabled(this._peerConnection, 'video', false)
+    turnOffCamera = (stop) => {
+      const localStream = this._streams.getAllStreams().find((stream) => {
+        return stream.origin === 'local' && stream.source === 'media'
+      })
+
+      if (!localStream || !(localStream.mediaStream instanceof MediaStream)) {
+        throw new Error(
+          'Add local media stream with addStream() before calling this method'
+        )
+      }
+
+      const videoTrack = localStream?.mediaStream.getVideoTracks()[0]
+
+      if (!videoTrack || videoTrack.readyState === 'ended') {
+        throw new Error(`No running video track available to be processed.`)
+      }
+
+      if (stop) {
+        this._stopTrack(videoTrack)
+        return
+      }
+
+      this._setTrackEnabled(videoTrack, false)
     }
 
     /**
      * Turn off the local microphone
+     * @param {boolean} [stop] Completely stop the microphone track
      */
-    turnOffMic = () => {
-      if (!this._peerConnection) return
-      this._setTrackEnabled(this._peerConnection, 'audio', false)
+    turnOffMic = (stop) => {
+      const localStream = this._streams.getAllStreams().find((stream) => {
+        return stream.origin === 'local' && stream.source === 'media'
+      })
+
+      if (!localStream || !(localStream.mediaStream instanceof MediaStream)) {
+        throw new Error(
+          'Add local media stream with addStream() before calling this method'
+        )
+      }
+
+      const audioTrack = localStream?.mediaStream.getAudioTracks()[0]
+
+      if (!audioTrack || audioTrack.readyState === 'ended') {
+        throw new Error(`No running audio track available to be processed.`)
+      }
+
+      if (stop) {
+        this._stopTrack(audioTrack)
+        return
+      }
+
+      this._setTrackEnabled(audioTrack, false)
     }
 
     /**
@@ -247,7 +381,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       if (!this._peerConnection) return
 
       if (!(newTrack instanceof MediaStreamTrack)) {
-        throw new TypeError('The track must be an instance of MediaStreamTrack')
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
       }
 
       for (const transceiver of this._peerConnection.getTransceivers()) {
@@ -255,8 +389,12 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           transceiver.sender.track &&
           transceiver.sender.track.kind === newTrack.kind
         ) {
-          await transceiver.sender.replaceTrack(newTrack)
-          await this.negotiate()
+          try {
+            await transceiver.sender.replaceTrack(newTrack)
+          } catch (error) {
+            console.error(error)
+            throw error
+          }
         }
       }
     }
@@ -374,35 +512,42 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     }
 
     /**
-     * @param {RTCPeerConnection} peerConnection
-     * @param {'video' | 'audio'} kind
+     * @param {MediaStreamTrack} track
      * @param {boolean} enabled
      */
-    _setTrackEnabled = (peerConnection, kind, enabled) => {
-      const stream = this._streams.getAllStreams().find((stream) => {
-        return stream.origin === 'local' && stream.source === 'media'
-      })
+    _setTrackEnabled = (track, enabled = true) => {
+      if (!this._peerConnection) return
 
-      if (!stream) {
-        throw new Error(
-          'You must add a user MediaStream in order to proceed this operation'
-        )
+      if (!(track instanceof MediaStreamTrack)) {
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
       }
 
-      const mediaTrack = stream.mediaStream.getTracks().find((track) => {
-        return track.kind === kind
-      })
+      for (const transceiver of this._peerConnection.getTransceivers()) {
+        const senderTrack = transceiver.sender.track
+        if (!senderTrack) continue
 
-      if (!mediaTrack) return
+        if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
+          senderTrack.enabled = enabled
+        }
+      }
+    }
 
-      const transceivers = peerConnection.getTransceivers()
+    /**
+     * @param {MediaStreamTrack} track
+     */
+    _stopTrack = (track) => {
+      if (!this._peerConnection) return
 
-      for (const transceiver of transceivers) {
-        const track = transceiver.sender.track
-        if (!track) return
+      if (!(track instanceof MediaStreamTrack)) {
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
+      }
 
-        if (track.kind === mediaTrack.kind && track.id === mediaTrack.id) {
-          track.enabled = enabled
+      for (const transceiver of this._peerConnection.getTransceivers()) {
+        const senderTrack = transceiver.sender.track
+        if (!senderTrack) continue
+
+        if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
+          senderTrack.stop()
         }
       }
     }
@@ -444,9 +589,75 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     }
 
     /**
+     * @param {MediaStreamTrack} track
      * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
      */
-    _addLocalMediaStream = (stream) => {
+    _addAudioTrack = (track, stream) => {
+      if (!(track instanceof MediaStreamTrack)) {
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
+      }
+
+      if (!stream || !(stream.mediaStream instanceof MediaStream)) {
+        throw new Error('Provide stream instance for track destination')
+      }
+
+      if (track.kind === 'audio') {
+        const audioTrack = stream.mediaStream.getAudioTracks()[0]
+
+        if (!audioTrack) {
+          stream.mediaStream.addTrack(track)
+        } else if (track.id !== audioTrack.id) {
+          stream.replaceTrack(track)
+        }
+
+        const transceiver = this._addAudioTransceiver(stream)
+
+        track.addEventListener('ended', () => {
+          if (!this._peerConnection || !transceiver?.sender.track) return
+          transceiver.sender.track.stop()
+          this._peerConnection.removeTrack(transceiver.sender)
+          this.removeStream(stream.id)
+        })
+      }
+    }
+
+    /**
+     * @param {MediaStreamTrack} track
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     */
+    _addVideoTrack = (track, stream) => {
+      if (!(track instanceof MediaStreamTrack)) {
+        throw new TypeError('Track must be an instance of MediaStreamTrack')
+      }
+
+      if (!stream || !(stream.mediaStream instanceof MediaStream)) {
+        throw new Error('Provide stream instance for track destination')
+      }
+
+      if (track.kind === 'video') {
+        const videoTrack = stream.mediaStream.getVideoTracks()[0]
+
+        if (!videoTrack) {
+          stream.mediaStream.addTrack(track)
+        } else if (track.id !== videoTrack.id) {
+          stream.replaceTrack(track)
+        }
+
+        const transceiver = this._addVideoTransceiver(stream)
+
+        track.addEventListener('ended', () => {
+          if (!this._peerConnection || !transceiver?.sender.track) return
+          transceiver.sender.track.stop()
+          this._peerConnection.removeTrack(transceiver.sender)
+          this.removeStream(stream.id)
+        })
+      }
+    }
+
+    /**
+     * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
+     */
+    _addAudioTransceiver = (stream) => {
       if (!this._peerConnection) return
 
       const supportsSetCodecPreferences =
@@ -512,27 +723,17 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         }
 
-        audioTrack.addEventListener('ended', () => {
-          if (!this._peerConnection || !audioTransceiver.sender) return
-          this._peerConnection.removeTrack(audioTransceiver.sender)
-          this.removeStream(stream.id)
-        })
-      }
-
-      if (stream.source === 'media') {
-        this._addVideoTransceiver(stream, config, 'webcam')
-      } else if (stream.source === 'screen') {
-        this._addVideoTransceiver(stream, config, 'screen')
+        return audioTransceiver
       }
     }
 
     /**
      * @param {import('../stream/stream-types.js').RoomStreamType.InstanceStream} stream
-     * @param {import('../room-types.js').RoomType.Config} config
-     * @param {'webcam' | 'screen'} type
      */
-    _addVideoTransceiver = (stream, config, type) => {
+    _addVideoTransceiver = (stream) => {
       if (!this._peerConnection) return
+      /** @type {'webcam' | 'screen'} */
+      const type = stream.source === 'media' ? 'webcam' : 'screen'
 
       const supportsSetCodecPreferences =
         window.RTCRtpTransceiver &&
@@ -547,8 +748,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         const systemVideoCodecs =
           RTCRtpReceiver.getCapabilities('video')?.codecs || []
 
-        console.log('systemVideoCodecs', systemVideoCodecs)
-
         for (const videoCodec of config.media[type].videoCodecs) {
           for (const systemVideoCodec of systemVideoCodecs) {
             if (
@@ -560,12 +759,9 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         }
 
-        console.log('preferredCodecs', preferredCodecs)
-
         // Add all remaining codecs
         for (const videoCodec of systemVideoCodecs) {
           if (!config.media[type].videoCodecs.includes(videoCodec.mimeType)) {
-            console.log('videoCodec', videoCodec)
             preferredCodecs.push(videoCodec)
           }
         }
@@ -655,11 +851,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           }
         }
 
-        videoTrack.addEventListener('ended', () => {
-          if (!this._peerConnection || !videoTransceiver.sender) return
-          this._peerConnection.removeTrack(videoTransceiver.sender)
-          this.removeStream(stream.id)
-        })
+        return videoTransceiver
       }
     }
 
