@@ -1,4 +1,5 @@
 import { facade } from './facade/facade.js'
+export { AccessToken } from './auth/access-token.js'
 
 export const RoomEvent = Object.freeze({
   CHANNEL_OPENED: 'channelOpened',
