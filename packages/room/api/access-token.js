@@ -1,5 +1,5 @@
 import mergeWith from 'lodash-es/mergeWith.js'
-import { createFetcher } from '../api/fetcher.js'
+import { createFetcher } from './fetcher.js'
 
 const config = {
   baseUrl: 'https://api.inlive.app',
@@ -19,7 +19,7 @@ export const createAccessToken = (userConfig = config) => {
   const baseUrl = `${config.baseUrl}/${config.version}`
   let accessToken = ''
 
-  const fetcher = createFetcher().createInstance(baseUrl, config.apiKey)
+  const fetcher = createFetcher().createInstance(baseUrl)
 
   const generateToken = async () => {
     if (
