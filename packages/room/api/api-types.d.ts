@@ -1,16 +1,20 @@
 import type { createFetcher } from './fetcher.js'
 import type { createApi } from './api.js'
+import type { createAccessToken } from './access-token.js'
 import type { SharedType } from '../../internal/types/types.js'
 
 export declare namespace RoomAPIType {
   type CreateFetcher = typeof createFetcher
+  type CreateAccessToken = typeof createAccessToken
   type CreateApi = typeof createApi
 
   type InstanceFetcher = ReturnType<ReturnType<CreateFetcher>['createInstance']>
+  type InstanceCreateAccessToken = ReturnType<CreateAccessToken>
   type InstanceApi = ReturnType<ReturnType<CreateApi>['createInstance']>
 
   type ApiDependencies = {
-    fetcher: RoomAPIType.InstanceFetcher
+    fetcher: InstanceFetcher
+    accessToken: InstanceCreateAccessToken | null
   }
 
   type TrackSourcesRequestBody = {

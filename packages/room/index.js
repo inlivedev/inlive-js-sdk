@@ -7,7 +7,8 @@ import { createStream } from './stream/stream.js'
 import { createPeer } from './peer/peer.js'
 import { createChannel } from './channel/channel.js'
 import * as config from './config/config.js'
-export { createAccessToken as AccessToken } from './auth/access-token.js'
+import { createAccessToken } from './api/access-token.js'
+export { createAccessToken as AccessToken } from './api/access-token.js'
 export { REASONS as ChannelClosureReasons } from './channel/channel.js'
 
 export const RoomEvent = Object.freeze({
@@ -28,11 +29,19 @@ export const Room = (userConfig = config) => {
     return Array.isArray(userValue) ? userValue : undefined
   })
 
-  const baseUrl = `${config.api.baseUrl}/${config.api.version}`
-  const apiKey = config.api.apiKey
-  const fetcher = createFetcher().createInstance(baseUrl, apiKey)
+  const hubBaseUrl = `${config.api.baseUrl}/${config.api.version}`
+  let accessToken = null
+
+  if (config.api.apiKey.trim().length > 0) {
+    accessToken = createAccessToken({
+      apiKey: config.api.apiKey,
+    })
+  }
+
+  const fetcher = createFetcher().createInstance(hubBaseUrl)
   const api = createApi({
     fetcher,
+    accessToken,
   }).createInstance()
   const event = createEvent().createInstance()
   const streams = createStreams().createInstance()
@@ -48,7 +57,7 @@ export const Room = (userConfig = config) => {
     event,
     peer,
     streams,
-  }).createInstance(baseUrl)
+  }).createInstance(hubBaseUrl)
 
   return {
     createRoom: api.createRoom,
@@ -69,6 +78,7 @@ export const Room = (userConfig = config) => {
         return peer
       },
     createDataChannel: api.createDataChannel,
+    setAccessToken: api.setAccessToken,
     on: event.on,
     leaveRoom: api.leaveRoom,
     endRoom: api.endRoom,
