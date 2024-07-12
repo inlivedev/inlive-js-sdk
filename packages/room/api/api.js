@@ -245,9 +245,13 @@ export const createApi = ({ fetcher, accessToken }) => {
         body.enable_vad = config.enableVAD
       }
 
+      let currentAccessToken = await this._getCurrentAccessToken(
+        this._accessToken
+      )
+
       /** @type {RequestInit} */
       const options = {
-        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
+        headers: { Authorization: 'Bearer ' + currentAccessToken },
       }
 
       if (body.uid || body.name) {
@@ -259,6 +263,17 @@ export const createApi = ({ fetcher, accessToken }) => {
         `/rooms/${roomId}/register`,
         options
       )
+
+      if (
+        response.code === 403 &&
+        response.headers.get('x-access-token-expired') &&
+        this._accessToken
+      ) {
+        // recursive
+        await this._accessToken.generateToken()
+        const client = await this.registerClient(roomId, config)
+        return client
+      }
 
       const data = response.data || {}
       const bitrates = data.bitrates || {}
