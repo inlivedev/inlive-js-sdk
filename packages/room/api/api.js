@@ -1,10 +1,12 @@
 /** @param {import('./api-types.js').RoomAPIType.ApiDependencies} apiDeps Dependencies for api module */
-export const createApi = ({ fetcher }) => {
+export const createApi = ({ fetcher, accessToken }) => {
   const Api = class {
     _fetcher
+    _accessToken
 
     constructor() {
       this._fetcher = fetcher
+      this._accessToken = accessToken
     }
 
     /**
@@ -67,11 +69,26 @@ export const createApi = ({ fetcher }) => {
         options: requestOptions,
       }
 
+      let currentAccessToken = await this._getCurrentAccessToken(
+        this._accessToken
+      )
+
       /** @type {import('./api-types.js').RoomAPIType.RoomResponseBody} */
       const response = await this._fetcher.post(`/rooms/create`, {
-        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
+        headers: { Authorization: 'Bearer ' + currentAccessToken },
         body: JSON.stringify(body),
       })
+
+      if (
+        response.code === 403 &&
+        response.headers.get('x-access-token-expired') &&
+        this._accessToken
+      ) {
+        // recursive
+        await this._accessToken.generateToken()
+        const room = await this.createRoom(name, id, options)
+        return room
+      }
 
       const data = response.data || {}
       const roomOptions = data.options || {}
@@ -691,6 +708,31 @@ export const createApi = ({ fetcher }) => {
         message: response.message || '',
         data: null,
       }
+    }
+
+    /**
+     * @param {import('./api-types.js').RoomAPIType.InstanceCreateAccessToken | null} accessToken
+     */
+    _getCurrentAccessToken = async (accessToken) => {
+      if (
+        !accessToken ||
+        typeof accessToken.generateToken !== 'function' ||
+        typeof accessToken.currentToken !== 'function'
+      ) {
+        throw new Error(
+          'Require AccessToken() to be initialized properly. Set the access token with room.setAccessToken(accessToken)'
+        )
+      }
+
+      let currentToken = accessToken.currentToken()
+
+      if (currentToken.trim().length === 0) {
+        const newToken = await accessToken.generateToken()
+        currentToken = newToken.data || ''
+        return currentToken
+      }
+
+      return currentToken
     }
   }
 
