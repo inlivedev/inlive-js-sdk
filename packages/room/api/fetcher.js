@@ -26,6 +26,7 @@ export const createFetcher = () => {
             ...jsonResp,
             code: response.status,
             ok: response.ok,
+            headers: response.headers,
           }
         } catch (error) {
           throw new Error(`Cannot process response from the server: ${error}`)

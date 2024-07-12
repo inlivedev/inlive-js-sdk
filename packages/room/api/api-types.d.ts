@@ -97,6 +97,7 @@ export declare namespace RoomAPIType {
     code: number
     ok: boolean
     message: string
+    headers: Headers
   }
 
   type RoomResponseBody = BaseResponseBody & {
@@ -109,7 +110,7 @@ export declare namespace RoomAPIType {
     options: RoomOptions
   }
 
-  type RoomReturnBody = BaseResponseBody & {
+  type RoomReturnBody = Omit<BaseResponseBody, 'headers'> & {
     data: Room
   }
 
