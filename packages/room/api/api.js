@@ -775,6 +775,13 @@ export const createApi = ({ fetcher, accessToken }) => {
 
       return currentToken
     }
+
+    /**
+     * @param {import('./api-types.js').RoomAPIType.InstanceCreateAccessToken} accessToken
+     */
+    setAccessToken = (accessToken) => {
+      this._accessToken = accessToken
+    }
   }
 
   return {
@@ -798,6 +805,7 @@ export const createApi = ({ fetcher, accessToken }) => {
         leaveRoom: api.leaveRoom,
         endRoom: api.endRoom,
         createDataChannel: api.createDataChannel,
+        setAccessToken: api.setAccessToken,
       }
     },
   }
