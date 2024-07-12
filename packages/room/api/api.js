@@ -86,8 +86,7 @@ export const createApi = ({ fetcher, accessToken }) => {
       ) {
         // recursive
         await this._accessToken.generateToken()
-        const room = await this.createRoom(name, id, options)
-        return room
+        return this.createRoom(name, id, options)
       }
 
       const data = response.data || {}
@@ -166,8 +165,7 @@ export const createApi = ({ fetcher, accessToken }) => {
       ) {
         // recursive
         await this._accessToken.generateToken()
-        const room = await this.getRoom(roomId)
-        return room
+        return this.getRoom(roomId)
       }
 
       const data = response.data || {}
@@ -271,8 +269,7 @@ export const createApi = ({ fetcher, accessToken }) => {
       ) {
         // recursive
         await this._accessToken.generateToken()
-        const client = await this.registerClient(roomId, config)
-        return client
+        return this.registerClient(roomId, config)
       }
 
       const data = response.data || {}
@@ -690,10 +687,24 @@ export const createApi = ({ fetcher, accessToken }) => {
         throw new Error('Room ID must be a valid string')
       }
 
+      let currentAccessToken = await this._getCurrentAccessToken(
+        this._accessToken
+      )
+
       /** @type {import('./api-types.js').RoomAPIType.BaseResponseBody} */
       const response = await this._fetcher.put(`/rooms/${roomId}/end`, {
-        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
+        headers: { Authorization: 'Bearer ' + currentAccessToken },
       })
+
+      if (
+        response.code === 403 &&
+        response.headers.get('x-access-token-expired') &&
+        this._accessToken
+      ) {
+        // recursive
+        await this._accessToken.generateToken()
+        return this.endRoom(roomId)
+      }
 
       const result = {
         code: response.code || 500,
