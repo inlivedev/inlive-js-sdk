@@ -150,10 +150,25 @@ export const createApi = ({ fetcher, accessToken }) => {
         throw new Error('Room ID must be a valid string')
       }
 
+      let currentAccessToken = await this._getCurrentAccessToken(
+        this._accessToken
+      )
+
       /** @type {import('./api-types.js').RoomAPIType.RoomResponseBody} */
       const response = await this._fetcher.get(`/rooms/${roomId}`, {
-        headers: { Authorization: 'Bearer ' + this._fetcher.getApiKey() },
+        headers: { Authorization: 'Bearer ' + currentAccessToken },
       })
+
+      if (
+        response.code === 403 &&
+        response.headers.get('x-access-token-expired') &&
+        this._accessToken
+      ) {
+        // recursive
+        await this._accessToken.generateToken()
+        const room = await this.getRoom(roomId)
+        return room
+      }
 
       const data = response.data || {}
       const roomOptions = data.options || {}
