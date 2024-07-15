@@ -8,7 +8,7 @@ import { createPeer } from './peer/peer.js'
 import { createChannel } from './channel/channel.js'
 import * as config from './config/config.js'
 import { createAccessToken } from './api/access-token.js'
-export { createAccessToken as AccessToken } from './api/access-token.js'
+export { createAccessToken } from './api/access-token.js'
 export { REASONS as ChannelClosureReasons } from './channel/channel.js'
 
 export const RoomEvent = Object.freeze({
