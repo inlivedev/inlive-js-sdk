@@ -9,6 +9,21 @@ const config = {
 }
 
 /**
+ * @typedef AccessTokenData
+ * @property {string} access_token
+ * @property {string} refresh_token
+ */
+
+/**
+ * @typedef AccessTokenResponse
+ * @property {number} code
+ * @property {boolean} ok
+ * @property {string} message
+ * @property {Headers} headers
+ * @property {AccessTokenData} data
+ */
+
+/**
  * @param {import('../../internal/types/types.js').SharedType.DeepPartial<typeof config>} [userConfig]
  */
 export const createAccessToken = async (userConfig = config) => {
@@ -23,6 +38,7 @@ export const createAccessToken = async (userConfig = config) => {
     throw new Error('API key is required.')
   }
 
+  /** @type {AccessTokenResponse} */
   const response = await fetcher.post('/keys/accesstoken', {
     headers: { Authorization: 'Bearer ' + config.apiKey },
   })
