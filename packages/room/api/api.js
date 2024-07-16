@@ -6,6 +6,8 @@ export const createApi = ({ fetcher, config }) => {
     _fetcher
     /** @type {import('./api-types.js').RoomAPIType.ApiAuth | null} */
     _auth = null
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    _authTimeout = null
 
     constructor() {
       this._fetcher = fetcher
@@ -81,7 +83,10 @@ export const createApi = ({ fetcher, config }) => {
 
       if (response.headers.get('x-access-token-expired')) {
         const authResponse = await createAuth({
+          baseUrl: this._auth.baseUrl,
+          apiVersion: this._auth.apiVersion,
           apiKey: this._auth.refreshToken,
+          expirySeconds: this._auth.expirySeconds,
         })
         this._auth = this.setAuth(authResponse)
         return this.createRoom(name, id, options)
@@ -158,7 +163,10 @@ export const createApi = ({ fetcher, config }) => {
 
       if (response.headers.get('x-access-token-expired')) {
         const authResponse = await createAuth({
+          baseUrl: this._auth.baseUrl,
+          apiVersion: this._auth.apiVersion,
           apiKey: this._auth.refreshToken,
+          expirySeconds: this._auth.expirySeconds,
         })
         this._auth = this.setAuth(authResponse)
         return this.getRoom(roomId)
@@ -261,7 +269,10 @@ export const createApi = ({ fetcher, config }) => {
 
       if (response.headers.get('x-access-token-expired')) {
         const authResponse = await createAuth({
+          baseUrl: this._auth.baseUrl,
+          apiVersion: this._auth.apiVersion,
           apiKey: this._auth.refreshToken,
+          expirySeconds: this._auth.expirySeconds,
         })
         this._auth = this.setAuth(authResponse)
         return this.registerClient(roomId, config)
@@ -716,7 +727,10 @@ export const createApi = ({ fetcher, config }) => {
 
       if (response.headers.get('x-access-token-expired')) {
         const authResponse = await createAuth({
+          baseUrl: this._auth.baseUrl,
+          apiVersion: this._auth.apiVersion,
           apiKey: this._auth.refreshToken,
+          expirySeconds: this._auth.expirySeconds,
         })
         this._auth = this.setAuth(authResponse)
         return this.endRoom(roomId)
@@ -799,6 +813,21 @@ export const createApi = ({ fetcher, config }) => {
     setAuth = (auth) => {
       const url = new URL(auth.url)
       const apiVersion = url.pathname.split('/')[1]
+
+      if (this._authTimeout) {
+        clearTimeout(this._authTimeout)
+        this._authTimeout = null
+      }
+
+      this._authTimeout = setTimeout(async () => {
+        const authResponse = await createAuth({
+          baseUrl: url.origin,
+          apiVersion: apiVersion,
+          apiKey: auth.data.refreshToken,
+          expirySeconds: auth.data.expirySeconds,
+        })
+        this._auth = this.setAuth(authResponse)
+      }, auth.data.expirySeconds * 1500)
 
       const data = {
         baseUrl: url.origin,
