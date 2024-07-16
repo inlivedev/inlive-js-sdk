@@ -81,10 +81,7 @@ export const createApi = ({ fetcher, config }) => {
         body: JSON.stringify(body),
       })
 
-      if (
-        response.code === 403 &&
-        response.headers.get('x-access-token-expired')
-      ) {
+      if (response.headers.get('x-access-token-expired')) {
         const authResponse = await createAuth({
           apiKey: this._auth.refreshToken,
         })
@@ -161,10 +158,7 @@ export const createApi = ({ fetcher, config }) => {
         headers: { Authorization: 'Bearer ' + this._auth.accessToken },
       })
 
-      if (
-        response.code === 403 &&
-        response.headers.get('x-access-token-expired')
-      ) {
+      if (response.headers.get('x-access-token-expired')) {
         const authResponse = await createAuth({
           apiKey: this._auth.refreshToken,
         })
@@ -267,10 +261,7 @@ export const createApi = ({ fetcher, config }) => {
         options
       )
 
-      if (
-        response.code === 403 &&
-        response.headers.get('x-access-token-expired')
-      ) {
+      if (response.headers.get('x-access-token-expired')) {
         const authResponse = await createAuth({
           apiKey: this._auth.refreshToken,
         })
@@ -725,10 +716,7 @@ export const createApi = ({ fetcher, config }) => {
         headers: { Authorization: 'Bearer ' + this._auth.accessToken },
       })
 
-      if (
-        response.code === 403 &&
-        response.headers.get('x-access-token-expired')
-      ) {
+      if (response.headers.get('x-access-token-expired')) {
         const authResponse = await createAuth({
           apiKey: this._auth.refreshToken,
         })
