@@ -24,6 +24,7 @@ export const createFetcher = () => {
           const jsonResp = await response.json()
           return {
             ...jsonResp,
+            url: response.url,
             code: response.status,
             ok: response.ok,
             headers: response.headers,
