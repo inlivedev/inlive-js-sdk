@@ -1,20 +1,18 @@
 import type { createFetcher } from './fetcher.js'
 import type { createApi } from './api.js'
-import type { createAccessToken } from './access-token.js'
 import type { SharedType } from '../../internal/types/types.js'
+import type { RoomType } from '../room-types.js'
 
 export declare namespace RoomAPIType {
   type CreateFetcher = typeof createFetcher
-  type CreateAccessToken = typeof createAccessToken
   type CreateApi = typeof createApi
 
   type InstanceFetcher = ReturnType<ReturnType<CreateFetcher>['createInstance']>
-  type InstanceCreateAccessToken = ReturnType<CreateAccessToken>
   type InstanceApi = ReturnType<ReturnType<CreateApi>['createInstance']>
 
   type ApiDependencies = {
     fetcher: InstanceFetcher
-    accessToken: InstanceCreateAccessToken | null
+    config: RoomType.Config
   }
 
   type TrackSourcesRequestBody = {
@@ -94,10 +92,11 @@ export declare namespace RoomAPIType {
   }
 
   type BaseResponseBody = {
+    url: string
+    headers: Headers
     code: number
     ok: boolean
     message: string
-    headers: Headers
   }
 
   type RoomResponseBody = BaseResponseBody & {
@@ -110,7 +109,7 @@ export declare namespace RoomAPIType {
     options: RoomOptions
   }
 
-  type RoomReturnBody = Omit<BaseResponseBody, 'headers'> & {
+  type RoomReturnBody = BaseResponseBody & {
     data: Room
   }
 
@@ -154,5 +153,13 @@ export declare namespace RoomAPIType {
     data: {
       answer: RTCSessionDescription
     }
+  }
+
+  type ApiAuth = {
+    baseUrl: string
+    apiVersion: string
+    expirySeconds: number
+    accessToken: string
+    refreshToken: string
   }
 }

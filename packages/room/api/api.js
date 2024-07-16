@@ -1,12 +1,16 @@
+import { createAuth } from './auth.js'
+
 /** @param {import('./api-types.js').RoomAPIType.ApiDependencies} apiDeps Dependencies for api module */
-export const createApi = ({ fetcher, accessToken }) => {
+export const createApi = ({ fetcher, config }) => {
   const Api = class {
     _fetcher
-    _accessToken
+    /** @type {import('./api-types.js').RoomAPIType.ApiAuth | null} */
+    _auth = null
+    _accessToken = ''
+    _refreshToken = ''
 
     constructor() {
       this._fetcher = fetcher
-      this._accessToken = accessToken
     }
 
     /**
@@ -18,10 +22,11 @@ export const createApi = ({ fetcher, accessToken }) => {
     createRoom = async (name = '', id = '', options) => {
       const requestOptions = {}
 
-      if (typeof options !== 'undefined') {
+      if (options !== undefined) {
         requestOptions.bitrates =
-          typeof options.bitrates !== 'undefined'
-            ? {
+          options.bitrates === undefined
+            ? {}
+            : {
                 audio: options.bitrates.audio || 0,
                 audio_red: options.bitrates.audioRed || 0,
                 video: options.bitrates.video || 0,
@@ -33,11 +38,11 @@ export const createApi = ({ fetcher, accessToken }) => {
                 video_low_pixels: options.bitrates.videoLowPixels || 0,
                 initial_bandwidth: options.bitrates.initialBandwidth || 0,
               }
-            : {}
 
         requestOptions.quality_presets =
-          typeof options.qualityPresets !== 'undefined'
-            ? {
+          options.qualityPresets === undefined
+            ? {}
+            : {
                 high: {
                   sid: options.qualityPresets.high?.sid || 2,
                   tid: options.qualityPresets.high?.tid || 2,
@@ -51,7 +56,6 @@ export const createApi = ({ fetcher, accessToken }) => {
                   tid: options.qualityPresets.low?.tid || 0,
                 },
               }
-            : {}
 
         requestOptions.codecs = options.codecs || []
         requestOptions.pli_interval_ns = options.pliIntervalMS
@@ -69,23 +73,22 @@ export const createApi = ({ fetcher, accessToken }) => {
         options: requestOptions,
       }
 
-      let currentAccessToken = await this._getCurrentAccessToken(
-        this._accessToken
-      )
+      this._auth = await this._createAuthIfNotSet()
 
       /** @type {import('./api-types.js').RoomAPIType.RoomResponseBody} */
       const response = await this._fetcher.post(`/rooms/create`, {
-        headers: { Authorization: 'Bearer ' + currentAccessToken },
+        headers: { Authorization: 'Bearer ' + this._auth.accessToken },
         body: JSON.stringify(body),
       })
 
       if (
         response.code === 403 &&
-        response.headers.get('x-access-token-expired') &&
-        this._accessToken
+        response.headers.get('x-access-token-expired')
       ) {
-        // recursive
-        await this._accessToken.generateToken()
+        const authResponse = await createAuth({
+          apiKey: this._auth.refreshToken,
+        })
+        this._auth = this.setAuth(authResponse)
         return this.createRoom(name, id, options)
       }
 
@@ -96,6 +99,8 @@ export const createApi = ({ fetcher, accessToken }) => {
 
       /** @type {import('./api-types.js').RoomAPIType.RoomReturnBody} */
       const room = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -149,22 +154,21 @@ export const createApi = ({ fetcher, accessToken }) => {
         throw new Error('Room ID must be a valid string')
       }
 
-      let currentAccessToken = await this._getCurrentAccessToken(
-        this._accessToken
-      )
+      this._auth = await this._createAuthIfNotSet()
 
       /** @type {import('./api-types.js').RoomAPIType.RoomResponseBody} */
       const response = await this._fetcher.get(`/rooms/${roomId}`, {
-        headers: { Authorization: 'Bearer ' + currentAccessToken },
+        headers: { Authorization: 'Bearer ' + this._auth.accessToken },
       })
 
       if (
         response.code === 403 &&
-        response.headers.get('x-access-token-expired') &&
-        this._accessToken
+        response.headers.get('x-access-token-expired')
       ) {
-        // recursive
-        await this._accessToken.generateToken()
+        const authResponse = await createAuth({
+          apiKey: this._auth.refreshToken,
+        })
+        this._auth = this.setAuth(authResponse)
         return this.getRoom(roomId)
       }
 
@@ -175,6 +179,8 @@ export const createApi = ({ fetcher, accessToken }) => {
 
       /** @type {import('./api-types.js').RoomAPIType.RoomReturnBody} */
       const room = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -243,13 +249,11 @@ export const createApi = ({ fetcher, accessToken }) => {
         body.enable_vad = config.enableVAD
       }
 
-      let currentAccessToken = await this._getCurrentAccessToken(
-        this._accessToken
-      )
+      this._auth = await this._createAuthIfNotSet()
 
       /** @type {RequestInit} */
       const options = {
-        headers: { Authorization: 'Bearer ' + currentAccessToken },
+        headers: { Authorization: 'Bearer ' + this._auth.accessToken },
       }
 
       if (body.uid || body.name) {
@@ -264,11 +268,12 @@ export const createApi = ({ fetcher, accessToken }) => {
 
       if (
         response.code === 403 &&
-        response.headers.get('x-access-token-expired') &&
-        this._accessToken
+        response.headers.get('x-access-token-expired')
       ) {
-        // recursive
-        await this._accessToken.generateToken()
+        const authResponse = await createAuth({
+          apiKey: this._auth.refreshToken,
+        })
+        this._auth = this.setAuth(authResponse)
         return this.registerClient(roomId, config)
       }
 
@@ -276,6 +281,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       const bitrates = data.bitrates || {}
 
       const client = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -322,6 +329,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       const events = data.events || {}
 
       return {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -368,6 +377,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       const bitrates = data.bitrates || {}
 
       return {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -411,6 +422,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       const data = response.data || {}
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -443,6 +456,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       })
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -471,6 +486,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       )
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -499,6 +516,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       )
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -523,6 +542,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       )
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -555,6 +576,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       const data = response.data || {}
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -591,6 +614,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       )
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -625,6 +650,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       )
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -670,6 +697,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       )
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -687,26 +716,27 @@ export const createApi = ({ fetcher, accessToken }) => {
         throw new Error('Room ID must be a valid string')
       }
 
-      let currentAccessToken = await this._getCurrentAccessToken(
-        this._accessToken
-      )
+      this._auth = await this._createAuthIfNotSet()
 
       /** @type {import('./api-types.js').RoomAPIType.BaseResponseBody} */
       const response = await this._fetcher.put(`/rooms/${roomId}/end`, {
-        headers: { Authorization: 'Bearer ' + currentAccessToken },
+        headers: { Authorization: 'Bearer ' + this._auth.accessToken },
       })
 
       if (
         response.code === 403 &&
-        response.headers.get('x-access-token-expired') &&
-        this._accessToken
+        response.headers.get('x-access-token-expired')
       ) {
-        // recursive
-        await this._accessToken.generateToken()
+        const authResponse = await createAuth({
+          apiKey: this._auth.refreshToken,
+        })
+        this._auth = this.setAuth(authResponse)
         return this.endRoom(roomId)
       }
 
       const result = {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -744,6 +774,8 @@ export const createApi = ({ fetcher, accessToken }) => {
       )
 
       return {
+        url: response.url,
+        headers: response.headers,
         code: response.code || 500,
         ok: response.ok || false,
         message: response.message || '',
@@ -751,36 +783,45 @@ export const createApi = ({ fetcher, accessToken }) => {
       }
     }
 
-    /**
-     * @param {import('./api-types.js').RoomAPIType.InstanceCreateAccessToken | null} accessToken
-     */
-    _getCurrentAccessToken = async (accessToken) => {
-      if (
-        !accessToken ||
-        typeof accessToken.generateToken !== 'function' ||
-        typeof accessToken.currentToken !== 'function'
-      ) {
+    _createAuthIfNotSet = async () => {
+      if (!config.api.apiKey && !this._auth) {
         throw new Error(
-          'Require AccessToken() to be initialized properly. Set the access token with room.setAccessToken(accessToken)'
+          'Auth is not set properly. Use createAuth() and set the response with room.setAuth()'
         )
       }
 
-      let currentToken = accessToken.currentToken()
+      if (this._auth) return this._auth
 
-      if (currentToken.trim().length === 0) {
-        const newToken = await accessToken.generateToken()
-        currentToken = newToken.data || ''
-        return currentToken
-      }
+      const response = await createAuth({
+        apiKey: config.api.apiKey,
+      })
 
-      return currentToken
+      return this.setAuth(response)
     }
 
     /**
-     * @param {import('./api-types.js').RoomAPIType.InstanceCreateAccessToken} accessToken
+     * @typedef ReturnAccessToken
+     * @property {string} url
+     * @property {{expirySeconds: number, accessToken: string, refreshToken: string}} data
      */
-    setAccessToken = (accessToken) => {
-      this._accessToken = accessToken
+
+    /**
+     * @param {ReturnAccessToken} auth
+     */
+    setAuth = (auth) => {
+      const url = new URL(auth.url)
+      const apiVersion = url.pathname.split('/')[1]
+
+      const data = {
+        baseUrl: url.origin,
+        apiVersion: apiVersion,
+        accessToken: auth.data.accessToken,
+        refreshToken: auth.data.refreshToken,
+        expirySeconds: auth.data.expirySeconds,
+      }
+
+      this._auth = data
+      return data
     }
   }
 
@@ -805,7 +846,7 @@ export const createApi = ({ fetcher, accessToken }) => {
         leaveRoom: api.leaveRoom,
         endRoom: api.endRoom,
         createDataChannel: api.createDataChannel,
-        setAccessToken: api.setAccessToken,
+        setAuth: api.setAuth,
       }
     },
   }
