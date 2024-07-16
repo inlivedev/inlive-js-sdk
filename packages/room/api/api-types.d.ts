@@ -99,6 +99,10 @@ export declare namespace RoomAPIType {
     message: string
   }
 
+  type BaseResponseReturn = BaseResponseBody & {
+    data: null
+  }
+
   type RoomResponseBody = BaseResponseBody & {
     data: RoomResponse
   }
@@ -118,6 +122,14 @@ export declare namespace RoomAPIType {
       client_id: string
       name: string
       bitrates: BitratesSnakeCase
+    }
+  }
+
+  type RegisterClientReturn = BaseResponseBody & {
+    data: {
+      clientId: string
+      clientName: string
+      bitrates: BitratesCamelCase
     }
   }
 

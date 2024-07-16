@@ -228,6 +228,7 @@ export const createApi = ({ fetcher, config }) => {
     /**
      * @param {string} roomId
      * @param {{clientId?: string, clientName?: string, enableVAD?: boolean}} [config]
+     * @returns {Promise<import('./api-types.js').RoomAPIType.RegisterClientReturn>}
      */
     registerClient = async (roomId, config = {}) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
@@ -710,6 +711,7 @@ export const createApi = ({ fetcher, config }) => {
 
     /**
      * @param {string} roomId
+     * @returns {Promise<import('./api-types.js').RoomAPIType.BaseResponseReturn>}
      */
     endRoom = async (roomId) => {
       if (typeof roomId !== 'string' || roomId.trim().length === 0) {
