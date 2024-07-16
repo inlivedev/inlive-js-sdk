@@ -6,8 +6,6 @@ export const createApi = ({ fetcher, config }) => {
     _fetcher
     /** @type {import('./api-types.js').RoomAPIType.ApiAuth | null} */
     _auth = null
-    _accessToken = ''
-    _refreshToken = ''
 
     constructor() {
       this._fetcher = fetcher
