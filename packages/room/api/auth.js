@@ -27,7 +27,7 @@ const config = {
 /**
  * @param {import('../../internal/types/types.js').SharedType.DeepPartial<typeof config>} [userConfig]
  */
-export const createAccessToken = async (userConfig = config) => {
+export const createAuth = async (userConfig = config) => {
   mergeWith(config, userConfig, (_, userValue) => {
     return Array.isArray(userValue) ? userValue : undefined
   })
