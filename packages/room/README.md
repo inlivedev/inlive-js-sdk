@@ -4,21 +4,54 @@ This package is used to work with [inLive Hub and Room API services](https://hub
 
 ## Usage
 
-To use this package, you need to import a `Room` module and initialize it in a global scope where you can export and import the room object returned everywhere in your application.
+The first thing to do is to get an application key, also known as an API key. You need to register [an inLive account](https://studio.inlive.app) and go to the [integration page](https://studio.inlive.app/settings/integration) where you can create one. The API key is unique per application and the recommendation is to only use and store it on the server side.
+
+### Basic usage with authentication
+
+You should import and run `createAuth()` module in the server side. This is important because it will ask for your API key and we don't want the API key to be exposed to the client side. The `createAuth()` function will return a promise object containing access and refresh tokens useful for client side authentication.
+
+The `Room()` module can be initialized globally both in the client or server sides. However, some functionalities only work in the client side. To properly authenticate `Room()` module, you need to set authentication data and tokens returned by `createAuth()` using `room.setAuth()` method.
 
 ```js
-import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk';
-// Or if you prefer to load only the room module
-import { Room, RoomEvent } from '@inlivedev/inlive-js-sdk/dist/room.js';
+import { Room, RoomEvent, createAuth } from '@inlivedev/inlive-js-sdk';
+// Or if you prefer to load only the room distribution
+import { Room, RoomEvent, createAuth } from '@inlivedev/inlive-js-sdk/dist/room.js';
 
-const room = Room({
-  api : {
-    apiKey : 'YOUR_API_KEY'
-  }
-})
+// You need to run this in the server side to prevent API key leak
+const auth = await createAuth({
+  apiKey: 'YOUR_API_KEY',
+  expirySeconds: 3600,
+});
+
+// Initialize globally, so you can import and use it anywhere in your application
+const room = Room();
+
+// Setup the authentication
+room.setAuth(auth);
 ```
 
 ### Configurations
+
+#### Authentication module
+These are the available config options for `createAuth()` module.
+
+```js
+{
+  // Your API key
+  apiKey: 'YOUR_API_KEY',
+
+  // The API server base URL
+  baseUrl: 'https://api.inlive.app',
+
+  // The API version
+  apiVersion: 'v1',
+
+  // Time needed for the access token to expire. Time needed for the refresh token is doubled by this value.
+  expirySeconds: 3600,
+}
+```
+
+#### Room module
 These are the available config options for initializing the `Room` module. See the [default configuration](./config/config.js).
 
 > [!NOTE]
@@ -28,7 +61,7 @@ Some webcam and screenshare configurations might not be always working the way t
 {
   // API server configurations
   api: {
-    // This is the only required part when you want to use functions that require authentication.
+    // Your API key
     apiKey: 'YOUR_API_KEY',
 
     // The API server base URL
@@ -136,16 +169,6 @@ Room({
   }
 })
 ```
-
-### Authentication
-Some function in the Room Object require the apiKey parameter to be defined, since the SDK is designed to be used on Client and Server Side
-
-If the Library is used on the client side you might not need to pass the `apiKey` parameter
-
-The following function require apiKey to be defined :
-* `Room.createRoom()`
-* `Room.getRoom()`
-* `Room.createClient()`
 
 ### Room object
 
