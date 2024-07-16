@@ -39,9 +39,12 @@ export const createAuth = async (userConfig = config) => {
     throw new Error('API key is required.')
   }
 
+  const body = { expiry_seconds: config.expirySeconds }
+
   /** @type {AccessTokenResponse} */
   const response = await fetcher.post('/keys/accesstoken', {
     headers: { Authorization: 'Bearer ' + config.apiKey },
+    body: JSON.stringify(body),
   })
 
   const data = response.data || {}
