@@ -7,8 +7,7 @@ import { createStream } from './stream/stream.js'
 import { createPeer } from './peer/peer.js'
 import { createChannel } from './channel/channel.js'
 import * as config from './config/config.js'
-import { createAccessToken } from './api/access-token.js'
-export { createAccessToken } from './api/access-token.js'
+export { createAuth } from './api/auth.js'
 export { REASONS as ChannelClosureReasons } from './channel/channel.js'
 
 export const RoomEvent = Object.freeze({
@@ -30,24 +29,17 @@ export const Room = (userConfig = config) => {
   })
 
   const hubBaseUrl = `${config.api.baseUrl}/${config.api.version}`
-  let accessToken = null
-
-  if (config.api.apiKey.trim().length > 0) {
-    accessToken = createAccessToken({
-      apiKey: config.api.apiKey,
-    })
-  }
 
   const fetcher = createFetcher().createInstance(hubBaseUrl)
   const api = createApi({
     fetcher,
-    accessToken,
+    config,
   }).createInstance()
   const event = createEvent().createInstance()
   const streams = createStreams().createInstance()
   const peer = createPeer({
     api,
-    config: config,
+    config,
     createStream,
     event,
     streams,
@@ -78,7 +70,7 @@ export const Room = (userConfig = config) => {
         return peer
       },
     createDataChannel: api.createDataChannel,
-    setAccessToken: api.setAccessToken,
+    setAuth: api.setAuth,
     on: event.on,
     leaveRoom: api.leaveRoom,
     endRoom: api.endRoom,
