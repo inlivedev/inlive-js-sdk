@@ -827,7 +827,7 @@ export const createApi = ({ fetcher, config }) => {
           expirySeconds: auth.data.expirySeconds,
         })
         this._auth = this.setAuth(authResponse)
-      }, auth.data.expirySeconds * 1500)
+      }, auth.data.expirySeconds * 1000)
 
       const data = {
         baseUrl: url.origin,
