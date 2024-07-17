@@ -233,6 +233,10 @@ await room.endRoom(roomData.data.roomId);
 
 #### Methods
 
+- `room.setAuth(auth)`
+
+  A method to setup the authentication data for `Room()` module. It expects the object returned by `createAuth()` module as parameter.
+
 - `room.createRoom(name?: string | undefined, id?: string | undefined, config?: object | undefined)`
 
   > 🔐 Require Authentication
