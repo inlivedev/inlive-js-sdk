@@ -1,4 +1,14 @@
-import { facade } from './facade/facade.js'
+import mergeWith from 'lodash-es/mergeWith.js'
+import { createFetcher } from './api/fetcher.js'
+import { createApi } from './api/api.js'
+import { createEvent } from './event/event.js'
+import { createStreams } from './stream/streams.js'
+import { createStream } from './stream/stream.js'
+import { createPeer } from './peer/peer.js'
+import { createChannel } from './channel/channel.js'
+import * as config from './config/config.js'
+export { createAuth } from './api/auth.js'
+export { REASONS as ChannelClosureReasons } from './channel/channel.js'
 
 export const RoomEvent = Object.freeze({
   CHANNEL_OPENED: 'channelOpened',
@@ -10,20 +20,59 @@ export const RoomEvent = Object.freeze({
   META_CHANGED: 'metaChanged',
 })
 
-export { REASONS as ChannelClosureReasons } from './channel/channel.js'
-
 /**
- * @typedef {ReturnType<import('./facade/facade-types.js').RoomFacadeType.CreateInstanceFacade>} RoomInstance
+ * @param {import('./room-types.js').RoomType.UserConfig} [userConfig]
  */
+export const Room = (userConfig = config) => {
+  mergeWith(config, userConfig, (_, userValue) => {
+    return Array.isArray(userValue) ? userValue : undefined
+  })
 
-/**
- * @param {import('./facade/facade-types.js').RoomFacadeType.Facade} facade Object which creates an instance Facade module
- * @returns {(config?: import('./room-types.js').RoomType.UserConfig) => RoomInstance}
- */
-const createRoom = (facade) => {
-  return (config = {}) => {
-    return facade.createInstance(config)
+  const hubBaseUrl = `${config.api.baseUrl}/${config.api.version}`
+
+  const fetcher = createFetcher().createInstance(hubBaseUrl)
+  const api = createApi({
+    fetcher,
+    config,
+  }).createInstance()
+  const event = createEvent().createInstance()
+  const streams = createStreams().createInstance()
+  const peer = createPeer({
+    api,
+    config,
+    createStream,
+    event,
+    streams,
+  }).createInstance()
+  createChannel({
+    api,
+    event,
+    peer,
+    streams,
+  }).createInstance(hubBaseUrl)
+
+  return {
+    createRoom: api.createRoom,
+    getRoom: api.getRoom,
+    createClient: api.registerClient,
+    getClient: api.getClient,
+    setClientName: api.setClientName,
+    getMetadata: api.getMetadata,
+    setMetadata: api.setMetadata,
+    deleteMetadata: api.deleteMetadata,
+    createPeer:
+      /**
+       * @param {string} roomId
+       * @param {string} clientId
+       */
+      async (roomId, clientId) => {
+        await peer.connect(roomId, clientId)
+        return peer
+      },
+    createDataChannel: api.createDataChannel,
+    setAuth: api.setAuth,
+    on: event.on,
+    leaveRoom: api.leaveRoom,
+    endRoom: api.endRoom,
   }
 }
-
-export const Room = createRoom(facade)

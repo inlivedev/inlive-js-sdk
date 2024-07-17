@@ -21,6 +21,7 @@ module.exports = {
     'jsdoc/require-returns': 'off',
     'jsdoc/require-param-description': 'off',
     'jsdoc/require-returns-description': 'off',
+    'jsdoc/require-property-description': 'off',
     'prettier/prettier': [
       'warn',
       {

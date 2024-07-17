@@ -1,15 +1,12 @@
 export const createFetcher = () => {
   const Fetcher = class {
-    _apiKey
     _baseUrl
 
     /**
-     * @param {string}  apiKey
      * @param {string} baseUrl
      */
-    constructor(baseUrl, apiKey) {
+    constructor(baseUrl) {
       this._baseUrl = baseUrl
-      this._apiKey = apiKey
     }
 
     /**
@@ -27,8 +24,10 @@ export const createFetcher = () => {
           const jsonResp = await response.json()
           return {
             ...jsonResp,
+            url: response.url,
             code: response.status,
             ok: response.ok,
+            headers: response.headers,
           }
         } catch (error) {
           throw new Error(`Cannot process response from the server: ${error}`)
@@ -70,10 +69,6 @@ export const createFetcher = () => {
 
     getBaseUrl = () => {
       return this._baseUrl
-    }
-
-    getApiKey = () => {
-      return this._apiKey
     }
 
     /**
@@ -135,13 +130,11 @@ export const createFetcher = () => {
   return {
     /**
      * @param {string} baseUrl
-     * @param {string} apiKey
      */
-    createInstance: (baseUrl, apiKey) => {
-      const fetcher = new Fetcher(baseUrl, apiKey)
+    createInstance: (baseUrl) => {
+      const fetcher = new Fetcher(baseUrl)
 
       return {
-        getApiKey: fetcher.getApiKey,
         getBaseUrl: fetcher.getBaseUrl,
         get: fetcher.get,
         post: fetcher.post,
