@@ -45,6 +45,7 @@ export const createAuth = async (userConfig = config) => {
   const response = await fetcher.post('/keys/accesstoken', {
     headers: { Authorization: 'Bearer ' + config.apiKey },
     body: JSON.stringify(body),
+    cache: 'no-store',
   })
 
   const data = response.data || {}
