@@ -34,14 +34,14 @@ export const media = {
   },
   screen: {
     maxFramerate: 30,
-    videoCodecs: ['video/VP8', 'video/H264', 'video/VP9'],
+    videoCodecs: ['video/VP9', 'video/VP8', 'video/H264'],
     simulcast: false,
     svc: true,
     scalabilityMode: 'L1T1',
     bitrates: {
-      high: 1200 * 1000,
-      mid: 500 * 1000,
-      low: 150 * 1000,
+      high: 1800 * 1000,
+      mid: 1100 * 1000,
+      low: 350 * 1000,
     },
   },
   microphone: {
