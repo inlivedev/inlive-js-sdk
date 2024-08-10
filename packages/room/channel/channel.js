@@ -1,5 +1,4 @@
-import { RoomEvent } from '../index.js'
-import { InternalPeerEvents } from '../peer/peer.js'
+import { InternalPeerEvents, RoomEvent } from '../peer/event.js'
 
 export const REASONS = {
   PEER_CLOSED: 'peerClosed',

@@ -4,12 +4,7 @@ import {
 } from '../../internal/utils/get-browser-name.js'
 import { VideoObserver } from '../observer/video-observer.js'
 import { BandwidthController } from '../bandwidth-controller/bandwidth-controller.js'
-import { RoomEvent } from '../index.js'
-
-export const InternalPeerEvents = {
-  INTERNAL_DATACHANNEL_AVAILABLE: 'internalDataChannelAvailable',
-  REMOTE_STREAM_READY_TO_ADD: 'remoteStreamReadyToAdd',
-}
+import { RoomEvent, InternalPeerEvents } from './event.js'
 
 /** @param {import('./peer-types.js').RoomPeerType.PeerDependencies} peerDependencies Dependencies for peer module */
 export const createPeer = ({ api, createStream, event, streams, config }) => {

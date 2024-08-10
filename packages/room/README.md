@@ -116,7 +116,7 @@ Some webcam and screenshare configurations might not be always working the way t
       svc: true,
 
       // Specify the scalability mode for the webcam
-      scalabilityMode: 'L3T1',
+      scalabilityMode: 'L3T3',
 
       // Specify the bitrate for the webcam. Mid and low bitrates are available only when simulcast is enabled.
       bitrates: {
@@ -130,7 +130,7 @@ Some webcam and screenshare configurations might not be always working the way t
       maxFramerate: 30,
 
       // A list of preferred codecs for screenshare in video MIME type format. Early codec in the list will be prioritized.
-      videoCodecs: ['video/VP8', 'video/H264', 'video/VP9'],
+      videoCodecs: ['video/VP9','video/VP8', 'video/H264',]
 
       // Specify whether the simulcast is enabled for the screenshare
       simulcast: false,
@@ -139,12 +139,12 @@ Some webcam and screenshare configurations might not be always working the way t
       svc: true,
 
       // Specify the scalability mode for the screenshare
-      scalabilityMode: 'L1T2',
+      scalabilityMode: 'L1T3',
 
       // Specify the bitrate for the screenshare. Mid and low bitrates are available only when simulcast is enabled.
       bitrates: {
-        high: 1200000,
-        mid: 500000,
+        high: 2000000,
+        mid: 800000,
         low: 150000,
       },
     },

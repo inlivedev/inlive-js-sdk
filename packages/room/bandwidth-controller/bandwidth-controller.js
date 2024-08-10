@@ -1,5 +1,4 @@
-import { InternalPeerEvents } from '../peer/peer.js'
-import { RoomEvent } from '../index.js'
+import { InternalPeerEvents, RoomEvent } from '../peer/event.js'
 
 export class BandwidthController {
   #event
