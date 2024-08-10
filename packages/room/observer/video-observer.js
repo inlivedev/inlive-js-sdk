@@ -3,8 +3,8 @@
  */
 export class VideoObserver {
   #intervalGap
-  /** @type { import('./video-observer-types.js').VideoObserver.StringMap} lastReportTime - Last report time */
-  #lastReportTime
+  /** @type { import('./video-observer-types.js').VideoObserver.StringMapTimeout} delayedReports - Last report time */
+  #delayedReports
   #dataChannel
   #resizeObserver
   #intersectionObserver
@@ -15,7 +15,7 @@ export class VideoObserver {
    */
   constructor(dataChannel, intervalGap) {
     this.#intervalGap = typeof intervalGap !== 'number' ? 1000 : intervalGap
-    this.#lastReportTime = {}
+    this.#delayedReports = {}
     this.#dataChannel = dataChannel
     this.#resizeObserver = new ResizeObserver(this.#onResize.bind(this))
     this.#intersectionObserver = new IntersectionObserver(
@@ -87,22 +87,32 @@ export class VideoObserver {
   }
 
   /**
-   * Report video size to peer connection.
+   * Handle video size changes.
    * @param {string} id - MediaStreamTrack id
    * @param {number} width - Video width
    * @param {number} height - Video height
    * @returns {void}
    */
   #onVideoSizeChanged(id, width, height) {
-    if (
-      id in this.#lastReportTime &&
-      Date.now() - this.#lastReportTime[id] < this.#intervalGap
-    ) {
-      return
+    if (id in this.#delayedReports) {
+      clearTimeout(this.#delayedReports[id])
+
+      delete this.#delayedReports[id]
     }
 
-    this.#lastReportTime[id] = Date.now()
+    this.#delayedReports[id] = setTimeout(() => {
+      this.sendVideoSize(id, width, height)
+    }, this.#intervalGap)
+  }
 
+  /**
+   * Report video size to peer connection.
+   * @param {string} id - MediaStreamTrack id
+   * @param {number} width - Video width
+   * @param {number} height - Video height
+   * @returns {void}
+   */
+  sendVideoSize(id, width, height) {
     if (this.#dataChannel.readyState === 'open') {
       const data = {
         type: 'video_size',
@@ -125,6 +135,7 @@ export class VideoObserver {
           },
         }
 
+        console.debug('video size changed', data)
         this.#dataChannel.send(JSON.stringify(data))
         this.#dataChannel.removeEventListener('open', listener)
       }

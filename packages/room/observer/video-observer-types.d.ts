@@ -1,7 +1,7 @@
 import { VideoObserver } from './video-observer'
 
 export declare namespace VideoObserver {
-  interface StringMap {
-    [key: string]: number
+  interface StringMapTimeout {
+    [key: string]: ReturnType<typeof setTimeout?>
   }
 }
