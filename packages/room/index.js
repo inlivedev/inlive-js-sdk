@@ -10,16 +10,6 @@ import * as config from './config/config.js'
 export { createAuth } from './api/auth.js'
 export { REASONS as ChannelClosureReasons } from './channel/channel.js'
 
-export const RoomEvent = Object.freeze({
-  CHANNEL_OPENED: 'channelOpened',
-  CHANNEL_CLOSED: 'channelClosed',
-  PEER_OPENED: 'peerOpened',
-  PEER_CLOSED: 'peerClosed',
-  STREAM_AVAILABLE: 'streamAvailable',
-  STREAM_REMOVED: 'streamRemoved',
-  META_CHANGED: 'metaChanged',
-})
-
 /**
  * @param {import('./room-types.js').RoomType.UserConfig} [userConfig]
  */

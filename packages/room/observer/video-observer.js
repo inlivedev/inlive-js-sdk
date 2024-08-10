@@ -59,8 +59,8 @@ export class VideoObserver {
       const videoTracks = entry.target.srcObject.getVideoTracks()
       if (videoTracks.length > 0) {
         const trackid = videoTracks[0].id
-        const width = entry.isIntersecting ? entry.target.width : 0
-        const height = entry.isIntersecting ? entry.target.height : 0
+        const width = entry.isIntersecting ? entry.target.offsetWidth : 0
+        const height = entry.isIntersecting ? entry.target.offsetHeight : 0
         this.#onVideoSizeChanged(trackid, width, height)
       }
     }
@@ -100,6 +100,7 @@ export class VideoObserver {
       delete this.#delayedReports[id]
     }
 
+    console.log('video size changed start timeout', id, width, height)
     this.#delayedReports[id] = setTimeout(() => {
       this.sendVideoSize(id, width, height)
     }, this.#intervalGap)
@@ -122,6 +123,8 @@ export class VideoObserver {
           height: Math.floor(height),
         },
       }
+
+      console.debug('video size changed', data)
 
       this.#dataChannel.send(JSON.stringify(data))
     } else {

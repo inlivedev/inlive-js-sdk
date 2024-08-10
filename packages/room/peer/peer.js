@@ -407,6 +407,16 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     }
 
     /**
+     * @param {string} trackId
+     * @param {number} width
+     * @param {number} height
+     * @returns {void}
+     */
+    updateVideoSize = (trackId, width, height) => {
+      this._videoObserver?.sendVideoSize(trackId, width, height)
+    }
+
+    /**
      * @param {HTMLVideoElement} videoElement
      */
     unobserveVideo = (videoElement) => {
@@ -1057,6 +1067,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         turnOffMic: peer.turnOffMic,
         replaceTrack: peer.replaceTrack,
         observeVideo: peer.observeVideo,
+        updateVideoSize: peer.updateVideoSize,
         unobserveVideo: peer.unobserveVideo,
         negotiate: peer.negotiate,
         pendingNegotiation: peer.pendingNegotiation,
