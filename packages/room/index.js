@@ -62,6 +62,8 @@ export const Room = (userConfig = config) => {
     createDataChannel: api.createDataChannel,
     setAuth: api.setAuth,
     on: event.on,
+    addEventListener: event.addEventListener,
+    removeEventListener: event.removeEventListener,
     leaveRoom: api.leaveRoom,
     endRoom: api.endRoom,
   }

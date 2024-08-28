@@ -227,7 +227,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const videoTrack = localStream.mediaStream.getVideoTracks()[0]
 
       if (!newTrack && !videoTrack) {
-        throw new Error('Cannot find any video track which can be processed')
+        return
       }
 
       if (newTrack) {
@@ -278,7 +278,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const audioTrack = localStream.mediaStream.getAudioTracks()[0]
 
       if (!newTrack && !audioTrack) {
-        throw new Error('Cannot find any audio track which can be processed')
+        return
       }
 
       if (newTrack) {
@@ -329,7 +329,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const videoTrack = localStream?.mediaStream.getVideoTracks()[0]
 
       if (!videoTrack || videoTrack.readyState === 'ended') {
-        throw new Error(`No running video track available to be processed.`)
+        return
       }
 
       if (stop) {
@@ -358,7 +358,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       const audioTrack = localStream?.mediaStream.getAudioTracks()[0]
 
       if (!audioTrack || audioTrack.readyState === 'ended') {
-        throw new Error(`No running audio track available to be processed.`)
+        return
       }
 
       if (stop) {

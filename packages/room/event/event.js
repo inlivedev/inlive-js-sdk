@@ -51,6 +51,48 @@ export const createEvent = () => {
 
       this._events[eventName].add(callback)
     }
+
+    /**
+     * @param {string} eventName - The name of the event
+     * @param {(data: any) => void} callback - A callback function
+     */
+    addEventListener = (eventName, callback) => {
+      if (typeof eventName !== 'string' || eventName.trim().length === 0) {
+        throw new Error('Valid string for event name is required')
+      }
+
+      if (typeof callback !== 'function') {
+        throw new TypeError('Valid callback function is required')
+      }
+
+      const event = this._events[eventName]
+
+      if (!(event instanceof Set)) {
+        this._events[eventName] = new Set()
+      }
+
+      this._events[eventName].add(callback)
+    }
+
+    /**
+     * @param {string} eventName - The name of the event
+     * @param {(data: any) => void} callback - A callback function
+     */
+    removeEventListener = (eventName, callback) => {
+      if (typeof eventName !== 'string' || eventName.trim().length === 0) {
+        throw new Error('Valid string for event name is required')
+      }
+
+      if (typeof callback !== 'function') {
+        throw new TypeError('Valid callback function is required')
+      }
+
+      const event = this._events[eventName]
+
+      if (event instanceof Set) {
+        event.delete(callback)
+      }
+    }
   }
 
   return {
@@ -60,6 +102,8 @@ export const createEvent = () => {
       return {
         emit: event.emit,
         on: event.on,
+        addEventListener: event.addEventListener,
+        removeEventListener: event.removeEventListener,
       }
     },
   }
