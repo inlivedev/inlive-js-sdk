@@ -2,20 +2,14 @@
  * Video observer class.
  */
 export class VideoObserver {
-  #intervalGap
-  /** @type { import('./video-observer-types.js').VideoObserver.StringMapTimeout} delayedReports - Last report time */
-  #delayedReports
   #dataChannel
   #resizeObserver
   #intersectionObserver
   /**
    * Constructor.
    * @param {RTCDataChannel} dataChannel - Data channel to use for reporting video size
-   * @param {number} intervalGap - interval time gap between report
    */
-  constructor(dataChannel, intervalGap) {
-    this.#intervalGap = typeof intervalGap !== 'number' ? 1000 : intervalGap
-    this.#delayedReports = {}
+  constructor(dataChannel) {
     this.#dataChannel = dataChannel
     this.#resizeObserver = new ResizeObserver(this.#onResize.bind(this))
     this.#intersectionObserver = new IntersectionObserver(
@@ -94,16 +88,7 @@ export class VideoObserver {
    * @returns {void}
    */
   #onVideoSizeChanged(id, width, height) {
-    if (id in this.#delayedReports) {
-      clearTimeout(this.#delayedReports[id])
-
-      delete this.#delayedReports[id]
-    }
-
-    console.log('video size changed start timeout', id, width, height)
-    this.#delayedReports[id] = setTimeout(() => {
-      this.sendVideoSize(id, width, height)
-    }, this.#intervalGap)
+    this.sendVideoSize(id, width, height)
   }
 
   /**

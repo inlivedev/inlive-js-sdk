@@ -996,7 +996,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
           internalChannel
         )
 
-        this._videoObserver = new VideoObserver(internalChannel, 1000)
+        this._videoObserver = new VideoObserver(internalChannel)
 
         for (const videoElement of this._pendingObservedVideo) {
           this._videoObserver.observe(videoElement)
