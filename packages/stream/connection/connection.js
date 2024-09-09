@@ -1,4 +1,3 @@
-import camelcaseKeys from 'camelcase-keys'
 import { Internal } from '../../internal/index.js'
 
 const { webrtc } = Internal
@@ -114,7 +113,6 @@ const connection = (() => {
 
   /**
    * Open the client connnection
-   *
    * @param {MediaObject} mediaObject - The media object consists of the ID of the stream, media video element and media stream object
    */
   const open = async (mediaObject) => {

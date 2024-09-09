@@ -334,6 +334,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       if (stop) {
         this._stopTrack(videoTrack)
+        localStream.mediaStream.removeTrack(videoTrack)
         return
       }
 
@@ -382,7 +383,8 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       for (const transceiver of this._peerConnection.getTransceivers()) {
         if (
           transceiver.sender.track &&
-          transceiver.sender.track.kind === newTrack.kind
+          transceiver.sender.track.kind === newTrack.kind &&
+          transceiver.sender.track.id === newTrack.id
         ) {
           try {
             await transceiver.sender.replaceTrack(newTrack)
@@ -553,6 +555,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
         if (senderTrack.kind === track.kind && senderTrack.id === track.id) {
           senderTrack.stop()
+          track.stop()
         }
       }
     }
@@ -938,6 +941,25 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
       } catch (error) {
         console.error(error)
       }
+    }
+
+    /**
+     * startViewOnly will add a video and audio transceiver to the peer connection
+     * in order to allow the peer to receive video and audio from the remote peer
+     * and will start the negotiation process
+     */
+    startViewOnly = async () => {
+      if (!this._peerConnection) return
+
+      this._peerConnection.addTransceiver('video', {
+        direction: 'sendrecv',
+      })
+
+      this._peerConnection.addTransceiver('audio', {
+        direction: 'sendrecv',
+      })
+
+      this.negotiate()
     }
 
     /**
