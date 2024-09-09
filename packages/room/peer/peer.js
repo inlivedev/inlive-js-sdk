@@ -238,7 +238,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         }
 
         if (videoTrack) {
-          await this.replaceTrack(newTrack)
+          await this.replaceTrack(videoTrack, newTrack)
           localStream.replaceTrack(newTrack)
           return
         }
@@ -289,7 +289,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         }
 
         if (audioTrack) {
-          await this.replaceTrack(newTrack)
+          await this.replaceTrack(audioTrack, newTrack)
           localStream.replaceTrack(newTrack)
           return
         }
@@ -334,7 +334,6 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
       if (stop) {
         this._stopTrack(videoTrack)
-        localStream.mediaStream.removeTrack(videoTrack)
         return
       }
 
@@ -371,23 +370,24 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
     }
 
     /**
+     * @param {MediaStreamTrack} oldTrack
      * @param {MediaStreamTrack} newTrack
      */
-    replaceTrack = async (newTrack) => {
+    replaceTrack = async (oldTrack, newTrack) => {
       if (!this._peerConnection) return
 
       if (!(newTrack instanceof MediaStreamTrack)) {
         throw new TypeError('Track must be an instance of MediaStreamTrack')
       }
 
-      for (const transceiver of this._peerConnection.getTransceivers()) {
+      for (const sender of this._peerConnection.getSenders()) {
         if (
-          transceiver.sender.track &&
-          transceiver.sender.track.kind === newTrack.kind &&
-          transceiver.sender.track.id === newTrack.id
+          sender.track &&
+          sender.track.kind === oldTrack.kind &&
+          sender.track.id === oldTrack.id
         ) {
           try {
-            await transceiver.sender.replaceTrack(newTrack)
+            await sender.replaceTrack(newTrack)
           } catch (error) {
             console.error(error)
             throw error

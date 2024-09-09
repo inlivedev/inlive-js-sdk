@@ -26,7 +26,10 @@ export declare namespace RoomPeerType {
     turnOnMic: () => void
     turnOffCamera: () => void
     turnOffMic: () => void
-    replaceTrack: (track: MediaStreamTrack) => Promise<void>
+    replaceTrack: (
+      oldTrack: MediaStreamTrack,
+      newTrack: MediaStreamTrack
+    ) => Promise<void>
     observeVideo: (video: HTMLVideoElement) => void
     unobserveVideo: (video: HTMLVideoElement) => void
     negotiate: () => Promise<void>
