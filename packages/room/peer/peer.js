@@ -167,6 +167,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
 
     /**
      * Get all stored streams
+     * @returns {import('../stream/stream-types.js').RoomStreamType.InstanceStream[]}
      */
     getAllStreams = () => {
       return this._streams.getAllStreams()
@@ -1092,6 +1093,7 @@ export const createPeer = ({ api, createStream, event, streams, config }) => {
         updateVideoSize: peer.updateVideoSize,
         unobserveVideo: peer.unobserveVideo,
         negotiate: peer.negotiate,
+        startViewOnly: peer.startViewOnly,
         pendingNegotiation: peer.pendingNegotiation,
       }
     },
