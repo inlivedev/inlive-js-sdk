@@ -6,8 +6,6 @@ export const createApi = ({ fetcher, config }) => {
     _fetcher
     /** @type {import('./api-types.js').RoomAPIType.ApiAuth | null} */
     _auth = null
-    /** @type {ReturnType<typeof setTimeout> | null} */
-    _authTimeout = null
 
     constructor() {
       this._fetcher = fetcher
@@ -813,21 +811,6 @@ export const createApi = ({ fetcher, config }) => {
     setAuth = (auth) => {
       const url = new URL(auth.url)
       const apiVersion = url.pathname.split('/')[1]
-
-      if (this._authTimeout) {
-        clearTimeout(this._authTimeout)
-        this._authTimeout = null
-      }
-
-      this._authTimeout = setTimeout(async () => {
-        const authResponse = await createAuth({
-          baseUrl: url.origin,
-          apiVersion: apiVersion,
-          apiKey: auth.data.refreshToken,
-          expirySeconds: auth.data.expirySeconds,
-        })
-        this._auth = this.setAuth(authResponse)
-      }, auth.data.expirySeconds * 1000)
 
       const data = {
         baseUrl: url.origin,
