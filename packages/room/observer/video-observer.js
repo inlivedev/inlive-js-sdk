@@ -5,6 +5,9 @@ export class VideoObserver {
   #dataChannel
   #resizeObserver
   #intersectionObserver
+  /** @type { import('./video-observer-types.js').VideoObserver.StringMapTimeout} delayedReports - Last report time */
+  #delayedReports
+
   /**
    * Constructor.
    * @param {RTCDataChannel} dataChannel - Data channel to use for reporting video size
@@ -15,6 +18,8 @@ export class VideoObserver {
     this.#intersectionObserver = new IntersectionObserver(
       this.#onIntersection.bind(this)
     )
+
+    this.#delayedReports = {}
   }
 
   /**
@@ -88,6 +93,17 @@ export class VideoObserver {
    * @returns {void}
    */
   #onVideoSizeChanged(id, width, height) {
+    if (id in this.#delayedReports) {
+      clearTimeout(this.#delayedReports[id])
+
+      delete this.#delayedReports[id]
+    }
+
+    this.#delayedReports[id] = setTimeout(() => {
+      console.log('video size changed', id, width, height)
+      this.sendVideoSize(id, width, height)
+    }, 30)
+
     this.sendVideoSize(id, width, height)
   }
 
