@@ -68,17 +68,6 @@ export class VideoObserver {
   observe(videoElement) {
     this.#intersectionObserver.observe(videoElement)
     this.#resizeObserver.observe(videoElement)
-
-    // report the initial size
-    if (!(videoElement.srcObject instanceof MediaStream)) return
-
-    const videoTracks = videoElement.srcObject.getVideoTracks()
-    if (videoTracks?.length > 0) {
-      const trackid = videoTracks[0].id
-      const width = videoElement.offsetWidth
-      const height = videoElement.offsetHeight
-      this.#onVideoSizeChanged(trackid, width, height)
-    }
   }
 
   /**
