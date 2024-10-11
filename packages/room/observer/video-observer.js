@@ -93,6 +93,10 @@ export class VideoObserver {
    * @returns {void}
    */
   #onVideoSizeChanged(id, width, height) {
+    if (width === 0 || height === 0) {
+      return
+    }
+
     if (id in this.#delayedReports) {
       clearTimeout(this.#delayedReports[id])
 
